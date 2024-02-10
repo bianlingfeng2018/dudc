@@ -4,18 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="14dae802-f44b-4076-b717-678d6006ee8f" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dc_detection/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dc_detection/src/main/java/edu/fudan/Main.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dc_detection/src/main/java/edu/fudan/algorithms/DefaultDetector.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dc_detection/src/main/java/edu/fudan/utils/CmdParamsReceiver.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dc_detection/src/main/resources/logback.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-    </list>
+    <list default="true" id="14dae802-f44b-4076-b717-678d6006ee8f" name="Changes" comment="封装命令行工具，测试编译、构建、运行" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -119,8 +108,21 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1707579975343</updated>
-      <workItem from="1707579976409" duration="459000" />
+      <workItem from="1707579976409" duration="788000" />
     </task>
+    <task id="LOCAL-00001" summary="封装命令行工具，测试编译、构建、运行">
+      <option name="closed" value="true" />
+      <created>1707580750332</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1707580750332</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="封装命令行工具，测试编译、构建、运行" />
+    <option name="LAST_COMMIT_MESSAGE" value="封装命令行工具，测试编译、构建、运行" />
   </component>
 </project>
