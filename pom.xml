@@ -6,8 +6,15 @@
    <version>1.0-SNAPSHOT</version>
 
    <properties>
-      <maven.compiler.source>8</maven.compiler.source>
-      <maven.compiler.target>8</maven.compiler.target>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <metanome.version>1.2-SNAPSHOT</metanome.version>
+      <maven-compiler-plugin.version>3.1</maven-compiler-plugin.version>
+      <maven-assembly-plugin.version>3.1.1</maven-assembly-plugin.version>
+      <mokito-core.version>3.6.28</mokito-core.version>
+      <mokito-all.version>1.10.19</mokito-all.version>
+      <junit.version>4.13.1</junit.version>
+      <guava.version>23.0</guava.version>
+      <fastutil.version>8.4.4</fastutil.version>
    </properties>
 
    <modules>
@@ -15,39 +22,56 @@
    </modules>
 
    <dependencies>
+<!--      metanome公共依赖-->
       <dependency>
-         <groupId>org.apache.lucene</groupId>
-         <artifactId>lucene-core</artifactId>
-         <version>8.3.0</version>
+         <groupId>de.metanome</groupId>
+         <artifactId>algorithm_integration</artifactId>
+         <version>${metanome.version}</version>
+         <scope>compile</scope>
       </dependency>
-      <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-core -->
       <dependency>
-         <groupId>ch.qos.logback</groupId>
-         <artifactId>logback-core</artifactId>
-         <version>1.2.6</version>
+         <groupId>de.metanome</groupId>
+         <artifactId>algorithm_helper</artifactId>
+         <version>${metanome.version}</version>
+         <scope>compile</scope>
       </dependency>
-      <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
       <dependency>
-         <groupId>ch.qos.logback</groupId>
-         <artifactId>logback-classic</artifactId>
-         <version>1.2.6</version>
+         <groupId>de.metanome</groupId>
+         <artifactId>backend</artifactId>
+         <version>${metanome.version}</version>
+         <scope>provided</scope>
       </dependency>
-      <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
       <dependency>
-         <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-api</artifactId>
-         <version>1.7.32</version>
+         <groupId>org.mockito</groupId>
+         <artifactId>mockito-all</artifactId>
+         <version>${mokito-all.version}</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.mockito</groupId>
+         <artifactId>mockito-core</artifactId>
+         <version>${mokito-core.version}</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+         <version>${junit.version}</version>
+         <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>com.google.guava</groupId>
          <artifactId>guava</artifactId>
-         <version>31.0.1-jre</version>
+         <version>${guava.version}</version>
+         <scope>compile</scope>
       </dependency>
       <dependency>
-         <groupId>org.projectlombok</groupId>
-         <artifactId>lombok</artifactId>
-         <version>1.18.20</version>
+         <groupId>it.unimi.dsi</groupId>
+         <artifactId>fastutil</artifactId>
+         <version>${fastutil.version}</version>
+         <scope>compile</scope>
       </dependency>
+<!--      命令行封装工具-->
       <dependency>
          <groupId>info.picocli</groupId>
          <artifactId>picocli</artifactId>
