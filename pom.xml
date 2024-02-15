@@ -18,7 +18,9 @@
    </properties>
 
    <modules>
-      <module>dc_detection</module>
+     <module>dc-detection</module>
+     <module>dc-sampling</module>
+     <module>dc-base</module>
    </modules>
 
    <dependencies>
@@ -59,18 +61,47 @@
          <version>${junit.version}</version>
          <scope>test</scope>
       </dependency>
-      <dependency>
-         <groupId>com.google.guava</groupId>
-         <artifactId>guava</artifactId>
-         <version>${guava.version}</version>
-         <scope>compile</scope>
-      </dependency>
+<!--      <dependency>-->
+<!--         <groupId>com.google.guava</groupId>-->
+<!--         <artifactId>guava</artifactId>-->
+<!--         <version>${guava.version}</version>-->
+<!--         <scope>compile</scope>-->
+<!--      </dependency>-->
       <dependency>
          <groupId>it.unimi.dsi</groupId>
          <artifactId>fastutil</artifactId>
          <version>${fastutil.version}</version>
          <scope>compile</scope>
       </dependency>
+<!--     My Dependency-->
+     <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-core -->
+     <dependency>
+       <groupId>ch.qos.logback</groupId>
+       <artifactId>logback-core</artifactId>
+       <version>1.2.6</version>
+     </dependency>
+     <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
+     <dependency>
+       <groupId>ch.qos.logback</groupId>
+       <artifactId>logback-classic</artifactId>
+       <version>1.2.6</version>
+     </dependency>
+     <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+     <dependency>
+       <groupId>org.slf4j</groupId>
+       <artifactId>slf4j-api</artifactId>
+       <version>1.7.32</version>
+     </dependency>
+     <dependency>
+       <groupId>com.google.guava</groupId>
+       <artifactId>guava</artifactId>
+       <version>31.0.1-jre</version>
+     </dependency>
+     <dependency>
+       <groupId>org.projectlombok</groupId>
+       <artifactId>lombok</artifactId>
+       <version>1.18.20</version>
+     </dependency>
 <!--      命令行封装工具-->
       <dependency>
          <groupId>info.picocli</groupId>
