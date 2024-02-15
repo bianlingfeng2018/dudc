@@ -5,7 +5,7 @@ import java.util.Random;
 import gnu.trove.iterator.TIntIterator;
 import gnu.trove.list.array.TIntArrayList;
 
-class OrderedCluster {
+public class OrderedCluster {
 	private final TIntArrayList array;
 	
 	public OrderedCluster() {
