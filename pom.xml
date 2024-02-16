@@ -21,6 +21,8 @@
      <module>dc-detection</module>
      <module>dc-sampling</module>
      <module>dc-base</module>
+     <module>dc-uguide-discovery</module>
+     <module>dc-discovery</module>
    </modules>
 
    <dependencies>

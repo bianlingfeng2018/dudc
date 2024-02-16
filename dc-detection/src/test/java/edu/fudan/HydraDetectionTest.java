@@ -29,7 +29,7 @@ public class HydraDetectionTest {
   public void testDetectDCsViolations()
       throws IOException, InputGenerationException, InputIterationException, DCDetectionException {
 //    String dcsFile = baseDir + File.separator + "result_rules" + File.separator + "dcminer_5_hospital.csv";
-    String dcsFile = baseDir + File.separator + "result_rules" + File.separator + "dcs_fastdc_5_hospital.out";
+    String dcsFile = baseDir + File.separator + "result_rules" + File.separator + "dcs_fastdc_5_hospital_1.out";
     File dcsF = new File(dcsFile);
 //    String dataFile = baseDir + File.separator + "preprocessed_data" + File.separator + "preprocessed_tax.csv";
     String dataFile = baseDir + File.separator + "preprocessed_data" + File.separator + "preprocessed_hospital_dirty_sample.csv";
