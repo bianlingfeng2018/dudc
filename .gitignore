@@ -35,4 +35,6 @@ build/
 /logs/
 /data/
 /.idea/
-/dc_detection/logs/
+
+### my ###
+**/logs/

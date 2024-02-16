@@ -43,25 +43,29 @@ public class ColumnAwareWeightedClusterSampler {
         // 更新frequency，即簇大小的出现频率
         updateSizeFrequency(sizeFrequencyMap, cluster);
       }
+      for (WeightedCluster cluster : valueMap.values()) {
+        cluster.setFrequency(sizeFrequencyMap.get(cluster.size()));
+      }
 
       List<WeightedCluster> sorted = valueMap.values().stream()
           .sorted()
           .collect(Collectors.toList());
 
-      List<WeightedCluster> selected = Lists.newArrayList();
-      int lastFrq = 0;
-      for (WeightedCluster cluster : sorted) {
-        int currFrq = cluster.getFrequency();
-        if (currFrq == lastFrq) {
-          continue;
-        }
-        lastFrq = currFrq;
-        selected.add(cluster);
-        if (selected.size() >= topKOfCluster) {
-          // 退出条件：遍历完所有sorted，或者达到topKOfCluster
-          break;
-        }
-      }
+//      List<WeightedCluster> selected = Lists.newArrayList();
+//      int lastFrq = 0;
+//      for (WeightedCluster cluster : sorted) {
+//        int currFrq = cluster.getFrequency();
+//        if (currFrq == lastFrq) {
+//          continue;
+//        }
+//        lastFrq = currFrq;
+//        selected.add(cluster);
+//        if (selected.size() >= topKOfCluster) {
+//          // 退出条件：遍历完所有sorted，或者达到topKOfCluster
+//          break;
+//        }
+//      }
+      List<WeightedCluster> selected = sorted.subList(0, Math.min(topKOfCluster, sorted.size()));
 
       for (OrderedCluster cluster : selected) {
         TIntIterator it = cluster.iterator();
@@ -87,7 +91,6 @@ public class ColumnAwareWeightedClusterSampler {
       // 旧的size频率值-1
       decrease(sfmap, lastSize);
     }
-    cluster.setFrequency(sfmap.get(currSize));
   }
 
   private static void decrease(Map<Integer, Integer> sfmap, int oldSize) {

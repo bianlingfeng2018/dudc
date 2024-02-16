@@ -20,11 +20,11 @@ import lombok.extern.slf4j.Slf4j;
 public class TupleSampler {
 
   // 最少取3个cluster，一个cluster内最少取2个元素，保证大于、小于、等于的情况都存在
-  private final int minK = 3;
+  private final int minK = 2;
   private final int minM = 2;
 
   public ArrayList<List<String>> sample(File dataF, int topKOfCluster, int maxInCluster,
-      Set<Integer> skippedColumns)
+      Set<Integer> skippedColumns, boolean requireHeader)
       throws FileNotFoundException, InputGenerationException, InputIterationException {
     log.info("Sampling: {}", dataF.toString());
     DefaultFileInputGenerator actualGenerator = new DefaultFileInputGenerator(dataF);
@@ -41,15 +41,20 @@ public class TupleSampler {
     log.info("Sampled size = {}", sampled.size());
 
     log.info("Regenerate and convert int to string...");
-    ArrayList<List<String>> lines = convertInt2Str(actualGenerator, sampled);
+    ArrayList<List<String>> lines = convertInt2Str(actualGenerator, sampled, requireHeader);
     log.info("Sampling done");
     return lines;
   }
 
   private static ArrayList<List<String>> convertInt2Str(DefaultFileInputGenerator actualGenerator,
-      Set<Integer> sampled) throws InputGenerationException, InputIterationException {
+      Set<Integer> sampled, boolean requireHeader)
+      throws InputGenerationException, InputIterationException {
     ArrayList<List<String>> lines = Lists.newArrayList();
     RelationalInput ri = actualGenerator.generateNewCopy();
+    if (requireHeader) {
+      List<String> columnNames = ri.columnNames();
+      lines.add(columnNames);
+    }
     int i = 0;
     while (ri.hasNext()) {
       List<String> next = ri.next();
