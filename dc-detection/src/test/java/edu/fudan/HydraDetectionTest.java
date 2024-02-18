@@ -9,10 +9,8 @@ import de.metanome.algorithm_integration.input.InputIterationException;
 import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import edu.fudan.algorithms.DCViolationSet;
 import edu.fudan.algorithms.HydraDetector;
-import edu.fudan.exceptions.DCDetectionException;
-import edu.fudan.utils.DCFileReader;
+import edu.fudan.transformat.DCFileReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
@@ -27,7 +25,7 @@ public class HydraDetectionTest {
   private final String baseDir = "D:\\MyFile\\gitee\\dc_miner\\data";
   @Test
   public void testDetectDCsViolations()
-      throws IOException, InputGenerationException, InputIterationException, DCDetectionException {
+      throws IOException, InputGenerationException, InputIterationException, DCMinderToolsException {
 //    String dcsFile = baseDir + File.separator + "result_rules" + File.separator + "dcminer_5_hospital.csv";
     String dcsFile = baseDir + File.separator + "result_rules" + File.separator + "dcs_fastdc_5_hospital_1.out";
     File dcsF = new File(dcsFile);

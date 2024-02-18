@@ -6,7 +6,6 @@ import edu.fudan.algorithms.TupleSampler;
 import edu.fudan.utils.FileUtil;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +36,6 @@ public class SamplerTest {
     List<List<String>> sampled = new TupleSampler().sample(dataF, topKOfCluster, maxInCluster, skippedColumns, true);
     // Write to file
     log.debug("Write to file: {}", sampledDataFile);
-    FileUtil.writeLinesToFile(sampled, sampledF);
+    FileUtil.writeListLinesToFile(sampled, sampledF);
   }
 }

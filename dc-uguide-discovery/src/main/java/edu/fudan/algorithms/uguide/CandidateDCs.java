@@ -7,11 +7,12 @@ import lombok.Getter;
  */
 @Getter
 public class CandidateDCs {
-  private String dcsPath;
-  private String evidencesPath;
 
-  public CandidateDCs(String dcsPath, String evidencesPath) {
-    this.dcsPath = dcsPath;
-    this.evidencesPath = evidencesPath;
+  private final String dcsPathForFCDC;
+  private final String evidencesPathForFCDC;
+
+  public CandidateDCs(String dcsPathForFCDC, String evidencesPathForFCDC) {
+    this.dcsPathForFCDC = dcsPathForFCDC;
+    this.evidencesPathForFCDC = evidencesPathForFCDC;
   }
 }

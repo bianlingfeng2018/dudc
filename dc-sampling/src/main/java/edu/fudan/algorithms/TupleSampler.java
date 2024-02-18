@@ -40,7 +40,7 @@ public class TupleSampler {
     log.debug("Sample time = {} ms", timeSample);
     log.info("Sampled size = {}", sampled.size());
 
-    log.info("Regenerate and convert int to string...");
+    log.info("Get lines according to sampled line indices...");
     ArrayList<List<String>> lines = convertInt2Str(actualGenerator, sampled, requireHeader);
     log.info("Sampling done");
     return lines;

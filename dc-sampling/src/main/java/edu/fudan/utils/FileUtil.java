@@ -11,11 +11,20 @@ import java.util.List;
  */
 public class FileUtil {
 
-  public static void writeLinesToFile(List<List<String>> lines, File out) throws IOException {
+  public static void writeListLinesToFile(List<List<String>> lines, File out) throws IOException {
     BufferedWriter bw = new BufferedWriter(new FileWriter(out));
     for (List<String> line : lines) {
       String joined = String.join(",", line);
       bw.write(joined);
+      bw.newLine();
+    }
+    bw.close();
+  }
+
+  public static void writeStringLinesToFile(List<String> lines, File out) throws IOException {
+    BufferedWriter bw = new BufferedWriter(new FileWriter(out));
+    for (String line : lines) {
+      bw.write(line);
       bw.newLine();
     }
     bw.close();

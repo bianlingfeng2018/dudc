@@ -3,6 +3,7 @@ package edu.fudan;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
 import edu.fudan.algorithms.UGuideDiscovery;
+import edu.fudan.exceptions.DCDetectionException;
 import edu.fudan.exceptions.UGuideDiscoveryException;
 import java.io.File;
 import java.io.IOException;
@@ -22,16 +23,19 @@ public class UGuideDiscoveryTest {
       "preprocessed_data\\preprocessed_hospital_dirty.csv";
   private final String sampledData = baseDir + File.separator +
       "preprocessed_data\\preprocessed_hospital_dirty_sample.csv";
-  private final String dcsPath = baseDir + File.separator +
-      "result_rules\\dcs_fcdc_hospital.out";
-  private final String evidencesPath = baseDir + File.separator +
+  private final String dcsPathForFCDC = baseDir + File.separator +
+      "evidence_set\\dcs_fcdc_hospital.out";
+  private final String evidencesPathForFCDC = baseDir + File.separator +
       "evidence_set\\evidence_set_fcdc_hospital.csv";
 
   @Test
   public void testOneRoundUGuide()
-      throws InputGenerationException, InputIterationException, IOException, UGuideDiscoveryException {
-    UGuideDiscovery ud = new UGuideDiscovery(cleanData, dirtyData, sampledData, dcsPath,
-        evidencesPath);
+      throws InputGenerationException, InputIterationException, IOException, DCMinderToolsException {
+    UGuideDiscovery ud = new UGuideDiscovery(cleanData,
+        dirtyData,
+        sampledData,
+        dcsPathForFCDC,
+        evidencesPathForFCDC);
     ud.guidedDiscovery();
   }
 }
