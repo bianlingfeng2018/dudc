@@ -1,6 +1,7 @@
-package de.hpi.naumann.dc.algorithms.hybrid;
+package edu.fudan.algorithms;
 
 import com.google.common.collect.Maps;
+import de.hpi.naumann.dc.algorithms.hybrid.ResultCompletion;
 import de.hpi.naumann.dc.cover.PrefixMinimalCoverSearch;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraintSet;
 import de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
@@ -14,7 +15,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HydraSample4DCMiner {
+public class HydraGenerator {
 
 	protected int sampleRounds = 20;
 	protected double efficiencyThreshold = 0.005d;
@@ -67,6 +68,6 @@ public class HydraSample4DCMiner {
 			this.evidenceCountMap = countMap;
 		}
 	}
-	private static Logger log = LoggerFactory.getLogger(HydraSample4DCMiner.class);
+	private static Logger log = LoggerFactory.getLogger(HydraGenerator.class);
 
 }

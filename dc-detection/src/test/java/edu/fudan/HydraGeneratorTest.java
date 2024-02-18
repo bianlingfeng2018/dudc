@@ -1,8 +1,8 @@
-package de.hpi.naumann.dc;
+package edu.fudan;
 
 import de.hpi.naumann.dc.algorithms.hybrid.Hydra;
-import de.hpi.naumann.dc.algorithms.hybrid.HydraSample4DCMiner;
-import de.hpi.naumann.dc.algorithms.hybrid.HydraSample4DCMiner.SampleResult;
+import edu.fudan.algorithms.HydraGenerator;
+import edu.fudan.algorithms.HydraGenerator.SampleResult;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraintSet;
 import de.hpi.naumann.dc.evidenceset.IEvidenceSet;
@@ -27,7 +27,7 @@ import org.junit.Test;
  * @author Lingfeng
  */
 @Slf4j
-public class Test4DCMiner {
+public class HydraGeneratorTest {
 
   private Boolean noCrossColumn = Boolean.TRUE;
   private double minimumSharedValue = 0.30d;
@@ -52,20 +52,9 @@ public class Test4DCMiner {
   @Test
   public void testGenSample()
       throws FileNotFoundException, InputGenerationException, InputIterationException {
-    String baseDir = "D:\\MyFile\\IdeaProjects\\metanome-algorithms\\data\\";
-    String[] dataList = {
-        "hydra_input_hospital.csv",
-        "hydra_input_stock.csv",
-        "hydra_input_tax_1k.csv"
-    };
-    String[] sampledList = {
-        "hydra_sampled_evidence_set_hospital.csv",
-        "hydra_sampled_evidence_set_stock.csv",
-        "hydra_sampled_evidence_set_tax.csv"
-    };
-    int i = 2;
-    String d = dataList[i];
-    String out = baseDir + sampledList[i];
+    String baseDir = "D:\\MyFile\\gitee\\dc_miner\\data\\preprocessed_data\\";
+    String d = "preprocessed_hospital.csv";
+    String out = baseDir + "hydra_sampled_evidence_set_hospital.csv";
     log.info("采样数据 {} ...", d);
     File f = new File(baseDir + d);
     DefaultFileInputGenerator actualGenerator = new DefaultFileInputGenerator(f);
@@ -73,8 +62,8 @@ public class Test4DCMiner {
     PredicateBuilder predicates = new PredicateBuilder(input, noCrossColumn, minimumSharedValue);
 //		PredicateBuilder predicates = new PredicateBuilder(input, Boolean.FALSE, minimumSharedValue);
     log.info("Predicate space size:" + predicates.getPredicates().size());
-    writePSpace(predicates.getPredicates(), i);
-    SampleResult sampleResult = new HydraSample4DCMiner().runSample(input, predicates);
+    writePSpace(predicates.getPredicates(), d);
+    SampleResult sampleResult = new HydraGenerator().runSample(input, predicates);
     IEvidenceSet sample = sampleResult.evidenceSet;
     Map<PredicateBitSet, Integer> evidenceCountMap = sampleResult.evidenceCountMap;
     log.info("证据集数量:{}", sample.size());
@@ -123,11 +112,11 @@ public class Test4DCMiner {
     }
   }
 
-  private void writePSpace(Set<Predicate> predicates, int i) {
+  private void writePSpace(Set<Predicate> predicates, String d) {
     BufferedWriter bw = null;
     try {
       bw = new BufferedWriter(
-          new FileWriter("p_space_" + i + ".txt"));
+          new FileWriter("p_space_" + d + ".txt"));
       for (Predicate predicate : predicates) {
         String s = predicate.toString();
         bw.write(s);

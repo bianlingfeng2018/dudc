@@ -1,6 +1,5 @@
 package edu.fudan;
 
-import edu.fudan.algorithms.DefaultDetector;
 import edu.fudan.algorithms.HydraDetector;
 import edu.fudan.utils.CmdParamsReceiver;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +24,6 @@ public class Main {
     String dcPath = params.dcPath;
 
     log.info("Detect violations, DCs={}, dataset={}", dcPath, dsId);
-//    DefaultDetector detector = new DefaultDetector(dsId);
-//    detector.detect();
     HydraDetector detector = new HydraDetector(null, null);
     log.info("Test detector: {}", detector);
   }

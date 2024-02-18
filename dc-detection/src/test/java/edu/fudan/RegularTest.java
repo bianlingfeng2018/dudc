@@ -7,7 +7,7 @@ import org.junit.Test;
 /**
  * @author Lingfeng
  */
-public class RegTest {
+public class RegularTest {
 
   @Test
   public void testRemoveBrackets() {
