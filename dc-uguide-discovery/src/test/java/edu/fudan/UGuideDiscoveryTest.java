@@ -3,8 +3,6 @@ package edu.fudan;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
 import edu.fudan.algorithms.UGuideDiscovery;
-import edu.fudan.exceptions.DCDetectionException;
-import edu.fudan.exceptions.UGuideDiscoveryException;
 import java.io.File;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +15,8 @@ import org.junit.Test;
 public class UGuideDiscoveryTest {
 
   private final String baseDir = "D:\\MyFile\\gitee\\dc_miner\\data";
+  private final String headerPath = baseDir + File.separator +
+      "preprocessed_data\\preprocessed_hospital_header.csv";
   private final String cleanData = baseDir + File.separator +
       "preprocessed_data\\preprocessed_hospital.csv";
   private final String dirtyData = baseDir + File.separator +
@@ -27,6 +27,12 @@ public class UGuideDiscoveryTest {
       "evidence_set\\dcs_fcdc_hospital.out";
   private final String evidencesPathForFCDC = baseDir + File.separator +
       "evidence_set\\evidence_set_fcdc_hospital.csv";
+  private final String topKDCsPath = baseDir + File.separator +
+      "result_rules\\dcs_hospital.out";
+  private final String groundTruthDCsPath = baseDir + File.separator +
+      "result_rules\\dcs_hospital_ground.out";
+  private final String candidateDCsPath = baseDir + File.separator +
+      "result_rules\\dcs_hospital_candidate.out";
 
   @Test
   public void testOneRoundUGuide()
@@ -35,7 +41,11 @@ public class UGuideDiscoveryTest {
         dirtyData,
         sampledData,
         dcsPathForFCDC,
-        evidencesPathForFCDC);
+        evidencesPathForFCDC,
+        topKDCsPath,
+        groundTruthDCsPath,
+        candidateDCsPath,
+        headerPath);
     ud.guidedDiscovery();
   }
 }

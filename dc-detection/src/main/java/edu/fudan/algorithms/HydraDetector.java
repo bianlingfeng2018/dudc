@@ -1,5 +1,8 @@
 package edu.fudan.algorithms;
 
+import static edu.fudan.conf.DefaultConf.minimumSharedValue;
+import static edu.fudan.conf.DefaultConf.noCrossColumn;
+
 import ch.javasoft.bitset.IBitSet;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Lists;
@@ -23,6 +26,11 @@ import de.hpi.naumann.dc.predicates.Predicate;
 import de.hpi.naumann.dc.predicates.PredicateBuilder;
 import de.hpi.naumann.dc.predicates.PredicatePair;
 import de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
+import de.metanome.algorithm_integration.input.InputGenerationException;
+import de.metanome.algorithm_integration.input.InputIterationException;
+import de.metanome.backend.input.file.DefaultFileInputGenerator;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -63,7 +71,10 @@ public class HydraDetector {
     return Double.valueOf(1.0d * selectivityCount.get(pair) / paircountDC.count(pair));
   };
 
-  public HydraDetector(Input input, PredicateBuilder predicates) {
+  public HydraDetector(String dataPath)
+      throws FileNotFoundException, InputGenerationException, InputIterationException {
+    Input input = new Input(new DefaultFileInputGenerator(new File(dataPath)).generateNewCopy());
+    PredicateBuilder predicates = new PredicateBuilder(input, noCrossColumn, minimumSharedValue);
     this.input = input;
     this.predicates = predicates;
   }
@@ -99,7 +110,7 @@ public class HydraDetector {
     log.info("Calculating partitions..");
 
     HashEvidenceSet resultEv = new HashEvidenceSet();
-    List<DCViolation> vios = Lists.newArrayList();
+    DCViolationSet violationSet = new DCViolationSet();
 
     ClusterPair startPartition = StrippedPartition.getFullParition(input.getLineCount());
     int[][] values = input.getInts();
@@ -126,7 +137,7 @@ public class HydraDetector {
             LinePair linePair = it.next();
             if (linePair.getLine1() != linePair.getLine2()) {
               DCViolation vio = new DCViolation(currentDCs, linePair);
-              vios.add(vio);
+              violationSet.add(vio);
             }
           }
         } else {
@@ -141,7 +152,7 @@ public class HydraDetector {
 
     });
 
-    return new DCViolationSet(vios);
+    return violationSet;
   }
 
 

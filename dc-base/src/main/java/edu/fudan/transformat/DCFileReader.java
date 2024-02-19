@@ -8,13 +8,18 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraintSet;
+import de.hpi.naumann.dc.input.Input;
 import de.hpi.naumann.dc.input.ParsedColumn;
 import de.hpi.naumann.dc.predicates.Predicate;
 import de.hpi.naumann.dc.predicates.operands.ColumnOperand;
 import de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
+import de.metanome.algorithm_integration.input.InputGenerationException;
+import de.metanome.algorithm_integration.input.InputIterationException;
+import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import edu.fudan.DCMinderToolsException;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
@@ -26,28 +31,37 @@ import java.util.regex.Pattern;
  * @author Lingfeng
  */
 public class DCFileReader {
-
-  private final ParsedColumn<?>[] parsedColumns;
+  private final String dataPath;
+  private final String dcsPath;
   private final List<String> headers = Lists.newArrayList();
   private final Map<String, ParsedColumn<?>> headerMap = Maps.newHashMap();
 
-  public DCFileReader(ParsedColumn<?>[] parsedColumns) {
-    this.parsedColumns = parsedColumns;
+  public DCFileReader(String dataPath, String dcsPath) {
+    this.dataPath = dataPath;
+    this.dcsPath = dcsPath;
     initHeader();
   }
 
   private void initHeader() {
-    for (ParsedColumn<?> pc : parsedColumns) {
-      // eg. City(String) -> City
-      String colName = extractColName(pc.getName());
-      headers.add(colName);
-      headerMap.put(colName, pc);
+    DefaultFileInputGenerator actualGenerator = null;
+    try {
+      actualGenerator = new DefaultFileInputGenerator(new File(dataPath));
+      Input input = new Input(actualGenerator.generateNewCopy());
+      ParsedColumn<?>[] parsedColumns = input.getColumns();
+      for (ParsedColumn<?> pc : parsedColumns) {
+        // eg. City(String) -> City
+        String colName = extractColName(pc.getName());
+        headers.add(colName);
+        headerMap.put(colName, pc);
+      }
+    } catch (FileNotFoundException | InputGenerationException | InputIterationException e) {
+      throw new RuntimeException(e);
     }
   }
 
-  public DenialConstraintSet readDCsFromFile(File f) throws IOException, DCMinderToolsException {
+  public DenialConstraintSet readDCsFromFile() throws IOException, DCMinderToolsException {
     DenialConstraintSet dcs = new DenialConstraintSet();
-    BufferedReader br = new BufferedReader(new FileReader(f));
+    BufferedReader br = new BufferedReader(new FileReader(dcsPath));
     String line = null;
     while ((line = br.readLine()) != null) {
       DenialConstraint dc = convertLineToDC(line);

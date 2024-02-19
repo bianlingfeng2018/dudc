@@ -10,9 +10,11 @@ public class CandidateDCs {
 
   private final String dcsPathForFCDC;
   private final String evidencesPathForFCDC;
+  private final String topKDCsPath;
 
-  public CandidateDCs(String dcsPathForFCDC, String evidencesPathForFCDC) {
+  public CandidateDCs(String dcsPathForFCDC, String evidencesPathForFCDC, String topKDCsPath) {
     this.dcsPathForFCDC = dcsPathForFCDC;
     this.evidencesPathForFCDC = evidencesPathForFCDC;
+    this.topKDCsPath = topKDCsPath;
   }
 }

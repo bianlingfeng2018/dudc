@@ -35,10 +35,8 @@
     </dependency>
     <dependency>
       <groupId>edu.fudan</groupId>
-      <artifactId>fcdc</artifactId>
-      <version>1.0</version>
-      <scope>system</scope>
-      <systemPath>D:/MyFile/IdeaProjects/dc_miner_tools/libs/discoverDCs.jar</systemPath>
+      <artifactId>dc-discovery</artifactId>
+      <version>1.0-SNAPSHOT</version>
     </dependency>
 
 

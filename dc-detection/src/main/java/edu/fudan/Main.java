@@ -1,7 +1,10 @@
 package edu.fudan;
 
+import de.metanome.algorithm_integration.input.InputGenerationException;
+import de.metanome.algorithm_integration.input.InputIterationException;
 import edu.fudan.algorithms.HydraDetector;
 import edu.fudan.utils.CmdParamsReceiver;
+import java.io.FileNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
@@ -11,7 +14,8 @@ import picocli.CommandLine;
 @Slf4j
 public class Main {
 
-  public static void main(String[] args) {
+  public static void main(String[] args)
+      throws InputGenerationException, FileNotFoundException, InputIterationException {
     CmdParamsReceiver params = new CmdParamsReceiver();
     new CommandLine(params).parseArgs(args);
     log.info("CmdParams : {}", params.toString());
@@ -24,7 +28,7 @@ public class Main {
     String dcPath = params.dcPath;
 
     log.info("Detect violations, DCs={}, dataset={}", dcPath, dsId);
-    HydraDetector detector = new HydraDetector(null, null);
+    HydraDetector detector = new HydraDetector(null);
     log.info("Test detector: {}", detector);
   }
 

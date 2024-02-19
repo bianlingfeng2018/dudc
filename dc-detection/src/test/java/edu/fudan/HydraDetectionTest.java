@@ -28,22 +28,12 @@ public class HydraDetectionTest {
       throws IOException, InputGenerationException, InputIterationException, DCMinderToolsException {
 //    String dcsFile = baseDir + File.separator + "result_rules" + File.separator + "dcminer_5_hospital.csv";
     String dcsFile = baseDir + File.separator + "result_rules" + File.separator + "dcs_fastdc_5_hospital_1.out";
-    File dcsF = new File(dcsFile);
 //    String dataFile = baseDir + File.separator + "preprocessed_data" + File.separator + "preprocessed_tax.csv";
     String dataFile = baseDir + File.separator + "preprocessed_data" + File.separator + "preprocessed_hospital_dirty_sample.csv";
-    File dataF = new File(dataFile);
-
-    // Read input and dcs
-    DefaultFileInputGenerator actualGenerator = new DefaultFileInputGenerator(dataF);
-    Input input = new Input(actualGenerator.generateNewCopy());
-    ParsedColumn<?>[] columns = input.getColumns();
-    PredicateBuilder predicates = new PredicateBuilder(input, noCrossColumn, minimumSharedValue);
-    DenialConstraintSet dcs = new DCFileReader(columns).readDCsFromFile(dcsF);
-
-    // Detect violations wrt dcs
-    DCViolationSet vios = new HydraDetector(input, predicates).detect(dcs);
-    log.debug("DC violations size = {}", vios.getDcViolationList().size());
-    log.debug("DC violation 0 = {}", vios.getDcViolationList().stream().findAny().orElse(null));
+    DenialConstraintSet dcs = new DCFileReader(dataFile, dcsFile).readDCsFromFile();
+    DCViolationSet vios = new HydraDetector(dataFile).detect(dcs);
+    log.debug("DC violations size = {}", vios.getViosSet().size());
+    log.debug("DC violation 0 = {}", vios.getViosSet().stream().findAny().orElse(null));
   }
 
 }
