@@ -1,8 +1,8 @@
 package edu.fudan.transformat;
 
 
-import static edu.fudan.transformat.FormatUtil.extractColName;
-import static edu.fudan.transformat.FormatUtil.extractExpression;
+import static edu.fudan.transformat.DCFormatUtil.extractColName;
+import static edu.fudan.transformat.DCFormatUtil.extractExpression;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;

@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 /**
  * @author Lingfeng
  */
-public class FormatUtil {
+public class DCFormatUtil {
 
   public static String convertToDCStr(DenialConstraint dc) {
     List<String> predicates = Lists.newArrayList();

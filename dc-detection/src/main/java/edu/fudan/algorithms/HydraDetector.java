@@ -2,10 +2,10 @@ package edu.fudan.algorithms;
 
 import static edu.fudan.conf.DefaultConf.minimumSharedValue;
 import static edu.fudan.conf.DefaultConf.noCrossColumn;
+import static edu.fudan.transformat.DCUnifyUtil.getUnifiedCopyOf;
 
 import ch.javasoft.bitset.IBitSet;
 import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.util.concurrent.AtomicLongMap;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
@@ -127,6 +127,7 @@ public class HydraDetector {
       Consumer<ClusterPair> consumer = (clusterPair) -> {
         List<DenialConstraint> currentDCs = predicateDCMap.get(inter.currentBits);
         if (currentDCs != null) {
+          List<DenialConstraint> unifiedCopyOfDCs = getUnifiedCopyOf(currentDCs);
 
           // EtmPoint point = etmMonitor.createPoint("EVIDENCES");
           builder.addEvidences(clusterPair, resultEv);
@@ -136,7 +137,7 @@ public class HydraDetector {
           for (Iterator<LinePair> it = clusterPair.getLinePairIterator(); it.hasNext(); ) {
             LinePair linePair = it.next();
             if (linePair.getLine1() != linePair.getLine2()) {
-              DCViolation vio = new DCViolation(currentDCs, linePair);
+              DCViolation vio = new DCViolation(unifiedCopyOfDCs, linePair);
               violationSet.add(vio);
             }
           }

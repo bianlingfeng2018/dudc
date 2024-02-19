@@ -36,7 +36,7 @@ public class HydraGeneratorTest {
   public void testGenDCs()
       throws FileNotFoundException, InputGenerationException, InputIterationException {
     File f = new File(
-        "D:\\MyFile\\gitee\\dc_miner\\data\\preprocessed_data\\preprocessed_tax.csv");
+        "D:\\MyFile\\gitee\\dc_miner\\data\\preprocessed_data\\preprocessed_hospital_dirty_10.csv");
     DefaultFileInputGenerator actualGenerator = new DefaultFileInputGenerator(f);
     Input input = new Input(actualGenerator.generateNewCopy());
     PredicateBuilder predicates = new PredicateBuilder(input, noCrossColumn, minimumSharedValue);

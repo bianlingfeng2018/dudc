@@ -14,8 +14,9 @@ import edu.fudan.algorithms.uguide.CleanData;
 import edu.fudan.algorithms.uguide.DirtyData;
 import edu.fudan.algorithms.uguide.Evaluation;
 import edu.fudan.algorithms.uguide.SampledData;
+import edu.fudan.transformat.DCUnifyUtil;
 import edu.fudan.transformat.DCFileReader;
-import edu.fudan.transformat.FormatUtil;
+import edu.fudan.transformat.DCFormatUtil;
 import edu.fudan.utils.FileUtil;
 import java.io.File;
 import java.io.IOException;
@@ -121,7 +122,7 @@ public class UGuideDiscovery {
 
     // TODO: DC will be identified by a database name, eg. 'xxx_dirty.csv', which we do not need
     for (DenialConstraint dc : dcs) {
-      evaluation.getGroundTruthDCs().add(dc);
+      evaluation.getGroundTruthDCs().add(DCUnifyUtil.getUnifiedCopyOf(dc));
     }
   }
 
@@ -137,9 +138,9 @@ public class UGuideDiscovery {
       DenialConstraint dc = entry.getKey();
       Set<DCViolation> dcViolations = entry.getValue();
       // 模拟用户交互，判断规则是否是真规则，如果是，那么其对应的冲突就是真冲突
-      if (noViosOnCleanData(dc, cleanData.getDataPath(), evaluation.getCandidateDCsPath())) {
+      if (evaluation.getGroundTruthDCs().contains(dc)) {
         int vioSize = dcViolations.size();
-        evalResult.put(FormatUtil.convertToDCStr(dc), vioSize);
+        evalResult.put(DCFormatUtil.convertToDCStr(dc), vioSize);
         trueVios += vioSize;
       }
     }
@@ -213,23 +214,9 @@ public class UGuideDiscovery {
     String topKDCsPath = candidateDCs.getTopKDCsPath();
     log.info("Write to file {}", topKDCsPath);
     List<String> dcStrList = dcList.stream()
-        .map(FormatUtil::convertToDCStr)
+        .map(DCFormatUtil::convertToDCStr)
         .collect(Collectors.toList());
     FileUtil.writeStringLinesToFile(dcStrList.subList(0, topK), new File(topKDCsPath));
-  }
-
-  private boolean noViosOnCleanData(DenialConstraint dc, String cleanDataPath,
-      String candidateDCsPath)
-      throws InputGenerationException, IOException, InputIterationException, DCMinderToolsException {
-    // 获得规则
-    List<DenialConstraint> dcs = Lists.newArrayList(dc);
-    List<String> dcStrList = dcs.stream().map(FormatUtil::convertToDCStr)
-        .collect(Collectors.toList());
-    FileUtil.writeStringLinesToFile(dcStrList, new File(candidateDCsPath));
-    DenialConstraintSet dcSet = new DCFileReader(cleanDataPath, candidateDCsPath).readDCsFromFile();
-    // 检测冲突
-    DCViolationSet detected = new HydraDetector(cleanDataPath).detect(dcSet);
-    return detected.size() == 0;
   }
 
   private void answerCellQuestion() {
