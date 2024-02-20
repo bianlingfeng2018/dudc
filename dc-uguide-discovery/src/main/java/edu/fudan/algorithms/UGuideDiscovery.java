@@ -14,9 +14,9 @@ import edu.fudan.algorithms.uguide.CleanData;
 import edu.fudan.algorithms.uguide.DirtyData;
 import edu.fudan.algorithms.uguide.Evaluation;
 import edu.fudan.algorithms.uguide.SampledData;
-import edu.fudan.transformat.DCUnifyUtil;
-import edu.fudan.transformat.DCFileReader;
 import edu.fudan.transformat.DCFormatUtil;
+import edu.fudan.transformat.DCReader;
+import edu.fudan.transformat.DCUnifyUtil;
 import edu.fudan.utils.FileUtil;
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -110,7 +109,7 @@ public class UGuideDiscovery {
     // 发现规则
     DiscoveryEntry.doDiscovery(dataPath, groundTruthDCsPath);
     // 读取规则
-    DenialConstraintSet dcs = new DCFileReader(dataPath, groundTruthDCsPath).readDCsFromFile();
+    DenialConstraintSet dcs = new DCReader(dataPath, groundTruthDCsPath).readDCsFromFile();
     // 检测冲突
     HydraDetector detector = new HydraDetector(dataPath);
     DCViolationSet vios = detector.detect(dcs);
@@ -140,7 +139,7 @@ public class UGuideDiscovery {
       // 模拟用户交互，判断规则是否是真规则，如果是，那么其对应的冲突就是真冲突
       if (evaluation.getGroundTruthDCs().contains(dc)) {
         int vioSize = dcViolations.size();
-        evalResult.put(DCFormatUtil.convertToDCStr(dc), vioSize);
+        evalResult.put(DCFormatUtil.convertDC2String(dc), vioSize);
         trueVios += vioSize;
       }
     }
@@ -156,7 +155,7 @@ public class UGuideDiscovery {
     log.info("Detect violations");
 //    String dataPath = sampledData.getDataPath();
     String dataPath = dirtyData.getDataPath();
-    DenialConstraintSet dcs = new DCFileReader(dataPath, candidateDCs.getTopKDCsPath())
+    DenialConstraintSet dcs = new DCReader(dataPath, candidateDCs.getTopKDCsPath())
         .readDCsFromFile();
     DCViolationSet vios = new HydraDetector(dataPath).detect(dcs);
     log.info("Violations size = {}", vios.size());
@@ -202,7 +201,7 @@ public class UGuideDiscovery {
 
   private void generateTopKDCs(int topK)
       throws IOException, DCMinderToolsException {
-    DenialConstraintSet dcs = new DCFileReader(sampledData.getDataPath(),
+    DenialConstraintSet dcs = new DCReader(sampledData.getDataPath(),
         candidateDCs.getDcsPathForFCDC()).readDCsFromFile();
     ArrayList<DenialConstraint> dcList = Lists.newArrayList(dcs);
     dcList.sort((o1, o2) -> {
@@ -213,9 +212,11 @@ public class UGuideDiscovery {
     log.debug("Sorted dcs: {}", dcList);
     String topKDCsPath = candidateDCs.getTopKDCsPath();
     log.info("Write to file {}", topKDCsPath);
-    List<String> dcStrList = dcList.stream()
-        .map(DCFormatUtil::convertToDCStr)
-        .collect(Collectors.toList());
+    List<String> dcStrList = new ArrayList<>();
+    for (DenialConstraint denialConstraint : dcList) {
+      String s = DCFormatUtil.convertDC2String(denialConstraint);
+      dcStrList.add(s);
+    }
     FileUtil.writeStringLinesToFile(dcStrList.subList(0, topK), new File(topKDCsPath));
   }
 
