@@ -77,9 +77,9 @@ public class UGuideDiscovery {
       round++;
       log.info("Round {}", round);
       // 采样
-//      sample();
+      sample();
       // 发现规则
-//      discoveryDCs();
+      discoveryDCs();
       // 检测冲突
       detect();
       // 评价真冲突/假冲突
@@ -169,7 +169,7 @@ public class UGuideDiscovery {
   }
 
   private void discoveryDCs()
-      throws IOException, DCMinderToolsException {
+      throws IOException {
     log.info("Discovery DCs from sample");
     // 从经过优化的采样数据中发现规则
     String inputData = sampledData.getDataPath();
@@ -195,7 +195,7 @@ public class UGuideDiscovery {
 
 
   private void generateTopKDCs(int topK)
-      throws IOException, DCMinderToolsException {
+      throws IOException {
     String dcsPathForFCDC = candidateDCs.getDcsPathForFCDC();
     String topKDCsPath = candidateDCs.getTopKDCsPath();
     List<DenialConstraint> dcList = DCLoader.load(headerPath, dcsPathForFCDC);
