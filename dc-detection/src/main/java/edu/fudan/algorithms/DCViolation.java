@@ -3,6 +3,7 @@ package edu.fudan.algorithms;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.paritions.LinePair;
 import de.metanome.algorithm_integration.Predicate;
+import edu.fudan.transformat.DCFormatUtil;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -27,8 +28,8 @@ public class DCViolation {
   public String toString() {
     StringBuilder sb = new StringBuilder("[dcs=");
     for (DenialConstraint dc : dcs) {
-      de.metanome.algorithm_integration.results.DenialConstraint dcResult = dc.toResult();
-      sb.append(dcResult.toString())
+      String dcStr = DCFormatUtil.convertDC2String(dc);
+      sb.append(dcStr)
           .append(",");
     }
     if (sb.length() > 1) {

@@ -2,7 +2,6 @@ package edu.fudan.algorithms;
 
 import static edu.fudan.conf.DefaultConf.topK;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraintSet;
@@ -15,8 +14,6 @@ import edu.fudan.algorithms.uguide.DirtyData;
 import edu.fudan.algorithms.uguide.Evaluation;
 import edu.fudan.algorithms.uguide.SampledData;
 import edu.fudan.transformat.DCFormatUtil;
-import edu.fudan.transformat.DCReader;
-import edu.fudan.transformat.DCUnifyUtil;
 import edu.fudan.utils.FileUtil;
 import java.io.File;
 import java.io.IOException;
@@ -109,24 +106,22 @@ public class UGuideDiscovery {
     // 发现规则
     DiscoveryEntry.doDiscovery(dataPath, groundTruthDCsPath);
     // 读取规则
-    DenialConstraintSet dcs = new DCReader(dataPath, groundTruthDCsPath).readDCsFromFile();
+    List<DenialConstraint> dcList = DCLoader.load(headerPath, groundTruthDCsPath);
     // 检测冲突
-    HydraDetector detector = new HydraDetector(dataPath);
-    DCViolationSet vios = detector.detect(dcs);
+    DCViolationSet vios = new HydraDetector(dataPath, groundTruthDCsPath).detect();
     int size = vios.size();
     log.info("Violations size = {}", size);
     if (size != 0) {
       throw new RuntimeException("Error discovery of DCs on clean data");
     }
 
-    // TODO: DC will be identified by a database name, eg. 'xxx_dirty.csv', which we do not need
-    for (DenialConstraint dc : dcs) {
-      evaluation.getGroundTruthDCs().add(DCUnifyUtil.getUnifiedCopyOf(dc));
+    // 设定GroundTruth规则
+    for (DenialConstraint dc : dcList) {
+      evaluation.getGroundTruthDCs().add(dc);
     }
   }
 
-  private void evaluate()
-      throws InputGenerationException, IOException, InputIterationException, DCMinderToolsException {
+  private void evaluate() {
     log.info("Evaluate the true violations and false violations");
     DCViolationSet vios = evaluation.getCandidateViolations();
     int totalVios = vios.size();
@@ -155,16 +150,16 @@ public class UGuideDiscovery {
     log.info("Detect violations");
 //    String dataPath = sampledData.getDataPath();
     String dataPath = dirtyData.getDataPath();
-    DenialConstraintSet dcs = new DCReader(dataPath, candidateDCs.getTopKDCsPath())
-        .readDCsFromFile();
-    DCViolationSet vios = new HydraDetector(dataPath).detect(dcs);
+    String topKDCsPath = candidateDCs.getTopKDCsPath();
+    DCViolationSet vios = new HydraDetector(dataPath, topKDCsPath).detect();
     log.info("Violations size = {}", vios.size());
 
     // update candidate DCs and violations
-    updateCandidateDCsAndVios(dcs, vios);
+    List<DenialConstraint> dcsList = DCLoader.load(headerPath, topKDCsPath);
+    updateCandidateDCsAndVios(dcsList, vios);
   }
 
-  private void updateCandidateDCsAndVios(DenialConstraintSet dcs, DCViolationSet vios) {
+  private void updateCandidateDCsAndVios(List<DenialConstraint> dcs, DCViolationSet vios) {
     for (DenialConstraint dc : dcs) {
       evaluation.getCandidateDCs().add(dc);
     }
@@ -201,23 +196,22 @@ public class UGuideDiscovery {
 
   private void generateTopKDCs(int topK)
       throws IOException, DCMinderToolsException {
-    DenialConstraintSet dcs = new DCReader(sampledData.getDataPath(),
-        candidateDCs.getDcsPathForFCDC()).readDCsFromFile();
-    ArrayList<DenialConstraint> dcList = Lists.newArrayList(dcs);
-    dcList.sort((o1, o2) -> {
-      int cntComparison = Integer.compare(o1.getPredicateCount(), o2.getPredicateCount());
-      return cntComparison;
-    });
-    log.debug("Read dcs size = {}", dcList.size());
-    log.debug("Sorted dcs: {}", dcList);
+    String dcsPathForFCDC = candidateDCs.getDcsPathForFCDC();
     String topKDCsPath = candidateDCs.getTopKDCsPath();
-    log.info("Write to file {}", topKDCsPath);
-    List<String> dcStrList = new ArrayList<>();
-    for (DenialConstraint denialConstraint : dcList) {
-      String s = DCFormatUtil.convertDC2String(denialConstraint);
-      dcStrList.add(s);
+    List<DenialConstraint> dcList = DCLoader.load(headerPath, dcsPathForFCDC);
+    log.debug("Read dcs size = {}", dcList.size());
+    dcList.sort((o1, o2) -> {
+      return Integer.compare(o1.getPredicateCount(), o2.getPredicateCount());
+    });
+    log.debug("Sorted dcs: {}", dcList);
+    List<String> result = new ArrayList<>();
+    List<DenialConstraint> topKDCs = dcList.subList(0, topK);
+    for (DenialConstraint dc : topKDCs) {
+      String s = DCFormatUtil.convertDC2String(dc);
+      result.add(s);
     }
-    FileUtil.writeStringLinesToFile(dcStrList.subList(0, topK), new File(topKDCsPath));
+    log.info("Write top-k dcs to file {}", topKDCsPath);
+    FileUtil.writeStringLinesToFile(result, new File(topKDCsPath));
   }
 
   private void answerCellQuestion() {

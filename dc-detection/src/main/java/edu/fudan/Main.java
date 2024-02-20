@@ -28,8 +28,6 @@ public class Main {
     String dcPath = params.dcPath;
 
     log.info("Detect violations, DCs={}, dataset={}", dcPath, dsId);
-    HydraDetector detector = new HydraDetector(null);
-    log.info("Test detector: {}", detector);
   }
 
 

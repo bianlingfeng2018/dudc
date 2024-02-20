@@ -1,14 +1,15 @@
 package edu.fudan;
 
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
-import de.hpi.naumann.dc.denialcontraints.DenialConstraintSet;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
+import edu.fudan.algorithms.DCViolation;
 import edu.fudan.algorithms.DCViolationSet;
+import edu.fudan.algorithms.DCLoader;
 import edu.fudan.algorithms.HydraDetector;
 import edu.fudan.transformat.DCFormatUtil;
-import edu.fudan.transformat.DCReader;
 import java.io.IOException;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
@@ -21,10 +22,10 @@ public class HydraDetectionTest {
   private final String baseDir = "D:\\MyFile\\gitee\\dc_miner\\data";
 
   @Test
-  public void testReadDCsFromFile() throws DCMinderToolsException, IOException {
+  public void testReadDCsFromFile() {
     String dcsFile = baseDir + "\\result_rules\\dcs_hospital.out";
     String dataFile = baseDir + "\\preprocessed_data\\preprocessed_hospital_dirty_sample.csv";
-    DenialConstraintSet dcs = new DCReader(dataFile, dcsFile).readDCsFromFile();
+    List<DenialConstraint> dcs = DCLoader.load(dataFile, dcsFile);
     for (DenialConstraint dc : dcs) {
       String dcStr = DCFormatUtil.convertDC2String(dc);
       log.debug(dcStr);
@@ -36,10 +37,10 @@ public class HydraDetectionTest {
       throws IOException, InputGenerationException, InputIterationException, DCMinderToolsException {
     String dcsFile = baseDir + "\\result_rules\\dcs_hospital.out";
     String dataFile = baseDir + "\\preprocessed_data\\preprocessed_hospital_dirty_sample.csv";
-    DenialConstraintSet dcs = new DCReader(dataFile, dcsFile).readDCsFromFile();
-    DCViolationSet vios = new HydraDetector(dataFile).detect(dcs);
+    DCViolationSet vios = new HydraDetector(dataFile, dcsFile).detect();
     log.debug("DC violations size = {}", vios.getViosSet().size());
-    log.debug("DC violation 0 = {}", vios.getViosSet().stream().findAny().orElse(null));
+    DCViolation vio0 = vios.getViosSet().stream().findAny().orElse(null);
+    log.debug("DC violation 0 = {}", vio0);
   }
 
 }

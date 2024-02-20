@@ -2,7 +2,6 @@ package edu.fudan.algorithms;
 
 import static edu.fudan.conf.DefaultConf.minimumSharedValue;
 import static edu.fudan.conf.DefaultConf.noCrossColumn;
-import static edu.fudan.transformat.DCUnifyUtil.getUnifiedCopyOf;
 
 import ch.javasoft.bitset.IBitSet;
 import com.google.common.collect.HashMultiset;
@@ -29,8 +28,10 @@ import de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
 import de.metanome.backend.input.file.DefaultFileInputGenerator;
+import edu.fudan.DCMinderToolsException;
+import edu.fudan.transformat.DCFormatUtil;
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -51,6 +52,7 @@ public class HydraDetector {
   private Input input;
   private PredicateBuilder predicates;
   protected int sampleRounds = 20;
+  private DenialConstraintSet set;
 
   private static BiFunction<AtomicLongMap<PartitionRefiner>,
       Function<PartitionRefiner, Integer>, Comparator<PartitionRefiner>> resultSorter = (
@@ -63,7 +65,6 @@ public class HydraDetector {
         1.0d * counts.apply(r2).intValue() / s2);
 
   };
-  ;
 
   private static BiFunction<Multiset<PredicatePair>,
       AtomicLongMap<PartitionRefiner>, Function<PredicatePair, Double>> pairWeight = (
@@ -71,15 +72,16 @@ public class HydraDetector {
     return Double.valueOf(1.0d * selectivityCount.get(pair) / paircountDC.count(pair));
   };
 
-  public HydraDetector(String dataPath)
-      throws FileNotFoundException, InputGenerationException, InputIterationException {
+  public HydraDetector(String dataPath, String dcsFile)
+      throws IOException, InputGenerationException, InputIterationException, DCMinderToolsException {
     Input input = new Input(new DefaultFileInputGenerator(new File(dataPath)).generateNewCopy());
     PredicateBuilder predicates = new PredicateBuilder(input, noCrossColumn, minimumSharedValue);
+    this.set = DCAdapter.getHydraDCs(input, dcsFile);
     this.input = input;
     this.predicates = predicates;
   }
 
-  public DCViolationSet detect(DenialConstraintSet set) {
+  public DCViolationSet detect() {
     IEvidenceSet sampleEvidence =
         new SystematicLinearEvidenceSetBuilder(predicates, sampleRounds).buildEvidenceSet(input);
     log.info("Checking " + set.size() + " DCs.");
@@ -127,7 +129,7 @@ public class HydraDetector {
       Consumer<ClusterPair> consumer = (clusterPair) -> {
         List<DenialConstraint> currentDCs = predicateDCMap.get(inter.currentBits);
         if (currentDCs != null) {
-          List<DenialConstraint> unifiedCopyOfDCs = getUnifiedCopyOf(currentDCs);
+          List<DenialConstraint> unifiedDCs = DCAdapter.getUnifiedDCs(currentDCs);
 
           // EtmPoint point = etmMonitor.createPoint("EVIDENCES");
           builder.addEvidences(clusterPair, resultEv);
@@ -137,7 +139,7 @@ public class HydraDetector {
           for (Iterator<LinePair> it = clusterPair.getLinePairIterator(); it.hasNext(); ) {
             LinePair linePair = it.next();
             if (linePair.getLine1() != linePair.getLine2()) {
-              DCViolation vio = new DCViolation(unifiedCopyOfDCs, linePair);
+              DCViolation vio = new DCViolation(unifiedDCs, linePair);
               violationSet.add(vio);
             }
           }
