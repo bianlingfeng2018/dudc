@@ -1,10 +1,16 @@
 package edu.fudan;
 
+import static edu.fudan.conf.DefaultConf.topK;
+
+import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
+import edu.fudan.algorithms.DiscoveryEntry;
 import edu.fudan.algorithms.UGuideDiscovery;
+import edu.fudan.utils.DCUtil;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
@@ -17,11 +23,11 @@ public class UGuideDiscoveryTest {
   private final String baseDir = "D:\\MyFile\\gitee\\dc_miner\\data";
   private final String headerPath = baseDir + File.separator +
       "preprocessed_data\\preprocessed_hospital_header.csv";
-  private final String cleanData = baseDir + File.separator +
+  private final String cleanDataPath = baseDir + File.separator +
       "preprocessed_data\\preprocessed_hospital.csv";
-  private final String dirtyData = baseDir + File.separator +
+  private final String dirtyDataPath = baseDir + File.separator +
       "preprocessed_data\\preprocessed_hospital_dirty.csv";
-  private final String sampledData = baseDir + File.separator +
+  private final String sampledDataPath = baseDir + File.separator +
       "preprocessed_data\\preprocessed_hospital_dirty_sample.csv";
   private final String dcsPathForFCDC = baseDir + File.separator +
       "evidence_set\\dcs_fcdc_hospital.out";
@@ -37,9 +43,9 @@ public class UGuideDiscoveryTest {
   @Test
   public void testOneRoundUGuide()
       throws InputGenerationException, InputIterationException, IOException, DCMinderToolsException {
-    UGuideDiscovery ud = new UGuideDiscovery(cleanData,
-        dirtyData,
-        sampledData,
+    UGuideDiscovery ud = new UGuideDiscovery(cleanDataPath,
+        dirtyDataPath,
+        sampledDataPath,
         dcsPathForFCDC,
         evidencesPathForFCDC,
         topKDCsPath,
@@ -47,5 +53,16 @@ public class UGuideDiscoveryTest {
         candidateDCsPath,
         headerPath);
     ud.guidedDiscovery();
+  }
+
+  @Test
+  public void testGenGroundTruthDCs() {
+    DiscoveryEntry.doDiscovery(cleanDataPath, dcsPathForFCDC);
+  }
+
+  @Test
+  public void testGenTopKDCs() throws IOException {
+    List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(10, dcsPathForFCDC, headerPath);
+    DCUtil.persistTopKDCs(topKDCs, topKDCsPath);
   }
 }

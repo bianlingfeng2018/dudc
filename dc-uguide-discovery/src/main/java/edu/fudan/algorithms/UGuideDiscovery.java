@@ -1,10 +1,14 @@
 package edu.fudan.algorithms;
 
 import static edu.fudan.conf.DefaultConf.topK;
+import static edu.fudan.utils.DataUtil.getDCsSetFromViolations;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
-import de.hpi.naumann.dc.denialcontraints.DenialConstraintSet;
+import de.hpi.naumann.dc.input.Input;
+import de.hpi.naumann.dc.input.ParsedColumn;
+import de.hpi.naumann.dc.predicates.operands.ColumnOperand;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
 import edu.fudan.DCMinderToolsException;
@@ -12,17 +16,22 @@ import edu.fudan.algorithms.uguide.CandidateDCs;
 import edu.fudan.algorithms.uguide.CleanData;
 import edu.fudan.algorithms.uguide.DirtyData;
 import edu.fudan.algorithms.uguide.Evaluation;
+import edu.fudan.algorithms.uguide.Evaluation.EvalResult;
 import edu.fudan.algorithms.uguide.SampledData;
 import edu.fudan.transformat.DCFormatUtil;
+import edu.fudan.utils.DCUtil;
 import edu.fudan.utils.FileUtil;
+import java.awt.SystemTray;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -31,8 +40,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UGuideDiscovery {
 
-  // 表头
-  private final String headerPath;
   // 干净数据
   private final CleanData cleanData;
   // 脏数据
@@ -44,36 +51,36 @@ public class UGuideDiscovery {
   // 评价
   private final Evaluation evaluation;
 
-  private final int maxDiscoveryRound = 1;
-  private final int maxQueryBudget = 100;
+  private final int maxDiscoveryRound = 100;
+  private final int maxQueryBudget = 10000;
   private final int topKOfCluster = 2;
   private final int maxInCluster = 2;
 
-  public UGuideDiscovery(String cleanData,
-      String dirtyData,
-      String sampledData,
+  public UGuideDiscovery(String cleanDataPath,
+      String dirtyDataPath,
+      String sampledDataPath,
       String dcsPathForFCDC,
       String evidencesPathForFCDC,
       String topKDCsPath,
       String groundTruthDCsPath,
       String candidateDCsPath,
       String headerPath) {
-    this.cleanData = new CleanData(cleanData);
-    this.dirtyData = new DirtyData(dirtyData);
-    this.sampledData = new SampledData(sampledData);
+    this.cleanData = new CleanData(cleanDataPath, headerPath);
+    this.dirtyData = new DirtyData(dirtyDataPath, headerPath);
+    this.sampledData = new SampledData(sampledDataPath, headerPath);
     this.candidateDCs = new CandidateDCs(dcsPathForFCDC, evidencesPathForFCDC, topKDCsPath);
-    this.headerPath = headerPath;
-    this.evaluation = new Evaluation(groundTruthDCsPath, candidateDCsPath);
+    this.evaluation = new Evaluation(cleanData, dirtyData, groundTruthDCsPath, candidateDCsPath);
   }
 
   public void guidedDiscovery()
       throws InputGenerationException, IOException, InputIterationException, DCMinderToolsException {
     // 设定groundTruth
-    setUp();
+    log.info("Setup for ground truth DCs");
+    evaluation.setUp();
     // 模拟多轮采样+用户交互，以达到发现所有真冲突的目的
     log.info("Start user guided discovery");
     int round = 0;
-    while (round < maxDiscoveryRound && !allTrueViolationsFound()) {
+    while (round < maxDiscoveryRound && !evaluation.allTrueViolationsFound()) {
       round++;
       log.info("Round {}", round);
       // 采样
@@ -82,66 +89,83 @@ public class UGuideDiscovery {
       discoveryDCs();
       // 检测冲突
       detect();
-      // 评价真冲突/假冲突
-      evaluate();
       // 多轮提问
       log.info("Ask questions to user");
-      int queryRound = 0;
-      while (queryRound < maxQueryBudget && hasNextQuestion()) {
-        queryRound++;
-        log.info("Query round {}", queryRound);
-        askCellQuestion();
-        answerCellQuestion();
+      askCellQuestion();
+      // 评价真冲突/假冲突
+      evaluate();
+      // 假等待
+      try {
+        Thread.sleep(3000);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
       }
     }
     log.info("Finish user guided discovery");
   }
 
-  private void setUp()
-      throws DCMinderToolsException, IOException, InputGenerationException, InputIterationException {
-    log.info("Setup for ground truth DCs");
-    String dataPath = cleanData.getDataPath();
-    String groundTruthDCsPath = evaluation.getGroundTruthDCsPath();
-
-    // 发现规则
-    DiscoveryEntry.doDiscovery(dataPath, groundTruthDCsPath);
-    // 读取规则
-    List<DenialConstraint> dcList = DCLoader.load(headerPath, groundTruthDCsPath);
-    // 检测冲突
-    DCViolationSet vios = new HydraDetector(dataPath, groundTruthDCsPath).detect();
-    int size = vios.size();
-    log.info("Violations size = {}", size);
-    if (size != 0) {
-      throw new RuntimeException("Error discovery of DCs on clean data");
+  private void askCellQuestion() {
+    log.info("Ask CELL question");
+    // 推荐一些让用户判断冲突
+    Set<DCViolation> questions = evaluation.genCellQuestions(maxQueryBudget);
+    Set<DenialConstraint> dcsFromQuestions = getDCsSetFromViolations(questions);
+    Map<DenialConstraint, Integer> dcTrustMap = Maps.newHashMap();
+    Set<DenialConstraint> falseDCs = Sets.newHashSet();
+    for (DenialConstraint dc : dcsFromQuestions) {
+      dcTrustMap.put(dc, 0);
     }
-
-    // 设定GroundTruth规则
-    for (DenialConstraint dc : dcList) {
-      evaluation.getGroundTruthDCs().add(dc);
+    for (DCViolation vio : questions) {
+      List<DenialConstraint> dcs = vio.getDcs();
+      for (DenialConstraint dc : dcs) {
+        if (evaluation.isTrueViolation(dc, vio.getLinePair())) {
+          // 若为真冲突，则增加DC的置信度
+          dcTrustMap.put(dc, dcTrustMap.get(dc) + 1);
+        } else {
+          // 若为假冲突，排除假阳性DC
+          falseDCs.add(dc);
+        }
+      }
+//      LinePair linePair = vio.getLinePair();
+//      int line1 = linePair.getLine1();
+//      int line2 = linePair.getLine2();
+//      for (DenialConstraint dc : vio.getDcs()) {
+//        log.debug("Violation: dc={}, linePair={}", dc.toResult().toString(), linePair);
+//        PredicateBitSet predicateSet = dc.getPredicateSet();
+//        for (Predicate p : predicateSet) {
+//          ColumnOperand<?> operand1 = p.getOperand1();
+//          ColumnOperand<?> operand2 = p.getOperand2();
+//          Operator op = p.getOperator();
+//          Comparable v1 = getCellValue(operand1, di, line1, line2);
+//          Comparable v2 = getCellValue(operand2, di, line1, line2);
+//          log.debug("Predicate: {}", p.toString());
+//          log.debug("v1={}, v2={}, op={}", v1, v2, op.getShortString());
+//          boolean eval = op.eval(v1, v2);
+//          log.debug("Satisfied={}", eval);
+//        }
+//      }
     }
+    log.info("Cell question done");
+    log.info("DC trusts:");
+    for (Entry<DenialConstraint, Integer> entry : dcTrustMap.entrySet()) {
+      log.info("{}, {}", DCFormatUtil.convertDC2String(entry.getKey()), entry.getValue());
+    }
+    // TODO: 1、置信度为真冲突个数，置信度低的可能是假阳性规则？2、冲突个数太多的（无论真假），可能是假阳性规则？
+    log.info("FalseDCs:");
+    for (DenialConstraint falseDC : falseDCs) {
+      log.info("{}", DCFormatUtil.convertDC2String(falseDC));
+    }
+    evaluation.update(null, falseDCs, null, null, null);
   }
 
   private void evaluate() {
     log.info("Evaluate the true violations and false violations");
-    DCViolationSet vios = evaluation.getCandidateViolations();
-    int totalVios = vios.size();
-    int trueVios = 0;
-    Map<DenialConstraint, Set<DCViolation>> viosMap = vios.getDcViosMap();
-    Map<String, Integer> evalResult = Maps.newHashMap();
-    for (Entry<DenialConstraint, Set<DCViolation>> entry : viosMap.entrySet()) {
-      DenialConstraint dc = entry.getKey();
-      Set<DCViolation> dcViolations = entry.getValue();
-      // 模拟用户交互，判断规则是否是真规则，如果是，那么其对应的冲突就是真冲突
-      if (evaluation.getGroundTruthDCs().contains(dc)) {
-        int vioSize = dcViolations.size();
-        evalResult.put(DCFormatUtil.convertDC2String(dc), vioSize);
-        trueVios += vioSize;
-      }
-    }
-    log.info("True vios/totalVios = {}/{}", trueVios, totalVios);
-    log.info("Evaluation results:");
-    for (String dcStr : evalResult.keySet()) {
-      log.info("{}: {}", dcStr, evalResult.get(dcStr));
+    EvalResult result = evaluation.evaluate();
+    log.info("TrueVios/TotalVios = {}/{}, {}", result.getTrueVios(), result.getTotalVios(),
+        (double) result.getTrueVios() / result.getTotalVios());
+    log.info("Final Candidate DCs and violations map:");
+    Map<String, Integer> map = result.getDcStrVioSizeMap();
+    for (String dcStr : map.keySet()) {
+      log.info("{}: {}", dcStr, map.get(dcStr));
     }
   }
 
@@ -151,21 +175,12 @@ public class UGuideDiscovery {
 //    String dataPath = sampledData.getDataPath();
     String dataPath = dirtyData.getDataPath();
     String topKDCsPath = candidateDCs.getTopKDCsPath();
-    DCViolationSet vios = new HydraDetector(dataPath, topKDCsPath).detect();
+    HydraDetector detector = new HydraDetector(dataPath, topKDCsPath);
+    DCViolationSet vios = detector.detect();
     log.info("Violations size = {}", vios.size());
 
     // update candidate DCs and violations
-    List<DenialConstraint> dcsList = DCLoader.load(headerPath, topKDCsPath);
-    updateCandidateDCsAndVios(dcsList, vios);
-  }
-
-  private void updateCandidateDCsAndVios(List<DenialConstraint> dcs, DCViolationSet vios) {
-    for (DenialConstraint dc : dcs) {
-      evaluation.getCandidateDCs().add(dc);
-    }
-    for (DCViolation vio : vios.getViosSet()) {
-      evaluation.getCandidateViolations().add(vio);
-    }
+    evaluation.update(null, null, vios.getViosSet(), null, null);
   }
 
   private void discoveryDCs()
@@ -173,11 +188,17 @@ public class UGuideDiscovery {
     log.info("Discovery DCs from sample");
     // 从经过优化的采样数据中发现规则
     String inputData = sampledData.getDataPath();
-    String dcsPath = candidateDCs.getDcsPathForFCDC();
-    DiscoveryEntry.doDiscovery(inputData, dcsPath);
+    String headerPath = sampledData.getHeaderPath();
+    String dcsPathForFCDC = candidateDCs.getDcsPathForFCDC();
+    DiscoveryEntry.doDiscovery(inputData, dcsPathForFCDC);
     // 取前k个规则
     log.info("Generate top-k DCs");
-    generateTopKDCs(topK);
+    String topKDCsPath = candidateDCs.getTopKDCsPath();
+    // TODO: 排除前面已经确认过的DC
+    List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(topK, dcsPathForFCDC, headerPath);
+    DCUtil.persistTopKDCs(topKDCs, topKDCsPath);
+
+    evaluation.update(new HashSet<>(topKDCs), null, null, null, null);
   }
 
 
@@ -193,43 +214,16 @@ public class UGuideDiscovery {
     FileUtil.writeListLinesToFile(sampled, new File(out));
   }
 
-
-  private void generateTopKDCs(int topK)
-      throws IOException {
-    String dcsPathForFCDC = candidateDCs.getDcsPathForFCDC();
-    String topKDCsPath = candidateDCs.getTopKDCsPath();
-    List<DenialConstraint> dcList = DCLoader.load(headerPath, dcsPathForFCDC);
-    log.debug("Read dcs size = {}", dcList.size());
-    dcList.sort((o1, o2) -> {
-      return Integer.compare(o1.getPredicateCount(), o2.getPredicateCount());
-    });
-    log.debug("Sorted dcs: {}", dcList);
-    List<String> result = new ArrayList<>();
-    List<DenialConstraint> topKDCs = dcList.subList(0, topK);
-    for (DenialConstraint dc : topKDCs) {
-      String s = DCFormatUtil.convertDC2String(dc);
-      result.add(s);
-    }
-    log.info("Write top-k dcs to file {}", topKDCsPath);
-    FileUtil.writeStringLinesToFile(result, new File(topKDCsPath));
+  private static Comparable getCellValue(ColumnOperand<?> operand, Input di, int line1, int line2) {
+    int index = operand.getIndex();
+    String n = operand.getColumn().getName();
+    String t = operand.getColumn().getType().getSimpleName();
+    String nameWithBracket = n + "(" + t + ")";
+    List<ParsedColumn<?>> filtered = Arrays.stream(di.getColumns())
+        .filter(col -> col.getName().equals(nameWithBracket))
+        .collect(Collectors.toList());
+    ParsedColumn<?> column = filtered.get(0);
+    Comparable value = column.getValue(index == 0 ? line1 : line2);
+    return value;
   }
-
-  private void answerCellQuestion() {
-    log.info("Answer CELL question");
-
-  }
-
-  private void askCellQuestion() {
-    log.info("Ask CELL question");
-
-  }
-
-  private boolean hasNextQuestion() {
-    return false;
-  }
-
-  private boolean allTrueViolationsFound() {
-    return false;
-  }
-
 }

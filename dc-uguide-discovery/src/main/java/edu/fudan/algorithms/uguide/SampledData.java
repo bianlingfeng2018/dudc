@@ -1,11 +1,8 @@
 package edu.fudan.algorithms.uguide;
 
+import static edu.fudan.utils.DataUtil.generateNewCopy;
+
 import de.hpi.naumann.dc.input.Input;
-import de.metanome.algorithm_integration.input.InputGenerationException;
-import de.metanome.algorithm_integration.input.InputIterationException;
-import de.metanome.backend.input.file.DefaultFileInputGenerator;
-import java.io.File;
-import java.io.FileNotFoundException;
 import lombok.Getter;
 
 /**
@@ -15,14 +12,13 @@ import lombok.Getter;
 public class SampledData {
 
   private final String dataPath;
+  private final Input input;
+  private final String headerPath;
 
-  public SampledData(String dataPath) {
+  public SampledData(String dataPath, String headerPath) {
     this.dataPath = dataPath;
+    this.input = generateNewCopy(dataPath);
+    this.headerPath = headerPath;
   }
 
-  public Input generateNewCopy()
-      throws InputGenerationException, FileNotFoundException, InputIterationException {
-    DefaultFileInputGenerator actualGenerator = new DefaultFileInputGenerator(new File(dataPath));
-    return new Input(actualGenerator.generateNewCopy());
-  }
 }
