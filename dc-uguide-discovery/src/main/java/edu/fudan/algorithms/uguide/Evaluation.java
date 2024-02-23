@@ -2,10 +2,12 @@ package edu.fudan.algorithms.uguide;
 
 import static edu.fudan.algorithms.uguide.Strategy.getRandomElements;
 
+import ch.javasoft.bitset.search.NTreeSearch;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.paritions.LinePair;
+import de.hpi.naumann.dc.predicates.sets.PredicateSetFactory;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
 import edu.fudan.DCMinderToolsException;
@@ -49,6 +51,12 @@ public class Evaluation {
   private final String candidateDCsPath;
 
   /**
+   * Path to output the final candidate DCs
+   */
+  @Getter
+  private final String trueDCsPath;
+
+  /**
    * Total violations wrt ground truth DCs.
    */
   private Set<DCViolation> groundTruthViolations = Sets.newHashSet();
@@ -68,10 +76,12 @@ public class Evaluation {
    * violations.
    */
   private final Set<DenialConstraint> groundTruthDCs = Sets.newHashSet();
+  private final NTreeSearch gtTree = new NTreeSearch();
 
   /**
    * Ture DCs(part of candidate DCs)
    */
+  @Getter
   private final Set<DenialConstraint> trueDCs = Sets.newHashSet();
 
   /**
@@ -105,11 +115,12 @@ public class Evaluation {
   private final Set<Integer> dirtyLines = Sets.newHashSet();
 
   public Evaluation(CleanData cleanData, DirtyData dirtyData, String groundTruthDCsPath,
-      String candidateDCsPath) {
+      String candidateDCsPath, String trueDCsPath) {
     this.cleanData = cleanData;
     this.dirtyData = dirtyData;
     this.groundTruthDCsPath = groundTruthDCsPath;
     this.candidateDCsPath = candidateDCsPath;
+    this.trueDCsPath = trueDCsPath;
   }
 
   public void setUp()
@@ -137,6 +148,9 @@ public class Evaluation {
     // 设定GroundTruth
     this.groundTruthViolations = viosOnDirty.getViosSet();
     this.groundTruthDCs.addAll(dcList);
+    for (DenialConstraint gtDC : groundTruthDCs) {
+      gtTree.add(PredicateSetFactory.create(gtDC.getPredicateSet()).getBitset());
+    }
   }
 
   public void update(Set<DenialConstraint> candidateDCs,
@@ -219,25 +233,24 @@ public class Evaluation {
     result.setCandiVios(this.candidateViolations.size());
     result.setGtVios(this.groundTruthViolations.size());
     result.setDcStrVioSizeMap(candiDCViosMap);
+    result.setDirtyLines(this.dirtyLines);
     return result;
   }
 
   public boolean isTrueDC(DenialConstraint dc) {
-    return this.groundTruthDCs.contains(dc);
+    // TODO: 包含情况怎么判断？
+    return dc.isImpliedBy(this.gtTree);
   }
 
   public boolean isTrueViolation(DenialConstraint dc, LinePair linePair) {
     // TODO: 可以这么判断真冲突，但是不能就说它对应的规则就是真规则
-    return this.groundTruthDCs.contains(dc);
+    return this.isTrueDC(dc);
   }
 
   public boolean allTrueViolationsFound() {
-    for (DenialConstraint gtDC : this.groundTruthDCs) {
-      if (!this.candidateDCs.contains(gtDC)) {
-        return false;
-      }
-    }
-    return true;
+    // TODO: 目前有可能trueDCs数量大于gtDCs，是因为impliedDC也算真规则
+    boolean b = this.trueDCs.size() >= this.groundTruthDCs.size();
+    return b;
   }
 
   public Set<DCViolation> genCellQuestionsFromCurrState(int maxQueryBudget) {
@@ -264,6 +277,7 @@ public class Evaluation {
     private int candiDCs = 0;
     private int gtDCs = 0;
     private Map<DenialConstraint, Integer> dcStrVioSizeMap;
+    private Set<Integer> dirtyLines;
 
     @Override
     public String toString() {

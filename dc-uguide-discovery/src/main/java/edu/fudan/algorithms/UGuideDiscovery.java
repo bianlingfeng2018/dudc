@@ -2,6 +2,7 @@ package edu.fudan.algorithms;
 
 import static edu.fudan.utils.DataUtil.getDCsSetFromViolations;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
@@ -20,7 +21,11 @@ import edu.fudan.algorithms.uguide.SampledData;
 import edu.fudan.transformat.DCFormatUtil;
 import edu.fudan.utils.DCUtil;
 import edu.fudan.utils.FileUtil;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,25 +54,28 @@ public class UGuideDiscovery {
   // 评价
   private final Evaluation evaluation;
 
-  private final int maxDiscoveryRound = 100;
-  private final int maxQueryBudget = 10000;
+  private final int maxDiscoveryRound = 20;
+  private final int maxQueryBudget = 1000;
   private final int topKOfCluster = 2;
   private final int maxInCluster = 2;
 
   public UGuideDiscovery(String cleanDataPath,
       String dirtyDataPath,
+      String dataDirtyLinesPath,
       String sampledDataPath,
       String dcsPathForFCDC,
       String evidencesPathForFCDC,
       String topKDCsPath,
       String groundTruthDCsPath,
       String candidateDCsPath,
+      String trueDCsPath,
       String headerPath) {
     this.cleanData = new CleanData(cleanDataPath, headerPath);
-    this.dirtyData = new DirtyData(dirtyDataPath, headerPath);
+    this.dirtyData = new DirtyData(dirtyDataPath, dataDirtyLinesPath, headerPath);
     this.sampledData = new SampledData(sampledDataPath, headerPath);
     this.candidateDCs = new CandidateDCs(dcsPathForFCDC, evidencesPathForFCDC, topKDCsPath);
-    this.evaluation = new Evaluation(cleanData, dirtyData, groundTruthDCsPath, candidateDCsPath);
+    this.evaluation = new Evaluation(cleanData, dirtyData, groundTruthDCsPath, candidateDCsPath,
+        trueDCsPath);
   }
 
   public void guidedDiscovery()
@@ -99,10 +107,41 @@ public class UGuideDiscovery {
   }
 
   private void persistResult() throws IOException {
-    Set<DenialConstraint> candiDcs = evaluation.getCandidateDCs();
+    persistDCs(evaluation.getCandidateDCs(), evaluation.getCandidateDCsPath());
+    persistDCs(evaluation.getTrueDCs(), evaluation.getTrueDCsPath());
+    Set<Integer> dirtyLines = evaluation.getDirtyLines();
+    try {
+      BufferedReader br = new BufferedReader(new FileReader(this.dirtyData.getDataPath()));
+      // 第一行header
+      String header = br.readLine();
+      log.info("Skip header: {}", header);
+      String line;
+      int i = 0;
+      List<String> result = Lists.newArrayList();
+      while ((line = br.readLine()) != null) {
+        if (dirtyLines.contains(i)) {
+          result.add(line);
+        }
+        i++;
+      }
+      BufferedWriter bw = new BufferedWriter(
+          new FileWriter(this.dirtyData.getDataDirtyLinesPath()));
+      for (String s : result) {
+        bw.write(s);
+        bw.newLine();
+      }
+      bw.close();
+      br.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+  }
+
+  private void persistDCs(Set<DenialConstraint> candiDcs, String path) throws IOException {
     List<String> dcStrList = candiDcs.stream().map(DCFormatUtil::convertDC2String)
         .collect(Collectors.toList());
-    FileUtil.writeStringLinesToFile(dcStrList, new File(evaluation.getCandidateDCsPath()));
+    FileUtil.writeStringLinesToFile(dcStrList, new File(path));
   }
 
   private void askCellQuestion() {
@@ -164,10 +203,11 @@ public class UGuideDiscovery {
     for (DenialConstraint falseDC : falseDCs) {
       log.info("{}", DCFormatUtil.convertDC2String(falseDC));
     }
-    // TODO: 未检查的DC可能是因为没有产生冲突，如果是这样：
-    //  1、它是一个真规则，也是groundTruth，但是没有注入错误。（这种情况要避免？是groundTruth规则就要注入错误，否则该规则对减少冲突没贡献，也不好通过其冲突确定这个规则，只能通过用户手动确认？）
+    // TODO: 未检查的DC可能是因为其冲突没有取样，也可能是因为没有产生冲突，如果是这样：
+    //  1、它是一个真规则，也是groundTruth，但是没有注入错误。（这种情况要避免？是groundTruth规则就要注入错误，否则该规则对减少冲突没贡献）
     //  2、它是一个真规则，不是groundTruth，没有注入错误。（此时该规则对检测冲突无贡献）
-    //  3、其他情况？
+    //  3、可能是假规则吗？因为假规则一般都会产生一些冲突，但是是否绝对？
+    //  1和2的情况目前是默认放到候选规则中，但是并不确定它是真规则，只有评估的时候可以确认，后面是否可以增加用户判断？
     log.info("UncheckedDCs:");
     for (DenialConstraint dc : dcsUnchecked) {
       log.info("{}", DCFormatUtil.convertDC2String(dc));
@@ -184,6 +224,8 @@ public class UGuideDiscovery {
     for (DenialConstraint dc : map.keySet()) {
       log.info("{}: {}", DCFormatUtil.convertDC2String(dc), map.get(dc));
     }
+    // TODO: 当本轮发现的规则都是不产生冲突的规则时，不会确认真冲突，因此dirtyLines不变化
+    log.info("Dirty lines = {}", result.getDirtyLines().size());
   }
 
   private void detect()
@@ -218,7 +260,7 @@ public class UGuideDiscovery {
   private void sample()
       throws InputGenerationException, IOException, InputIterationException {
     Set<Integer> dirtyLines = evaluation.getDirtyLines();
-    log.info("Sample from dirty data, excluded dirty lines={}", dirtyLines.size());
+    log.info("Sample from dirty data");
     HashSet<Integer> skippedColumns = new HashSet<>();
     List<List<String>> sampled = new TupleSampler()
         .sample(new File(dirtyData.getDataPath()), topKOfCluster, maxInCluster, skippedColumns,

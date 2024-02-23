@@ -19,7 +19,7 @@ public class DCUtil {
   public static List<DenialConstraint> generateTopKDCs(int topK, String dcsPath,
       String headerPath, Set<DenialConstraint> excludedDCs) {
     List<DenialConstraint> dcList = DCLoader.load(headerPath, dcsPath, excludedDCs);
-    log.debug("Read dcs size = {}", dcList.size());
+    log.info("Read dcs size = {}, excluded dcs size = {}", dcList.size(), excludedDCs.size());
     dcList.sort((o1, o2) -> {
       return Integer.compare(o1.getPredicateCount(), o2.getPredicateCount());
     });
