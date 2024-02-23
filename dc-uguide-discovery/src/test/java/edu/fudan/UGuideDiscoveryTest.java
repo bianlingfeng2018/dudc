@@ -1,8 +1,14 @@
 package edu.fudan;
 
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
 import ch.javasoft.bitset.search.NTreeSearch;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
+import de.hpi.naumann.dc.predicates.Predicate;
+import de.hpi.naumann.dc.predicates.operands.ColumnOperand;
 import de.hpi.naumann.dc.predicates.sets.PredicateSetFactory;
+import de.metanome.algorithm_integration.Operator;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
 import edu.fudan.algorithms.DCLoader;
@@ -71,6 +77,23 @@ public class UGuideDiscoveryTest {
   public void testGenTopKDCs() throws IOException {
     List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(10, dcsPathForFCDC, headerPath, null);
     DCUtil.persistTopKDCs(topKDCs, topKDCsPath);
+  }
+
+  @Test
+  public void testImplyMock() {
+    // 长规则能被短规则推断出来
+    ColumnOperand<?> o1 = mock(ColumnOperand.class);
+    ColumnOperand<?> o2 = mock(ColumnOperand.class);
+
+    DenialConstraint dc1 = new DenialConstraint(
+        new Predicate(Operator.GREATER, o1, o2), new Predicate(Operator.LESS, o1, o2));
+    DenialConstraint dc2 = new DenialConstraint(
+        new Predicate(Operator.GREATER, o1, o2));
+    NTreeSearch tree = new NTreeSearch();
+    tree.add(PredicateSetFactory.create(dc2.getPredicateSet()).getBitset());
+
+    boolean equals = dc1.isImpliedBy(tree);
+    assertTrue(equals);
   }
 
   @Test
