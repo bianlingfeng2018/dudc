@@ -1,7 +1,5 @@
 package edu.fudan;
 
-import static edu.fudan.conf.DefaultConf.topK;
-
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
@@ -62,7 +60,7 @@ public class UGuideDiscoveryTest {
 
   @Test
   public void testGenTopKDCs() throws IOException {
-    List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(10, dcsPathForFCDC, headerPath);
+    List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(10, dcsPathForFCDC, headerPath, null);
     DCUtil.persistTopKDCs(topKDCs, topKDCsPath);
   }
 }

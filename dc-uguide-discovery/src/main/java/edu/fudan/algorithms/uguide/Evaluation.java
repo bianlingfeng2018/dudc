@@ -3,8 +3,8 @@ package edu.fudan.algorithms.uguide;
 import static edu.fudan.algorithms.uguide.Strategy.getRandomElements;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
-import de.hpi.naumann.dc.denialcontraints.DenialConstraintSet;
 import de.hpi.naumann.dc.paritions.LinePair;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
@@ -13,13 +13,11 @@ import edu.fudan.algorithms.DCLoader;
 import edu.fudan.algorithms.DCViolation;
 import edu.fudan.algorithms.DCViolationSet;
 import edu.fudan.algorithms.HydraDetector;
-import edu.fudan.transformat.DCFormatUtil;
 import edu.fudan.utils.DataUtil;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,7 +33,7 @@ public class Evaluation {
   private final CleanData cleanData;
 
   /**
-   * Dirty data which is the data after injecting errors using BART
+   * Dirty data
    */
   private final DirtyData dirtyData;
 
@@ -43,26 +41,68 @@ public class Evaluation {
    * Path of ground truth DCs
    */
   private final String groundTruthDCsPath;
-  /**
-   * Ground truth DCs which hold on clean data. Violations wrt ground truth DCs are true
-   * violations.
-   */
-  private final DenialConstraintSet groundTruthDCs = new DenialConstraintSet();
 
   /**
    * Path to output the final candidate DCs
    */
+  @Getter
   private final String candidateDCsPath;
 
   /**
-   * Candidate DCs which are finally used to detect violations.
+   * Total violations wrt ground truth DCs.
    */
-  private final DenialConstraintSet candidateDCs = new DenialConstraintSet();
+  private Set<DCViolation> groundTruthViolations = Sets.newHashSet();
 
   /**
-   * Candidate Violations which are used to estimate the confidence of correspond DCs.
+   * True violations.
    */
-  private final DCViolationSet candidateViolations = new DCViolationSet();
+  private final Set<DCViolation> trueViolations = Sets.newHashSet();
+
+  /**
+   * Candidate violations.
+   */
+  private final Set<DCViolation> candidateViolations = Sets.newHashSet();
+
+  /**
+   * Ground truth DCs which hold on clean data. Violations wrt ground truth DCs are true
+   * violations.
+   */
+  private final Set<DenialConstraint> groundTruthDCs = Sets.newHashSet();
+
+  /**
+   * Ture DCs(part of candidate DCs)
+   */
+  private final Set<DenialConstraint> trueDCs = Sets.newHashSet();
+
+  /**
+   * Candidate DCs. It can be updated individually or when candidate violations change.
+   */
+  @Getter
+  private final Set<DenialConstraint> candidateDCs = Sets.newHashSet();
+
+  /**
+   * Visited DCs
+   */
+  @Getter
+  private final Set<DenialConstraint> visitedDCs = Sets.newHashSet();
+
+  // Current round state
+  /**
+   * Current round DCs. Choose DC questions from them.
+   */
+  @Getter
+  private final Set<DenialConstraint> currDCs = Sets.newHashSet();
+  /**
+   * Current round violations. Choose violation question from them.
+   */
+  private final Set<DCViolation> currVios = Sets.newHashSet();
+
+  /**
+   * Line indices which are dirty. They should be excluded from dirty data to help discover ground
+   * truth DCs.
+   */
+  @Getter
+  private final Set<Integer> dirtyLines = Sets.newHashSet();
 
   public Evaluation(CleanData cleanData, DirtyData dirtyData, String groundTruthDCsPath,
       String candidateDCsPath) {
@@ -74,24 +114,29 @@ public class Evaluation {
 
   public void setUp()
       throws DCMinderToolsException, IOException, InputGenerationException, InputIterationException {
-    String dataPath = cleanData.getDataPath();
-    String headerPath = cleanData.getHeaderPath();
+    String cleanDataPath = this.cleanData.getDataPath();
+    String dirtyDataPath = this.dirtyData.getDataPath();
+    String headerPath = this.cleanData.getHeaderPath();
 
     // 发现groundTruth规则
 //    DiscoveryEntry.doDiscovery(dataPath, groundTruthDCsPath);
     // 读取groundTruth规则
-    List<DenialConstraint> dcList = DCLoader.load(headerPath, groundTruthDCsPath);
+    List<DenialConstraint> dcList = DCLoader.load(headerPath, this.groundTruthDCsPath);
     // 检测冲突，结果应该为0
-    DCViolationSet vios = new HydraDetector(dataPath, groundTruthDCsPath).detect();
-    int size = vios.size();
-    if (size != 0) {
+    DCViolationSet viosOnClean = new HydraDetector(cleanDataPath, this.groundTruthDCsPath).detect();
+    int sizeClean = viosOnClean.size();
+    if (sizeClean != 0) {
       throw new RuntimeException("Error discovery of DCs on clean data");
     }
-
-    // 设定GroundTruth规则
-    for (DenialConstraint dc : dcList) {
-      this.groundTruthDCs.add(dc);
+    // 检测冲突，设定GroundTruth规则应当在脏数据集上发现的冲突数量
+    DCViolationSet viosOnDirty = new HydraDetector(dirtyDataPath, this.groundTruthDCsPath).detect();
+    int sizeDirty = viosOnDirty.size();
+    if (sizeDirty == 0) {
+      throw new RuntimeException("Error discovery of DCs on dirty data");
     }
+    // 设定GroundTruth
+    this.groundTruthViolations = viosOnDirty.getViosSet();
+    this.groundTruthDCs.addAll(dcList);
   }
 
   public void update(Set<DenialConstraint> candidateDCs,
@@ -100,35 +145,35 @@ public class Evaluation {
       Set<DCViolation> falseViolations,
       Set<Integer> dirtyLines) {
     if (candidateDCs != null) {
+      // 记录当前状态
+      this.currDCs.clear();
+      this.currDCs.addAll(candidateDCs);
       // 增加候选规则
-      for (DenialConstraint dc : candidateDCs) {
-        this.candidateDCs.add(dc);
-      }
+      this.candidateDCs.addAll(candidateDCs);
+      // 记录已经访问过的DC
+      this.visitedDCs.addAll(candidateDCs);
     }
     if (falseDCs != null) {
       Map<DenialConstraint, Set<DCViolation>> map = DataUtil.getDCViosMapFromVios(
-          this.candidateViolations.getViosSet());
+          this.candidateViolations);
       // 减少假阳性规则
-      for (DenialConstraint dc : falseDCs) {
-        this.candidateDCs.remove(dc);
-        Set<DCViolation> dcVios = map.get(dc);
-        for (DCViolation dcVio : dcVios) {
+      for (DenialConstraint falseDC : falseDCs) {
+        this.candidateDCs.remove(falseDC);
+        Set<DCViolation> vios = map.get(falseDC);
+        for (DCViolation vio : vios) {
           // 删除和DC相关的冲突
-          this.candidateViolations.getViosSet().remove(dcVio);
-          // 增加需要排除的脏数据
-          LinePair linePair = dcVio.getLinePair();
-          int line1 = linePair.getLine1();
-          int line2 = linePair.getLine2();
-          this.dirtyData.getDirtyLines().add(line1);
-          this.dirtyData.getDirtyLines().add(line2);
+          this.candidateViolations.remove(vio);
+          // TODO: 增加需要排除的脏数据，FalseDC不一定对应的是脏数据，有可能是缺少反例，需要进一步判断
+//          excludeDirtyLines(vio);
         }
       }
     }
     if (candidateViolations != null) {
+      // 记录当前状态
+      this.currVios.clear();
+      this.currVios.addAll(candidateViolations);
       // 增加相关的冲突
-      for (DCViolation vio : candidateViolations) {
-        this.candidateViolations.add(vio);
-      }
+      this.candidateViolations.addAll(candidateViolations);
     }
     if (falseViolations != null) {
       // 删除相关的冲突
@@ -138,61 +183,94 @@ public class Evaluation {
     }
     if (dirtyLines != null) {
       // 增加需要排除的脏数据
-      this.dirtyData.getDirtyLines().addAll(dirtyLines);
+      this.dirtyLines.addAll(dirtyLines);
     }
   }
 
-  public EvalResult evaluate() {
-    // 评价真冲突和假冲突个数
-    Set<DCViolation> vios = candidateViolations.getViosSet();
-    int totalVios = vios.size();
-    int trueVios = 0;
-    Map<DenialConstraint, Set<DCViolation>> viosMap = DataUtil.getDCViosMapFromVios(vios);
-    Map<String, Integer> dcStrVioSizeMap = Maps.newHashMap();
-    for (Entry<DenialConstraint, Set<DCViolation>> entry : viosMap.entrySet()) {
-      DenialConstraint dc = entry.getKey();
-      Set<DCViolation> dcVios = entry.getValue();
-      // 模拟用户交互，判断规则是否是真规则，如果是，那么其对应的冲突就是真冲突
-      if (groundTruthDCs.contains(dc)) {
-        int size = dcVios.size();
-        dcStrVioSizeMap.put(DCFormatUtil.convertDC2String(dc), size);
-        trueVios += size;
+  public EvalResult evaluate() throws DCMinderToolsException {
+    EvalResult result = new EvalResult();
+    // 评价最终的候选规则及其关联的冲突个数
+    Map<DenialConstraint, Integer> candiDCViosMap = Maps.newHashMap();
+    // 评价真规则和假规则个数
+    for (DenialConstraint candiDC : this.candidateDCs) {
+      candiDCViosMap.put(candiDC, 0);
+      if (isTrueDC(candiDC)) {
+        this.trueDCs.add(candiDC);
       }
     }
-
-    // TODO: 真DC/所有DC的评估
-    EvalResult result = new EvalResult();
-    result.setTrueVios(trueVios);
-    result.setTotalVios(totalVios);
-    result.setDcStrVioSizeMap(dcStrVioSizeMap);
+    // 评价真冲突和假冲突个数
+    for (DCViolation candiVio : this.candidateViolations) {
+      List<DenialConstraint> dcs = candiVio.getDcs();
+      for (DenialConstraint dc : dcs) {
+        if (isTrueViolation(dc, candiVio.getLinePair())) {
+          this.trueViolations.add(candiVio);
+        }
+        Integer i = candiDCViosMap.get(dc);
+        if (i == null) {
+          throw new DCMinderToolsException("No candiDC found for a candiVio!!!");
+        }
+        candiDCViosMap.put(dc, i + 1);
+      }
+    }
+    result.setTrueDCs(this.trueDCs.size());
+    result.setCandiDCs(this.candidateDCs.size());
+    result.setGtDCs(this.groundTruthDCs.size());
+    result.setTrueVios(this.trueViolations.size());
+    result.setCandiVios(this.candidateViolations.size());
+    result.setGtVios(this.groundTruthViolations.size());
+    result.setDcStrVioSizeMap(candiDCViosMap);
     return result;
   }
 
+  public boolean isTrueDC(DenialConstraint dc) {
+    return this.groundTruthDCs.contains(dc);
+  }
+
   public boolean isTrueViolation(DenialConstraint dc, LinePair linePair) {
-    boolean contains = groundTruthDCs.contains(dc);
-    return contains;
+    // TODO: 可以这么判断真冲突，但是不能就说它对应的规则就是真规则
+    return this.groundTruthDCs.contains(dc);
   }
 
   public boolean allTrueViolationsFound() {
-    for (DenialConstraint gtDC : groundTruthDCs) {
-      if (!candidateDCs.contains(gtDC)) {
+    for (DenialConstraint gtDC : this.groundTruthDCs) {
+      if (!this.candidateDCs.contains(gtDC)) {
         return false;
       }
     }
     return true;
   }
 
-  public Set<DCViolation> genCellQuestions(int maxQueryBudget) {
-    List<DCViolation> chosenVios = getRandomElements(candidateViolations.getViosSet(),
-        maxQueryBudget);
+  public Set<DCViolation> genCellQuestionsFromCurrState(int maxQueryBudget) {
+    List<DCViolation> chosenVios = getRandomElements(this.currVios, maxQueryBudget);
     return new HashSet<>(chosenVios);
+  }
+
+  public void excludeDirtyLines(DCViolation vio) {
+    LinePair linePair = vio.getLinePair();
+    int line1 = linePair.getLine1();
+    int line2 = linePair.getLine2();
+    this.dirtyLines.add(line1);
+    this.dirtyLines.add(line2);
   }
 
   @Getter
   @Setter
   public class EvalResult {
+
     private int trueVios = 0;
-    private int totalVios = 0;
-    private Map<String, Integer> dcStrVioSizeMap = Maps.newHashMap();
+    private int candiVios = 0;
+    private int gtVios = 0;
+    private int trueDCs = 0;
+    private int candiDCs = 0;
+    private int gtDCs = 0;
+    private Map<DenialConstraint, Integer> dcStrVioSizeMap;
+
+    @Override
+    public String toString() {
+      String result = String.format(
+          "Current round: %s/%s(trueVios/vios), %s(gtVios), %s/%s(trueCandiDCs/candiDCs), %s(gtDCs)",
+          this.trueVios, this.candiVios, this.gtVios, this.trueDCs, this.candiDCs, this.gtDCs);
+      return result;
+    }
   }
 }

@@ -13,12 +13,6 @@ import lombok.Getter;
 @Getter
 public class DirtyData {
 
-  /**
-   * Line indices which are dirty. They should be excluded from dirty data to help discover ground
-   * truth DCs.
-   */
-  private final Set<Integer> dirtyLines = Sets.newHashSet();
-
   private final String dataPath;
   private final Input input;
   private final String headerPath;

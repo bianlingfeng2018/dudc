@@ -2,12 +2,12 @@ package edu.fudan.algorithms;
 
 import com.google.common.collect.Lists;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
-import edu.fudan.DCMinderToolsException;
 import edu.fudan.transformat.DCFormatUtil;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Lingfeng
@@ -15,6 +15,11 @@ import java.util.List;
 public class DCLoader {
 
   public static List<DenialConstraint> load(String headerFile, String dcsFile) {
+    return load(headerFile, dcsFile, null);
+  }
+
+  public static List<DenialConstraint> load(String headerFile, String dcsFile,
+      Set<DenialConstraint> excludedDCs) {
     List<DenialConstraint> dcsWithoutData = Lists.newArrayList();
     // Read dcs from file
     BufferedReader br1 = null;
@@ -27,6 +32,10 @@ public class DCLoader {
       String line = null;
       while ((line = br2.readLine()) != null) {
         DenialConstraint dc = DCFormatUtil.convertString2DC(line, header);
+        // Exclude DCs situation
+        if (excludedDCs != null && excludedDCs.contains(dc)) {
+          continue;
+        }
         dcsWithoutData.add(dc);
       }
     } catch (IOException e) {

@@ -24,7 +24,7 @@ public class TupleSampler {
   private final int minM = 2;
 
   public ArrayList<List<String>> sample(File dataF, int topKOfCluster, int maxInCluster,
-      Set<Integer> skippedColumns, boolean requireHeader)
+      Set<Integer> skippedColumns, boolean requireHeader, Set<Integer> excludedLines)
       throws FileNotFoundException, InputGenerationException, InputIterationException {
     log.info("Sampling: {}", dataF.toString());
     DefaultFileInputGenerator actualGenerator = new DefaultFileInputGenerator(dataF);
@@ -35,7 +35,7 @@ public class TupleSampler {
 
     long startSample = System.currentTimeMillis();
     ColumnAwareWeightedClusterSampler sampler = new ColumnAwareWeightedClusterSampler();
-    Set<Integer> sampled = sampler.sampling(input, k, m, skippedColumns);
+    Set<Integer> sampled = sampler.sampling(input, k, m, skippedColumns, excludedLines);
     long timeSample = System.currentTimeMillis() - startSample;
     log.debug("Sample time = {} ms", timeSample);
     log.info("Sampled size = {}", sampled.size());

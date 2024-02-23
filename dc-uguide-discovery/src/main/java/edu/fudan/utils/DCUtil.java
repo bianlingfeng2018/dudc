@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -16,8 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 public class DCUtil {
 
   public static List<DenialConstraint> generateTopKDCs(int topK, String dcsPath,
-      String headerPath) {
-    List<DenialConstraint> dcList = DCLoader.load(headerPath, dcsPath);
+      String headerPath, Set<DenialConstraint> excludedDCs) {
+    List<DenialConstraint> dcList = DCLoader.load(headerPath, dcsPath, excludedDCs);
     log.debug("Read dcs size = {}", dcList.size());
     dcList.sort((o1, o2) -> {
       return Integer.compare(o1.getPredicateCount(), o2.getPredicateCount());

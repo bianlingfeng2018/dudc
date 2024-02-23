@@ -25,7 +25,7 @@ public class ColumnAwareWeightedClusterSampler {
    * @return 采样得到的元组
    */
   public Set<Integer> sampling(Input input, int topKOfCluster, int maxInCluster,
-      Set<Integer> skippedColumns) {
+      Set<Integer> skippedColumns, Set<Integer> excludedLines) {
     Set<Integer> lines = Sets.newHashSet();
     for (ParsedColumn<?> c : input.getColumns()) {
       if (skippedColumns.contains(c.getIndex())) {
@@ -36,6 +36,10 @@ public class ColumnAwareWeightedClusterSampler {
       Map<Integer, Integer> sizeFrequencyMap = Maps.newHashMap();
       Map<Object, WeightedCluster> valueMap = new HashMap<>();
       for (int i = 0; i < input.getLineCount(); ++i) {
+        if (excludedLines != null && excludedLines.contains(i)) {
+          // 排除行（已经被用户判断是脏数据）
+          continue;
+        }
         WeightedCluster cluster = valueMap.computeIfAbsent(c.getValue(i),
             (k) -> new WeightedCluster());
         // 自动更新size，即簇大小

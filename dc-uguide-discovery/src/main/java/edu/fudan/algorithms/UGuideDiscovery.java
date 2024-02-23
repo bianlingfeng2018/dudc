@@ -1,6 +1,5 @@
 package edu.fudan.algorithms;
 
-import static edu.fudan.conf.DefaultConf.topK;
 import static edu.fudan.utils.DataUtil.getDCsSetFromViolations;
 
 import com.google.common.collect.Maps;
@@ -21,7 +20,6 @@ import edu.fudan.algorithms.uguide.SampledData;
 import edu.fudan.transformat.DCFormatUtil;
 import edu.fudan.utils.DCUtil;
 import edu.fudan.utils.FileUtil;
-import java.awt.SystemTray;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -94,32 +92,44 @@ public class UGuideDiscovery {
       askCellQuestion();
       // 评价真冲突/假冲突
       evaluate();
-      // 假等待
-      try {
-        Thread.sleep(3000);
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
+      // 输出结果
+      persistResult();
     }
     log.info("Finish user guided discovery");
+  }
+
+  private void persistResult() throws IOException {
+    Set<DenialConstraint> candiDcs = evaluation.getCandidateDCs();
+    List<String> dcStrList = candiDcs.stream().map(DCFormatUtil::convertDC2String)
+        .collect(Collectors.toList());
+    FileUtil.writeStringLinesToFile(dcStrList, new File(evaluation.getCandidateDCsPath()));
   }
 
   private void askCellQuestion() {
     log.info("Ask CELL question");
     // 推荐一些让用户判断冲突
-    Set<DCViolation> questions = evaluation.genCellQuestions(maxQueryBudget);
+    Set<DCViolation> questions = evaluation.genCellQuestionsFromCurrState(maxQueryBudget);
+    Set<DenialConstraint> dcsUnchecked = Sets.newHashSet();
     Set<DenialConstraint> dcsFromQuestions = getDCsSetFromViolations(questions);
+    for (DenialConstraint currDC : evaluation.getCurrDCs()) {
+      if (!dcsFromQuestions.contains(currDC)) {
+        dcsUnchecked.add(currDC);
+      }
+    }
     Map<DenialConstraint, Integer> dcTrustMap = Maps.newHashMap();
     Set<DenialConstraint> falseDCs = Sets.newHashSet();
     for (DenialConstraint dc : dcsFromQuestions) {
       dcTrustMap.put(dc, 0);
     }
     for (DCViolation vio : questions) {
+      // TODO: Input和LinePair结合找出相关Cells，给用户判断是否为真冲突
       List<DenialConstraint> dcs = vio.getDcs();
       for (DenialConstraint dc : dcs) {
         if (evaluation.isTrueViolation(dc, vio.getLinePair())) {
           // 若为真冲突，则增加DC的置信度
           dcTrustMap.put(dc, dcTrustMap.get(dc) + 1);
+          // 若为真冲突，排除脏数据
+          evaluation.excludeDirtyLines(vio);
         } else {
           // 若为假冲突，排除假阳性DC
           falseDCs.add(dc);
@@ -154,18 +164,25 @@ public class UGuideDiscovery {
     for (DenialConstraint falseDC : falseDCs) {
       log.info("{}", DCFormatUtil.convertDC2String(falseDC));
     }
+    // TODO: 未检查的DC可能是因为没有产生冲突，如果是这样：
+    //  1、它是一个真规则，也是groundTruth，但是没有注入错误。（这种情况要避免？是groundTruth规则就要注入错误，否则该规则对减少冲突没贡献，也不好通过其冲突确定这个规则，只能通过用户手动确认？）
+    //  2、它是一个真规则，不是groundTruth，没有注入错误。（此时该规则对检测冲突无贡献）
+    //  3、其他情况？
+    log.info("UncheckedDCs:");
+    for (DenialConstraint dc : dcsUnchecked) {
+      log.info("{}", DCFormatUtil.convertDC2String(dc));
+    }
     evaluation.update(null, falseDCs, null, null, null);
   }
 
-  private void evaluate() {
+  private void evaluate() throws DCMinderToolsException {
     log.info("Evaluate the true violations and false violations");
     EvalResult result = evaluation.evaluate();
-    log.info("TrueVios/TotalVios = {}/{}, {}", result.getTrueVios(), result.getTotalVios(),
-        (double) result.getTrueVios() / result.getTotalVios());
-    log.info("Final Candidate DCs and violations map:");
-    Map<String, Integer> map = result.getDcStrVioSizeMap();
-    for (String dcStr : map.keySet()) {
-      log.info("{}: {}", dcStr, map.get(dcStr));
+    log.info(result.toString());
+    log.info("Final Candidate DCs and violations size map:");
+    Map<DenialConstraint, Integer> map = result.getDcStrVioSizeMap();
+    for (DenialConstraint dc : map.keySet()) {
+      log.info("{}: {}", DCFormatUtil.convertDC2String(dc), map.get(dc));
     }
   }
 
@@ -186,29 +203,26 @@ public class UGuideDiscovery {
   private void discoveryDCs()
       throws IOException {
     log.info("Discovery DCs from sample");
-    // 从经过优化的采样数据中发现规则
-    String inputData = sampledData.getDataPath();
-    String headerPath = sampledData.getHeaderPath();
-    String dcsPathForFCDC = candidateDCs.getDcsPathForFCDC();
-    DiscoveryEntry.doDiscovery(inputData, dcsPathForFCDC);
-    // 取前k个规则
-    log.info("Generate top-k DCs");
-    String topKDCsPath = candidateDCs.getTopKDCsPath();
-    // TODO: 排除前面已经确认过的DC
-    List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(topK, dcsPathForFCDC, headerPath);
-    DCUtil.persistTopKDCs(topKDCs, topKDCsPath);
+    BasicDCGenerator generator = new BasicDCGenerator(sampledData.getDataPath(),
+        // TODO:现在发现的规则没有加入g1，有的规则冲突太多，明显是假阳性，且影响后续的效率
+        candidateDCs.getDcsPathForFCDC(), sampledData.getHeaderPath());
+    generator.setExcludeDCs(evaluation.getVisitedDCs());
+    Set<DenialConstraint> dcs = generator.generateDCsForUser();
 
-    evaluation.update(new HashSet<>(topKDCs), null, null, null, null);
+    DCUtil.persistTopKDCs(new ArrayList<>(dcs), candidateDCs.getTopKDCsPath());
+
+    evaluation.update(dcs, null, null, null, null);
   }
 
 
   private void sample()
       throws InputGenerationException, IOException, InputIterationException {
-    log.info("Sample from dirty data");
+    Set<Integer> dirtyLines = evaluation.getDirtyLines();
+    log.info("Sample from dirty data, excluded dirty lines={}", dirtyLines.size());
     HashSet<Integer> skippedColumns = new HashSet<>();
     List<List<String>> sampled = new TupleSampler()
         .sample(new File(dirtyData.getDataPath()), topKOfCluster, maxInCluster, skippedColumns,
-            true);
+            true, dirtyLines);
     String out = sampledData.getDataPath();
     log.debug("Write to file: {}", out);
     FileUtil.writeListLinesToFile(sampled, new File(out));
