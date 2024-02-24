@@ -143,6 +143,9 @@ public class UGuideDiscovery {
     log.info("Ask CELL question");
     // 推荐一些让用户判断冲突
     Set<DCViolation> questions = evaluation.genCellQuestionsFromCurrState(maxQueryBudget);
+    int numb = questions.size();
+    log.info("Questions/Budget={}/{}", numb, maxQueryBudget);
+    evaluation.addCellBudget(numb);
     Set<DenialConstraint> dcsUnchecked = Sets.newHashSet();
     Set<DenialConstraint> dcsFromQuestions = getDCsSetFromViolations(questions);
     for (DenialConstraint currDC : evaluation.getCurrDCs()) {

@@ -113,6 +113,9 @@ public class Evaluation {
    */
   @Getter
   private final Set<Integer> dirtyLines = Sets.newHashSet();
+  private int cellBudgetUsed = 0;
+  private int dcBudgetUsed = 0;
+  private int tupleBudgetUsed = 0;
 
   public Evaluation(CleanData cleanData, DirtyData dirtyData, String groundTruthDCsPath,
       String candidateDCsPath, String trueDCsPath) {
@@ -201,6 +204,18 @@ public class Evaluation {
     }
   }
 
+  public void addCellBudget(int numb) {
+    this.cellBudgetUsed += numb;
+  }
+
+  public void addDCBudget(int numb) {
+    this.dcBudgetUsed += numb;
+  }
+
+  public void addTupleBudget(int numb) {
+    this.tupleBudgetUsed += numb;
+  }
+
   public EvalResult evaluate() throws DCMinderToolsException {
     EvalResult result = new EvalResult();
     // 评价最终的候选规则及其关联的冲突个数
@@ -234,6 +249,9 @@ public class Evaluation {
     result.setGtVios(this.groundTruthViolations.size());
     result.setDcStrVioSizeMap(candiDCViosMap);
     result.setDirtyLines(this.dirtyLines);
+    result.setCellQuestions(this.cellBudgetUsed);
+    result.setDcQuestions(this.dcBudgetUsed);
+    result.setTupleQuestions(this.tupleBudgetUsed);
     return result;
   }
 
@@ -276,14 +294,19 @@ public class Evaluation {
     private int trueDCs = 0;
     private int candiDCs = 0;
     private int gtDCs = 0;
+    private int cellQuestions = 0;
+    private int dcQuestions = 0;
+    private int tupleQuestions = 0;
     private Map<DenialConstraint, Integer> dcStrVioSizeMap;
     private Set<Integer> dirtyLines;
 
     @Override
     public String toString() {
       String result = String.format(
-          "Current round: %s/%s(trueVios/vios), %s(gtVios), %s/%s(trueCandiDCs/candiDCs), %s(gtDCs)",
-          this.trueVios, this.candiVios, this.gtVios, this.trueDCs, this.candiDCs, this.gtDCs);
+          "%s/%s/%s(trueVios/candiVios/gtVios), %s/%s/%s(trueDCs/candiDCs/gtDCs), "
+          + "%s,%s,%s(cellQuestions/dcQuestions/tupleQuestions)",
+          this.trueVios, this.candiVios, this.gtVios, this.trueDCs, this.candiDCs, this.gtDCs,
+          this.cellQuestions, this.dcQuestions, this.tupleQuestions);
       return result;
     }
   }
