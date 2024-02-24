@@ -12,13 +12,13 @@ import lombok.Getter;
 public class DirtyData {
 
   private final String dataPath;
-  private final String dataDirtyLinesPath;
+  private final String excludedLinesPath;
   private final Input input;
   private final String headerPath;
 
-  public DirtyData(String dataPath, String dataDirtyLinesPath, String headerPath) {
+  public DirtyData(String dataPath, String excludedLinesPath, String headerPath) {
     this.dataPath = dataPath;
-    this.dataDirtyLinesPath = dataDirtyLinesPath;
+    this.excludedLinesPath = excludedLinesPath;
     this.headerPath = headerPath;
     this.input = generateNewCopy(dataPath);
   }

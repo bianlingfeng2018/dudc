@@ -4,6 +4,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
+import de.hpi.naumann.dc.paritions.LinePair;
+import de.hpi.naumann.dc.predicates.Predicate;
+import de.hpi.naumann.dc.predicates.operands.ColumnOperand;
+import de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import edu.fudan.algorithms.DCLoader;
 import edu.fudan.algorithms.DCViolation;
 import edu.fudan.algorithms.DCViolationSet;
@@ -96,5 +100,41 @@ public class DCUtil {
       dirtyLines.add(lineIndex);
     }
     return dirtyLines;
+  }
+
+  public static Set<String> getCellIdentifiersOfChanges(String changesPath) throws IOException {
+    List<TChange> changes = loadChanges(changesPath);
+    log.info("Changes size(total errors number)={}", changes.size());
+    Set<String> cellIdentifiersOfChanges = Sets.newHashSet();
+    for (TChange c : changes) {
+      cellIdentifiersOfChanges.add(c.getLineIndex() + "_" + c.getAttribute());
+    }
+    return cellIdentifiersOfChanges;
+  }
+
+  public static Set<String> getCellIdentyfiersFromVios(Set<DCViolation> vioSet) {
+    Set<String> cellIdentifiers = Sets.newHashSet();
+    for (DCViolation vio : vioSet) {
+      List<DenialConstraint> dcs = vio.getDcs();
+      for (DenialConstraint dc : dcs) {
+        LinePair linePair = vio.getLinePair();
+        int line1 = linePair.getLine1();
+        int line2 = linePair.getLine2();
+        PredicateBitSet predicateSet = dc.getPredicateSet();
+        for (Predicate predicate : predicateSet) {
+          ColumnOperand<?> operand1 = predicate.getOperand1();
+          ColumnOperand<?> operand2 = predicate.getOperand2();
+          String colName1 = operand1.getColumn().getName();
+          String colName2 = operand2.getColumn().getName();
+          int o1 = operand1.getIndex();
+          int o2 = operand2.getIndex();
+          int i1 = o1 == 0 ? line1 : line2;
+          int i2 = o2 == 0 ? line1 : line2;
+          cellIdentifiers.add(i1 + "_" + colName1.toLowerCase());
+          cellIdentifiers.add(i2 + "_" + colName2.toLowerCase());
+        }
+      }
+    }
+    return cellIdentifiers;
   }
 }

@@ -1,6 +1,8 @@
 package edu.fudan.algorithms.uguide;
 
 import static edu.fudan.algorithms.uguide.Strategy.getRandomElements;
+import static edu.fudan.utils.DCUtil.getCellIdentifiersOfChanges;
+import static edu.fudan.utils.DCUtil.getCellIdentyfiersFromVios;
 
 import ch.javasoft.bitset.search.NTreeSearch;
 import com.google.common.collect.Maps;
@@ -116,6 +118,8 @@ public class Evaluation {
   private int cellBudgetUsed = 0;
   private int dcBudgetUsed = 0;
   private int tupleBudgetUsed = 0;
+  private Set<String> cellIdentifiersOfChanges = Sets.newHashSet();
+  private Set<String> cellIdentifiersOfTrueVios = Sets.newHashSet();
 
   public Evaluation(CleanData cleanData, DirtyData dirtyData, String groundTruthDCsPath,
       String candidateDCsPath, String trueDCsPath) {
@@ -151,9 +155,11 @@ public class Evaluation {
     // 设定GroundTruth
     this.groundTruthViolations = viosOnDirty.getViosSet();
     this.groundTruthDCs.addAll(dcList);
-    for (DenialConstraint gtDC : groundTruthDCs) {
-      gtTree.add(PredicateSetFactory.create(gtDC.getPredicateSet()).getBitset());
+    for (DenialConstraint gtDC : this.groundTruthDCs) {
+      this.gtTree.add(PredicateSetFactory.create(gtDC.getPredicateSet()).getBitset());
     }
+    // 设定errors(changes)
+    this.cellIdentifiersOfChanges = getCellIdentifiersOfChanges(this.cleanData.getChangesPath());
   }
 
   public void update(Set<DenialConstraint> candidateDCs,
@@ -241,6 +247,8 @@ public class Evaluation {
         candiDCViosMap.put(dc, i + 1);
       }
     }
+    // 评价error cells发现个数
+    this.cellIdentifiersOfTrueVios = getCellIdentyfiersFromVios(this.trueViolations);
     result.setTrueDCs(this.trueDCs.size());
     result.setCandiDCs(this.candidateDCs.size());
     result.setGtDCs(this.groundTruthDCs.size());
@@ -252,6 +260,8 @@ public class Evaluation {
     result.setCellQuestions(this.cellBudgetUsed);
     result.setDcQuestions(this.dcBudgetUsed);
     result.setTupleQuestions(this.tupleBudgetUsed);
+    result.setCellsOfChanges(this.cellIdentifiersOfChanges.size());
+    result.setCellsOfTrueVios(this.cellIdentifiersOfTrueVios.size());
     return result;
   }
 
@@ -266,6 +276,19 @@ public class Evaluation {
   }
 
   public boolean allTrueViolationsFound() {
+//    boolean b = trueDCsMoreThanGroundTruthDCs();
+//    boolean b = trueViosMoreThanGroundTruthVios();
+    boolean b = this.cellIdentifiersOfTrueVios.containsAll(this.cellIdentifiersOfChanges);
+    return b;
+  }
+
+  private boolean trueViosMoreThanGroundTruthVios() {
+    // TODO: 目前有可能trueViolations数量大于groundTruthViolations，是因为同一个tuplePair可能违反多个规则，所以冲突之间可能有元组对的重合
+    boolean b = this.trueViolations.size() == this.groundTruthViolations.size();
+    return b;
+  }
+
+  private boolean trueDCsMoreThanGroundTruthDCs() {
     // TODO: 目前有可能trueDCs数量大于gtDCs，是因为impliedDC也算真规则
     boolean b = this.trueDCs.size() >= this.groundTruthDCs.size();
     return b;
@@ -297,6 +320,8 @@ public class Evaluation {
     private int cellQuestions = 0;
     private int dcQuestions = 0;
     private int tupleQuestions = 0;
+    private int cellsOfChanges = 0;
+    private int cellsOfTrueVios = 0;
     private Map<DenialConstraint, Integer> dcStrVioSizeMap;
     private Set<Integer> dirtyLines;
 
@@ -304,9 +329,11 @@ public class Evaluation {
     public String toString() {
       String result = String.format(
           "%s/%s/%s(trueVios/candiVios/gtVios), %s/%s/%s(trueDCs/candiDCs/gtDCs), "
-          + "%s,%s,%s(cellQuestions/dcQuestions/tupleQuestions)",
+              + "%s,%s,%s(cellQuestions/dcQuestions/tupleQuestions), "
+              + "%s,%s(cellsOfTrueVios, cellsOfChanges)",
           this.trueVios, this.candiVios, this.gtVios, this.trueDCs, this.candiDCs, this.gtDCs,
-          this.cellQuestions, this.dcQuestions, this.tupleQuestions);
+          this.cellQuestions, this.dcQuestions, this.tupleQuestions,
+          this.cellsOfTrueVios, this.cellsOfChanges);
       return result;
     }
   }

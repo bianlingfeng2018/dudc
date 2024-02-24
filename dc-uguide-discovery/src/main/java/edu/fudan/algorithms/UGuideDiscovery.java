@@ -60,8 +60,9 @@ public class UGuideDiscovery {
   private final int maxInCluster = 2;
 
   public UGuideDiscovery(String cleanDataPath,
+      String changesPath,
       String dirtyDataPath,
-      String dataDirtyLinesPath,
+      String excludedLinesPath,
       String sampledDataPath,
       String dcsPathForFCDC,
       String evidencesPathForFCDC,
@@ -70,8 +71,8 @@ public class UGuideDiscovery {
       String candidateDCsPath,
       String trueDCsPath,
       String headerPath) {
-    this.cleanData = new CleanData(cleanDataPath, headerPath);
-    this.dirtyData = new DirtyData(dirtyDataPath, dataDirtyLinesPath, headerPath);
+    this.cleanData = new CleanData(cleanDataPath, headerPath, changesPath);
+    this.dirtyData = new DirtyData(dirtyDataPath, excludedLinesPath, headerPath);
     this.sampledData = new SampledData(sampledDataPath, headerPath);
     this.candidateDCs = new CandidateDCs(dcsPathForFCDC, evidencesPathForFCDC, topKDCsPath);
     this.evaluation = new Evaluation(cleanData, dirtyData, groundTruthDCsPath, candidateDCsPath,
@@ -126,7 +127,7 @@ public class UGuideDiscovery {
         i++;
       }
       BufferedWriter bw = new BufferedWriter(
-          new FileWriter(this.dirtyData.getDataDirtyLinesPath()));
+          new FileWriter(this.dirtyData.getExcludedLinesPath()));
       for (String s : result) {
         bw.write(s);
         bw.newLine();
