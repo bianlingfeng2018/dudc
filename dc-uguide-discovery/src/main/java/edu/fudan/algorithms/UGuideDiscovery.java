@@ -116,11 +116,12 @@ public class UGuideDiscovery {
       String header = br.readLine();
       log.info("Skip header: {}", header);
       String line;
+      // dirtyLines包含的是行号，行号从0开始
       int i = 0;
       List<String> result = Lists.newArrayList();
       while ((line = br.readLine()) != null) {
         if (dirtyLines.contains(i)) {
-          result.add(line);
+          result.add(i + "~" + line);
         }
         i++;
       }
@@ -136,12 +137,6 @@ public class UGuideDiscovery {
       e.printStackTrace();
     }
 
-  }
-
-  private void persistDCs(Set<DenialConstraint> candiDcs, String path) throws IOException {
-    List<String> dcStrList = candiDcs.stream().map(DCFormatUtil::convertDC2String)
-        .collect(Collectors.toList());
-    FileUtil.writeStringLinesToFile(dcStrList, new File(path));
   }
 
   private void askCellQuestion() {
@@ -282,4 +277,11 @@ public class UGuideDiscovery {
     Comparable value = column.getValue(index == 0 ? line1 : line2);
     return value;
   }
+
+  private void persistDCs(Set<DenialConstraint> candiDcs, String path) throws IOException {
+    List<String> dcStrList = candiDcs.stream().map(DCFormatUtil::convertDC2String)
+        .collect(Collectors.toList());
+    FileUtil.writeStringLinesToFile(dcStrList, new File(path));
+  }
+
 }
