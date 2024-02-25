@@ -28,7 +28,8 @@ public class ColumnAwareWeightedClusterSampler {
       Set<Integer> skippedColumns, Set<Integer> excludedLines) {
     Set<Integer> lines = Sets.newHashSet();
     for (ParsedColumn<?> c : input.getColumns()) {
-      if (skippedColumns.contains(c.getIndex())) {
+      if (skippedColumns != null && skippedColumns.contains(c.getIndex())) {
+        // 排除列
         continue;
       }
       log.info("Sampling column " + c.getName());

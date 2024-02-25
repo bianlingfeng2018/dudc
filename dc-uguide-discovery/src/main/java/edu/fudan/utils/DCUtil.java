@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
+import de.hpi.naumann.dc.input.Input;
+import de.hpi.naumann.dc.input.ParsedColumn;
 import de.hpi.naumann.dc.paritions.LinePair;
 import de.hpi.naumann.dc.predicates.Predicate;
 import de.hpi.naumann.dc.predicates.operands.ColumnOperand;
@@ -11,6 +13,7 @@ import de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import edu.fudan.algorithms.DCLoader;
 import edu.fudan.algorithms.DCViolation;
 import edu.fudan.algorithms.DCViolationSet;
+import edu.fudan.algorithms.uguide.TCell;
 import edu.fudan.algorithms.uguide.TChange;
 import edu.fudan.transformat.DCFormatUtil;
 import java.io.BufferedReader;
@@ -18,9 +21,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -102,18 +108,18 @@ public class DCUtil {
     return dirtyLines;
   }
 
-  public static Set<String> getCellIdentifiersOfChanges(String changesPath) throws IOException {
-    List<TChange> changes = loadChanges(changesPath);
+  public static Set<TCell> getCellIdentifiersOfChanges(List<TChange> changes) {
     log.info("Changes size(total errors number)={}", changes.size());
-    Set<String> cellIdentifiersOfChanges = Sets.newHashSet();
+    Set<TCell> cellIdentifiersOfChanges = Sets.newHashSet();
     for (TChange c : changes) {
-      cellIdentifiersOfChanges.add(c.getLineIndex() + "_" + c.getAttribute());
+      cellIdentifiersOfChanges.add(
+          new TCell(c.getLineIndex(), c.getAttribute(), c.getWrongValue()));
     }
     return cellIdentifiersOfChanges;
   }
 
-  public static Set<String> getCellIdentyfiersFromVios(Set<DCViolation> vioSet) {
-    Set<String> cellIdentifiers = Sets.newHashSet();
+  public static Set<TCell> getCellIdentyfiersFromVios(Set<DCViolation> vioSet, Input di) {
+    Set<TCell> cellIdentifiers = Sets.newHashSet();
     for (DCViolation vio : vioSet) {
       List<DenialConstraint> dcs = vio.getDcs();
       for (DenialConstraint dc : dcs) {
@@ -128,13 +134,37 @@ public class DCUtil {
           String colName2 = operand2.getColumn().getName();
           int o1 = operand1.getIndex();
           int o2 = operand2.getIndex();
-          int i1 = o1 == 0 ? line1 : line2;
-          int i2 = o2 == 0 ? line1 : line2;
-          cellIdentifiers.add(i1 + "_" + colName1.toLowerCase());
-          cellIdentifiers.add(i2 + "_" + colName2.toLowerCase());
+          int li1 = o1 == 0 ? line1 : line2;
+          int li2 = o2 == 0 ? line1 : line2;
+          Comparable<?> value1 = getCellValue(operand1, di, line1, line2);
+          Comparable<?> value2 = getCellValue(operand2, di, line1, line2);
+          cellIdentifiers.add(new TCell(li1, colName1.toLowerCase(), value1.toString()));
+          cellIdentifiers.add(new TCell(li2, colName2.toLowerCase(), value2.toString()));
         }
       }
     }
     return cellIdentifiers;
+  }
+
+
+  public static Set<Integer> getErrorLinesContainingChanges(List<TChange> changes) {
+    HashSet<Integer> results = Sets.newHashSet();
+    for (TChange change : changes) {
+      results.add(change.getLineIndex());
+    }
+    return results;
+  }
+
+  public static Comparable getCellValue(ColumnOperand<?> operand, Input di, int line1, int line2) {
+    int index = operand.getIndex();
+    String n = operand.getColumn().getName();
+    String t = operand.getColumn().getType().getSimpleName();
+    String nameWithBracket = n + "(" + t + ")";
+    List<ParsedColumn<?>> filtered = Arrays.stream(di.getColumns())
+        .filter(col -> col.getName().equals(nameWithBracket))
+        .collect(Collectors.toList());
+    ParsedColumn<?> column = filtered.get(0);
+    Comparable value = column.getValue(index == 0 ? line1 : line2);
+    return value;
   }
 }

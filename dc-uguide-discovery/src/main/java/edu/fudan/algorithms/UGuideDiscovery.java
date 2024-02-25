@@ -1,17 +1,20 @@
 package edu.fudan.algorithms;
 
+import static edu.fudan.conf.DefaultConf.maxCellQuestionBudget;
+import static edu.fudan.conf.DefaultConf.maxDiscoveryRound;
+import static edu.fudan.conf.DefaultConf.maxInCluster;
+import static edu.fudan.conf.DefaultConf.maxTupleQuestionBudget;
+import static edu.fudan.conf.DefaultConf.topKOfCluster;
 import static edu.fudan.utils.DataUtil.getDCsSetFromViolations;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
-import de.hpi.naumann.dc.input.Input;
-import de.hpi.naumann.dc.input.ParsedColumn;
-import de.hpi.naumann.dc.predicates.operands.ColumnOperand;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
 import edu.fudan.DCMinderToolsException;
+import edu.fudan.algorithms.TupleSampler.SampleResult;
 import edu.fudan.algorithms.uguide.CandidateDCs;
 import edu.fudan.algorithms.uguide.CleanData;
 import edu.fudan.algorithms.uguide.DirtyData;
@@ -28,8 +31,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -53,11 +54,6 @@ public class UGuideDiscovery {
   private final CandidateDCs candidateDCs;
   // 评价
   private final Evaluation evaluation;
-
-  private final int maxDiscoveryRound = 20;
-  private final int maxQueryBudget = 1000;
-  private final int topKOfCluster = 2;
-  private final int maxInCluster = 2;
 
   public UGuideDiscovery(String cleanDataPath,
       String changesPath,
@@ -97,8 +93,8 @@ public class UGuideDiscovery {
       // 检测冲突
       detect();
       // 多轮提问
-      log.info("Ask questions to user");
       askCellQuestion();
+      askTupleQuestion();
       // 评价真冲突/假冲突
       evaluate();
       // 输出结果
@@ -110,7 +106,7 @@ public class UGuideDiscovery {
   private void persistResult() throws IOException {
     persistDCs(evaluation.getCandidateDCs(), evaluation.getCandidateDCsPath());
     persistDCs(evaluation.getTrueDCs(), evaluation.getTrueDCsPath());
-    Set<Integer> dirtyLines = evaluation.getDirtyLines();
+    Set<Integer> excludedLines = evaluation.getExcludedLines();
     try {
       BufferedReader br = new BufferedReader(new FileReader(this.dirtyData.getDataPath()));
       // 第一行header
@@ -121,7 +117,7 @@ public class UGuideDiscovery {
       int i = 0;
       List<String> result = Lists.newArrayList();
       while ((line = br.readLine()) != null) {
-        if (dirtyLines.contains(i)) {
+        if (excludedLines.contains(i)) {
           result.add(i + "~" + line);
         }
         i++;
@@ -140,12 +136,22 @@ public class UGuideDiscovery {
 
   }
 
+  private void askTupleQuestion() {
+    log.info("Ask TUPLE question");
+    // 在采样数据中，推荐一些元组让用户判断
+    Set<Integer> questions = evaluation.genTupleQuestionsFromCurrState(maxTupleQuestionBudget);
+    int numb = questions.size();
+    log.info("TupleQuestions/MaxTupleQuestionBudget={}/{}", numb, maxTupleQuestionBudget);
+    evaluation.addTupleBudget(numb);
+    evaluation.excludeErrorLinesInSample(questions);
+  }
+
   private void askCellQuestion() {
     log.info("Ask CELL question");
     // 推荐一些让用户判断冲突
-    Set<DCViolation> questions = evaluation.genCellQuestionsFromCurrState(maxQueryBudget);
+    Set<DCViolation> questions = evaluation.genCellQuestionsFromCurrState(maxCellQuestionBudget);
     int numb = questions.size();
-    log.info("Questions/Budget={}/{}", numb, maxQueryBudget);
+    log.info("CellQuestions/MaxCellQuestionBudget={}/{}", numb, maxCellQuestionBudget);
     evaluation.addCellBudget(numb);
     Set<DenialConstraint> dcsUnchecked = Sets.newHashSet();
     Set<DenialConstraint> dcsFromQuestions = getDCsSetFromViolations(questions);
@@ -167,7 +173,7 @@ public class UGuideDiscovery {
           // 若为真冲突，则增加DC的置信度
           dcTrustMap.put(dc, dcTrustMap.get(dc) + 1);
           // 若为真冲突，排除脏数据
-          evaluation.excludeDirtyLines(vio);
+          evaluation.excludeLines(vio);
         } else {
           // 若为假冲突，排除假阳性DC
           falseDCs.add(dc);
@@ -224,7 +230,15 @@ public class UGuideDiscovery {
       log.info("{}: {}", DCFormatUtil.convertDC2String(dc), map.get(dc));
     }
     // TODO: 当本轮发现的规则都是不产生冲突的规则时，不会确认真冲突，因此dirtyLines不变化
-    log.info("Dirty lines = {}", result.getDirtyLines().size());
+    Set<Integer> excludedLines = result.getExcludedLines();
+    log.info("Excluded lines = {}", excludedLines.size());
+    // TODO: 通过Tuple问题排除sample中的错误行
+    Set<Integer> errorLinesInSample = result.getErrorLinesInSample();
+    Set<Integer> errorLinesInSampleAndExcluded = errorLinesInSample.stream()
+        .filter(i -> excludedLines.contains(i))
+        .collect(Collectors.toSet());
+    log.info("Excluded/ErrorLinesInSample = {}/{}", errorLinesInSampleAndExcluded.size(),
+        errorLinesInSample.size());
   }
 
   private void detect()
@@ -258,28 +272,17 @@ public class UGuideDiscovery {
 
   private void sample()
       throws InputGenerationException, IOException, InputIterationException {
-    Set<Integer> dirtyLines = evaluation.getDirtyLines();
+    Set<Integer> excludedLines = evaluation.getExcludedLines();
     log.info("Sample from dirty data");
-    HashSet<Integer> skippedColumns = new HashSet<>();
-    List<List<String>> sampled = new TupleSampler()
-        .sample(new File(dirtyData.getDataPath()), topKOfCluster, maxInCluster, skippedColumns,
-            true, dirtyLines);
+
+    SampleResult sampleResult = new TupleSampler()
+        .sample(new File(dirtyData.getDataPath()), topKOfCluster, maxInCluster,
+            null, true, excludedLines);
     String out = sampledData.getDataPath();
     log.debug("Write to file: {}", out);
-    FileUtil.writeListLinesToFile(sampled, new File(out));
-  }
+    FileUtil.writeListLinesToFile(sampleResult.getLinesWithHeader(), new File(out));
 
-  private static Comparable getCellValue(ColumnOperand<?> operand, Input di, int line1, int line2) {
-    int index = operand.getIndex();
-    String n = operand.getColumn().getName();
-    String t = operand.getColumn().getType().getSimpleName();
-    String nameWithBracket = n + "(" + t + ")";
-    List<ParsedColumn<?>> filtered = Arrays.stream(di.getColumns())
-        .filter(col -> col.getName().equals(nameWithBracket))
-        .collect(Collectors.toList());
-    ParsedColumn<?> column = filtered.get(0);
-    Comparable value = column.getValue(index == 0 ? line1 : line2);
-    return value;
+    evaluation.updateSampleResult(sampleResult);
   }
 
   private void persistDCs(Set<DenialConstraint> candiDcs, String path) throws IOException {

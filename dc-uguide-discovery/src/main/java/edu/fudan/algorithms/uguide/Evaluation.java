@@ -3,6 +3,8 @@ package edu.fudan.algorithms.uguide;
 import static edu.fudan.algorithms.uguide.Strategy.getRandomElements;
 import static edu.fudan.utils.DCUtil.getCellIdentifiersOfChanges;
 import static edu.fudan.utils.DCUtil.getCellIdentyfiersFromVios;
+import static edu.fudan.utils.DCUtil.getErrorLinesContainingChanges;
+import static edu.fudan.utils.DCUtil.loadChanges;
 
 import ch.javasoft.bitset.search.NTreeSearch;
 import com.google.common.collect.Maps;
@@ -17,12 +19,14 @@ import edu.fudan.algorithms.DCLoader;
 import edu.fudan.algorithms.DCViolation;
 import edu.fudan.algorithms.DCViolationSet;
 import edu.fudan.algorithms.HydraDetector;
+import edu.fudan.algorithms.TupleSampler.SampleResult;
 import edu.fudan.utils.DataUtil;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -110,16 +114,18 @@ public class Evaluation {
   private final Set<DCViolation> currVios = Sets.newHashSet();
 
   /**
-   * Line indices which are dirty. They should be excluded from dirty data to help discover ground
-   * truth DCs.
+   * Lines which should be excluded from dirty data.
    */
   @Getter
-  private final Set<Integer> dirtyLines = Sets.newHashSet();
+  private final Set<Integer> excludedLines = Sets.newHashSet();
   private int cellBudgetUsed = 0;
   private int dcBudgetUsed = 0;
   private int tupleBudgetUsed = 0;
-  private Set<String> cellIdentifiersOfChanges = Sets.newHashSet();
-  private Set<String> cellIdentifiersOfTrueVios = Sets.newHashSet();
+  private Set<TCell> cellIdentifiersOfChanges = Sets.newHashSet();
+  private Set<Integer> errorLinesOfChanges = Sets.newHashSet();
+  private Set<Integer> errorLinesInSample = Sets.newHashSet();
+  private Set<TCell> cellIdentifiersOfTrueVios = Sets.newHashSet();
+  private SampleResult sampleResult;
 
   public Evaluation(CleanData cleanData, DirtyData dirtyData, String groundTruthDCsPath,
       String candidateDCsPath, String trueDCsPath) {
@@ -159,7 +165,9 @@ public class Evaluation {
       this.gtTree.add(PredicateSetFactory.create(gtDC.getPredicateSet()).getBitset());
     }
     // 设定errors(changes)
-    this.cellIdentifiersOfChanges = getCellIdentifiersOfChanges(this.cleanData.getChangesPath());
+    List<TChange> changes = loadChanges(this.cleanData.getChangesPath());
+    this.cellIdentifiersOfChanges = getCellIdentifiersOfChanges(changes);
+    this.errorLinesOfChanges = getErrorLinesContainingChanges(changes);
   }
 
   public void update(Set<DenialConstraint> candidateDCs,
@@ -206,7 +214,7 @@ public class Evaluation {
     }
     if (dirtyLines != null) {
       // 增加需要排除的脏数据
-      this.dirtyLines.addAll(dirtyLines);
+      this.excludedLines.addAll(dirtyLines);
     }
   }
 
@@ -248,7 +256,10 @@ public class Evaluation {
       }
     }
     // 评价error cells发现个数
-    this.cellIdentifiersOfTrueVios = getCellIdentyfiersFromVios(this.trueViolations);
+    this.cellIdentifiersOfTrueVios = getCellIdentyfiersFromVios(this.trueViolations,
+        this.dirtyData.getInput());
+    // 评价sample的error lines
+    result.setErrorLinesInSample(this.errorLinesInSample);
     result.setTrueDCs(this.trueDCs.size());
     result.setCandiDCs(this.candidateDCs.size());
     result.setGtDCs(this.groundTruthDCs.size());
@@ -256,13 +267,21 @@ public class Evaluation {
     result.setCandiVios(this.candidateViolations.size());
     result.setGtVios(this.groundTruthViolations.size());
     result.setDcStrVioSizeMap(candiDCViosMap);
-    result.setDirtyLines(this.dirtyLines);
+    result.setExcludedLines(this.excludedLines);
     result.setCellQuestions(this.cellBudgetUsed);
     result.setDcQuestions(this.dcBudgetUsed);
     result.setTupleQuestions(this.tupleBudgetUsed);
     result.setCellsOfChanges(this.cellIdentifiersOfChanges.size());
     result.setCellsOfTrueVios(this.cellIdentifiersOfTrueVios.size());
     return result;
+  }
+
+  public void updateSampleResult(SampleResult sampleResult) {
+    this.sampleResult = sampleResult;
+    Set<Integer> allLinesInSample = this.sampleResult.getLineIndices();
+    this.errorLinesInSample = allLinesInSample.stream()
+        .filter(i -> this.errorLinesOfChanges.contains(i))
+        .collect(Collectors.toSet());
   }
 
   public boolean isTrueDC(DenialConstraint dc) {
@@ -299,12 +318,26 @@ public class Evaluation {
     return new HashSet<>(chosenVios);
   }
 
-  public void excludeDirtyLines(DCViolation vio) {
+  public Set<Integer> genTupleQuestionsFromCurrState(int maxQueryBudget) {
+    List<Integer> chosenLinesInSample = getRandomElements(this.sampleResult.getLineIndices(),
+        maxQueryBudget);
+    return new HashSet<>(chosenLinesInSample);
+  }
+
+  public void excludeLines(DCViolation vio) {
     LinePair linePair = vio.getLinePair();
     int line1 = linePair.getLine1();
     int line2 = linePair.getLine2();
-    this.dirtyLines.add(line1);
-    this.dirtyLines.add(line2);
+    this.excludedLines.add(line1);
+    this.excludedLines.add(line2);
+  }
+
+  public void excludeErrorLinesInSample(Set<Integer> questions) {
+    // 排除question(sample中推荐给用户判断的元组)中的所有错误行
+    Set<Integer> errors = questions.stream()
+        .filter(i -> this.errorLinesOfChanges.contains(i))
+        .collect(Collectors.toSet());
+    this.excludedLines.addAll(errors);
   }
 
   @Getter
@@ -323,7 +356,8 @@ public class Evaluation {
     private int cellsOfChanges = 0;
     private int cellsOfTrueVios = 0;
     private Map<DenialConstraint, Integer> dcStrVioSizeMap;
-    private Set<Integer> dirtyLines;
+    private Set<Integer> errorLinesInSample;
+    private Set<Integer> excludedLines;
 
     @Override
     public String toString() {

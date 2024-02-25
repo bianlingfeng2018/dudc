@@ -1,8 +1,11 @@
 package edu.fudan;
 
+import static edu.fudan.conf.DefaultConf.maxInCluster;
+import static edu.fudan.conf.DefaultConf.topKOfCluster;
 import static edu.fudan.utils.DCUtil.getCellIdentifiersOfChanges;
 import static edu.fudan.utils.DCUtil.getCellIdentyfiersFromVios;
 import static edu.fudan.utils.DCUtil.getDCVioSizeMap;
+import static edu.fudan.utils.DCUtil.getErrorLinesContainingChanges;
 import static edu.fudan.utils.DCUtil.loadChanges;
 import static edu.fudan.utils.DCUtil.loadDirtyDataExcludedLines;
 import static org.junit.Assert.assertEquals;
@@ -12,6 +15,7 @@ import static org.mockito.Mockito.mock;
 import ch.javasoft.bitset.search.NTreeSearch;
 import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
+import de.hpi.naumann.dc.input.Input;
 import de.hpi.naumann.dc.predicates.Predicate;
 import de.hpi.naumann.dc.predicates.operands.ColumnOperand;
 import de.hpi.naumann.dc.predicates.sets.PredicateSetFactory;
@@ -23,10 +27,15 @@ import edu.fudan.algorithms.DCViolation;
 import edu.fudan.algorithms.DCViolationSet;
 import edu.fudan.algorithms.DiscoveryEntry;
 import edu.fudan.algorithms.HydraDetector;
+import edu.fudan.algorithms.TupleSampler;
+import edu.fudan.algorithms.TupleSampler.SampleResult;
 import edu.fudan.algorithms.UGuideDiscovery;
+import edu.fudan.algorithms.uguide.DirtyData;
+import edu.fudan.algorithms.uguide.TCell;
 import edu.fudan.algorithms.uguide.TChange;
 import edu.fudan.transformat.DCFormatUtil;
 import edu.fudan.utils.DCUtil;
+import edu.fudan.utils.FileUtil;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -172,14 +181,16 @@ public class UGuideDiscoveryTest {
     // 对于BART注入错误，元组id(TupleOID)从1开始
     // 对于Hydra检测冲突，行号line(LinePair)从0开始
     String changesPath = this.changesPath;
-    Set<String> cellsOfChanges = getCellIdentifiersOfChanges(changesPath);
+    List<TChange> changes = loadChanges(changesPath);
+    Set<TCell> cellsOfChanges = getCellIdentifiersOfChanges(changes);
     log.info("Cells of Changes: {}, {}", cellsOfChanges.size(), cellsOfChanges.stream().findAny());
     // Detect vios of DC
     DCViolationSet vioSetOfGroundTruthDCs = new HydraDetector(dirtyDataPath,
         groundTruthDCsPath).detect();
     DCViolationSet vioSetOfTrueDCs = new HydraDetector(dirtyDataPath, trueDCsPath).detect();
-    Set<String> cellsFromGTVios = getCellIdentyfiersFromVios(vioSetOfGroundTruthDCs.getViosSet());
-    Set<String> cellsFromTrueVios = getCellIdentyfiersFromVios(vioSetOfTrueDCs.getViosSet());
+    Input di = new DirtyData(dirtyDataPath, excludedLinesPath, headerPath).getInput();
+    Set<TCell> cellsFromGTVios = getCellIdentyfiersFromVios(vioSetOfGroundTruthDCs.getViosSet(), di);
+    Set<TCell> cellsFromTrueVios = getCellIdentyfiersFromVios(vioSetOfTrueDCs.getViosSet(), di);
     log.info("Cells of GTDCs: {}, {}", cellsFromGTVios.size(),
         cellsFromGTVios.stream().findAny());
     log.info("Cells of TrueDCs: {}, {}", cellsFromTrueVios.size(),
@@ -188,6 +199,19 @@ public class UGuideDiscoveryTest {
     assertTrue(cellsFromGTVios.containsAll(cellsOfChanges));
     // All error cells are found in trueDCs
     assertTrue(cellsFromTrueVios.containsAll(cellsOfChanges));
+
+    for (TCell c : cellsFromGTVios) {
+      if (cellsOfChanges.contains(c)) {
+        log.info("Example true error cell in cellsFromGTVios: {}", c.toString());
+        break;
+      }
+    }
+    for (TCell c : cellsFromTrueVios) {
+      if (cellsOfChanges.contains(c)) {
+        log.info("Example true error cell in cellsFromTrueVios: {}", c.toString());
+        break;
+      }
+    }
   }
 
   @Test
@@ -211,6 +235,30 @@ public class UGuideDiscoveryTest {
         .collect(Collectors.toList());
     log.info("changesInExcludedLines={}, excludesInChangedLines={}", changesInExcludedLines.size(),
         excludesInChangedLines.size());
+  }
+
+  @Test
+  public void testErrorLinesInSample()
+      throws InputGenerationException, IOException, InputIterationException {
+    //Changes
+    List<TChange> changes = loadChanges(changesPath);
+    Set<Integer> errorLinesContainingChanges = getErrorLinesContainingChanges(changes);
+    log.info("Changes={}, errorLinesContainingChanges={}", changes.size(),
+        errorLinesContainingChanges.size());
+    // SampleResult
+    log.info("Sampling...");
+    SampleResult sampleResult = new TupleSampler()
+        .sample(new File(dirtyDataPath), topKOfCluster, maxInCluster,
+            null, true, null);
+    List<List<String>> linesWithHeader = sampleResult.getLinesWithHeader();
+    log.info("Write {} lines(with header line) to file: {}", linesWithHeader.size(), sampledDataPath);
+    FileUtil.writeListLinesToFile(linesWithHeader, new File(sampledDataPath));
+    Set<Integer> errorLinesInSample = sampleResult.getLineIndices().stream()
+        .filter(i -> errorLinesContainingChanges.contains(i)).collect(
+            Collectors.toSet());
+    log.info("ErrorLinesInSample/SampledLineIndices: {}/{}",
+        errorLinesInSample.size(), sampleResult.getLineIndices().size());
+    log.info("ErrorLinesInSample: {}", errorLinesInSample);  // [2336, 2481, 2456, 2506]
   }
 
 }

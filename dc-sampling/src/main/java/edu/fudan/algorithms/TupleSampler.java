@@ -11,6 +11,9 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -23,7 +26,7 @@ public class TupleSampler {
   private final int minK = 2;
   private final int minM = 2;
 
-  public ArrayList<List<String>> sample(File dataF, int topKOfCluster, int maxInCluster,
+  public SampleResult sample(File dataF, int topKOfCluster, int maxInCluster,
       Set<Integer> skippedColumns, boolean requireHeader, Set<Integer> excludedLines)
       throws FileNotFoundException, InputGenerationException, InputIterationException {
     log.info("Sampling: {}", dataF.toString());
@@ -41,12 +44,12 @@ public class TupleSampler {
     log.info("Sampled size = {}", sampled.size());
 
     log.info("Get lines according to sampled line indices...");
-    ArrayList<List<String>> lines = convertInt2Str(actualGenerator, sampled, requireHeader);
+    List<List<String>> lines = convertInt2Str(actualGenerator, sampled, requireHeader);
     log.info("Sampling done");
-    return lines;
+    return new SampleResult(sampled, lines);
   }
 
-  private static ArrayList<List<String>> convertInt2Str(DefaultFileInputGenerator actualGenerator,
+  private static List<List<String>> convertInt2Str(DefaultFileInputGenerator actualGenerator,
       Set<Integer> sampled, boolean requireHeader)
       throws InputGenerationException, InputIterationException {
     ArrayList<List<String>> lines = Lists.newArrayList();
@@ -64,5 +67,14 @@ public class TupleSampler {
       i++;
     }
     return lines;
+  }
+
+  @Getter
+  @Setter
+  @AllArgsConstructor
+  public class SampleResult {
+
+    private Set<Integer> lineIndices;
+    private List<List<String>> linesWithHeader;
   }
 }
