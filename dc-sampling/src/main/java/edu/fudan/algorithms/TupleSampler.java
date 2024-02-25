@@ -72,7 +72,7 @@ public class TupleSampler {
   @Getter
   @Setter
   @AllArgsConstructor
-  public class SampleResult {
+  public static class SampleResult {
 
     private Set<Integer> lineIndices;
     private List<List<String>> linesWithHeader;

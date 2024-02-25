@@ -29,7 +29,6 @@ import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
 import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import edu.fudan.DCMinderToolsException;
-import edu.fudan.transformat.DCFormatUtil;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -77,6 +76,15 @@ public class HydraDetector {
     Input input = new Input(new DefaultFileInputGenerator(new File(dataPath)).generateNewCopy());
     PredicateBuilder predicates = new PredicateBuilder(input, noCrossColumn, minimumSharedValue);
     this.set = DCAdapter.getHydraDCs(input, dcsFile);
+    this.input = input;
+    this.predicates = predicates;
+  }
+
+  public HydraDetector(String dataPath, Set<DenialConstraint> dcs)
+      throws IOException, InputGenerationException, InputIterationException, DCMinderToolsException {
+    Input input = new Input(new DefaultFileInputGenerator(new File(dataPath)).generateNewCopy());
+    PredicateBuilder predicates = new PredicateBuilder(input, noCrossColumn, minimumSharedValue);
+    this.set = DCAdapter.getHydraDCs(input, dcs);
     this.input = input;
     this.predicates = predicates;
   }

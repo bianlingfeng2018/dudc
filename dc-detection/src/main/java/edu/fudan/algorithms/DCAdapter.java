@@ -25,6 +25,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -67,6 +68,15 @@ class DCAdapter {
       dcs.add(dc);
     }
     br.close();
+    return dcs;
+  }
+
+  public static DenialConstraintSet getHydraDCs(Input input, Set<DenialConstraint> unifiedDCs)
+      throws DCMinderToolsException {
+    DenialConstraintSet dcs = new DenialConstraintSet();
+    for (DenialConstraint unifiedDC : unifiedDCs) {
+      dcs.add(getHydraDC(unifiedDC, input));
+    }
     return dcs;
   }
 
@@ -113,6 +123,34 @@ class DCAdapter {
     return new DenialConstraint(ps);
   }
 
+  private static DenialConstraint getHydraDC(DenialConstraint unifiedDC, Input input)
+      throws DCMinderToolsException {
+    if (unifiedDC == null) {
+      throw new DCMinderToolsException("Illegal unifiedDC: null");
+    }
+    // Prepare
+    List<String> colNames = Lists.newArrayList();
+    Map<String, ParsedColumn<?>> parsedColMap = Maps.newHashMap();
+    ParsedColumn<?>[] parsedColumns = input.getColumns();
+    for (ParsedColumn<?> pc : parsedColumns) {
+      // eg. City(String) -> City
+      String colName = extractColNameAndType(pc.getName())[0];
+      colNames.add(colName);
+      parsedColMap.put(colName, pc);
+    }
+    // Convert
+    PredicateBitSet ps = new PredicateBitSet();
+    for (Predicate p : unifiedDC.getPredicateSet()) {
+      ColumnOperand<?> operand1 = p.getOperand1();
+      ColumnOperand<?> operand2 = p.getOperand2();
+      String colName1 = operand1.getColumn().getName();
+      String colName2 = operand2.getColumn().getName();
+      ps.add(new Predicate(p.getOperator(),
+          new ColumnOperand<>(parsedColMap.get(colName1), operand1.getIndex()),
+          new ColumnOperand<>(parsedColMap.get(colName2), operand2.getIndex())));
+    }
+    return new DenialConstraint(ps);
+  }
 
   private static DenialConstraint getUnifiedCopyOfDC(DenialConstraint dc) {
     PredicateBitSet newPs = new PredicateBitSet();

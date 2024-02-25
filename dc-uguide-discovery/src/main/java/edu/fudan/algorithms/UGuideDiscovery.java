@@ -1,6 +1,7 @@
 package edu.fudan.algorithms;
 
 import static edu.fudan.conf.DefaultConf.maxCellQuestionBudget;
+import static edu.fudan.conf.DefaultConf.maxDCQuestionBudget;
 import static edu.fudan.conf.DefaultConf.maxDiscoveryRound;
 import static edu.fudan.conf.DefaultConf.maxInCluster;
 import static edu.fudan.conf.DefaultConf.maxTupleQuestionBudget;
@@ -11,6 +12,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
+import de.hpi.naumann.dc.paritions.LinePair;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
 import edu.fudan.DCMinderToolsException;
@@ -85,7 +87,7 @@ public class UGuideDiscovery {
     int round = 0;
     while (round < maxDiscoveryRound && !evaluation.allTrueViolationsFound()) {
       round++;
-      log.info("Round {}", round);
+      log.info("------ Round {} -------", round);
       // 采样
       sample();
       // 发现规则
@@ -95,6 +97,7 @@ public class UGuideDiscovery {
       // 多轮提问
       askCellQuestion();
       askTupleQuestion();
+      askDCQuestion();
       // 评价真冲突/假冲突
       evaluate();
       // 输出结果
@@ -134,6 +137,29 @@ public class UGuideDiscovery {
       e.printStackTrace();
     }
 
+  }
+
+  private void askDCQuestion()
+      throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
+    log.info("Ask DC question");
+    // 确认真DC，并删除真DC发现的冲突元组
+    Set<DenialConstraint> questions = evaluation.genDCQuestionsFromCurrState(maxDCQuestionBudget);
+    int numb = questions.size();
+    log.info("DCQuestions/MaxDCQuestionBudget={}/{}", numb, maxDCQuestionBudget);
+    evaluation.addDCBudget(numb);
+    Set<DenialConstraint> trueDCs = questions.stream().filter(dc -> evaluation.isTrueDC(dc))
+        .collect(Collectors.toSet());
+    Set<Integer> lines = Sets.newHashSet();
+    // 检查TrueDCs在dirtyData上产生的所有冲突
+    DCViolationSet vios = new HydraDetector(dirtyData.getDataPath(), trueDCs).detect();
+    for (DCViolation vio : vios.getViosSet()) {
+      LinePair linePair = vio.getLinePair();
+      int line1 = linePair.getLine1();
+      int line2 = linePair.getLine2();
+      lines.add(line1);
+      lines.add(line2);
+    }
+    evaluation.excludeLinesOfTrueDCs(lines);
   }
 
   private void askTupleQuestion() {
@@ -239,6 +265,9 @@ public class UGuideDiscovery {
         .collect(Collectors.toSet());
     log.info("Excluded/ErrorLinesInSample = {}/{}", errorLinesInSampleAndExcluded.size(),
         errorLinesInSample.size());
+    // 通过TrueDCs排除的元组
+    Set<Integer> curExcludedLinesOfTrueDCs = result.getCurExcludedLinesOfTrueDCs();
+    log.info("CurExcludedLinesOfTrueDCs = {}", curExcludedLinesOfTrueDCs.size());
   }
 
   private void detect()

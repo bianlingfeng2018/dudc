@@ -22,6 +22,7 @@ import edu.fudan.algorithms.HydraDetector;
 import edu.fudan.algorithms.TupleSampler.SampleResult;
 import edu.fudan.utils.DataUtil;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -125,7 +126,8 @@ public class Evaluation {
   private Set<Integer> errorLinesOfChanges = Sets.newHashSet();
   private Set<Integer> errorLinesInSample = Sets.newHashSet();
   private Set<TCell> cellIdentifiersOfTrueVios = Sets.newHashSet();
-  private SampleResult sampleResult;
+  private SampleResult sampleResult = new SampleResult(new HashSet<>(), new ArrayList<>());
+  private Set<Integer> curExcludedLinesOfTrueDCs = Sets.newHashSet();
 
   public Evaluation(CleanData cleanData, DirtyData dirtyData, String groundTruthDCsPath,
       String candidateDCsPath, String trueDCsPath) {
@@ -259,6 +261,7 @@ public class Evaluation {
     this.cellIdentifiersOfTrueVios = getCellIdentyfiersFromVios(this.trueViolations,
         this.dirtyData.getInput());
     // 评价sample的error lines
+    result.setCurExcludedLinesOfTrueDCs(this.curExcludedLinesOfTrueDCs);
     result.setErrorLinesInSample(this.errorLinesInSample);
     result.setTrueDCs(this.trueDCs.size());
     result.setCandiDCs(this.candidateDCs.size());
@@ -324,6 +327,11 @@ public class Evaluation {
     return new HashSet<>(chosenLinesInSample);
   }
 
+  public Set<DenialConstraint> genDCQuestionsFromCurrState(int maxQueryBudget) {
+    List<DenialConstraint> chosenDCs = getRandomElements(this.currDCs, maxQueryBudget);
+    return new HashSet<>(chosenDCs);
+  }
+
   public void excludeLines(DCViolation vio) {
     LinePair linePair = vio.getLinePair();
     int line1 = linePair.getLine1();
@@ -332,12 +340,18 @@ public class Evaluation {
     this.excludedLines.add(line2);
   }
 
-  public void excludeErrorLinesInSample(Set<Integer> questions) {
+  public void excludeErrorLinesInSample(Set<Integer> recommendedLines) {
     // 排除question(sample中推荐给用户判断的元组)中的所有错误行
-    Set<Integer> errors = questions.stream()
+    Set<Integer> errors = recommendedLines.stream()
         .filter(i -> this.errorLinesOfChanges.contains(i))
         .collect(Collectors.toSet());
     this.excludedLines.addAll(errors);
+  }
+
+  public void excludeLinesOfTrueDCs(Set<Integer> viosLinesOfTrueDCs) {
+    this.excludedLines.addAll(viosLinesOfTrueDCs);
+    // 记录当前轮排除的和TrueDCs相关的冲突元组
+    this.curExcludedLinesOfTrueDCs = viosLinesOfTrueDCs;
   }
 
   @Getter
@@ -355,9 +369,10 @@ public class Evaluation {
     private int tupleQuestions = 0;
     private int cellsOfChanges = 0;
     private int cellsOfTrueVios = 0;
-    private Map<DenialConstraint, Integer> dcStrVioSizeMap;
-    private Set<Integer> errorLinesInSample;
-    private Set<Integer> excludedLines;
+    private Map<DenialConstraint, Integer> dcStrVioSizeMap = Maps.newHashMap();
+    private Set<Integer> errorLinesInSample = Sets.newHashSet();
+    private Set<Integer> excludedLines = Sets.newHashSet();
+    private Set<Integer> curExcludedLinesOfTrueDCs = Sets.newHashSet();
 
     @Override
     public String toString() {
