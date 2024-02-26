@@ -96,8 +96,8 @@ public class UGuideDiscovery {
       detect();
       // 多轮提问
       askCellQuestion();
-      askTupleQuestion();
-      askDCQuestion();
+//      askTupleQuestion();
+//      askDCQuestion();
       // 评价真冲突/假冲突
       evaluate();
       // 输出结果

@@ -150,6 +150,15 @@ public class UGuideDiscoveryTest {
   }
 
   @Test
+  public void testFalseDCsDetect()
+      throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
+    // TODO: Violation size: tureDcs,candiDCs,gtDCs并无大小关系，因为冲突之间可能有元组对的重合，一对元组可能涉及多个冲突
+    DCViolationSet vios1 = new HydraDetector(cleanDataPath, trueDCsPath).detect();
+    DCViolationSet vios2 = new HydraDetector(dirtyDataPath, trueDCsPath).detect();
+    log.info("vios1={}, vios2={}", vios1.size(), vios2.size());
+  }
+
+  @Test
   public void testAllViolationHasOnlyOneDC()
       throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
     HydraDetector detector = new HydraDetector(dirtyDataPath, groundTruthDCsPath);
@@ -189,7 +198,8 @@ public class UGuideDiscoveryTest {
         groundTruthDCsPath).detect();
     DCViolationSet vioSetOfTrueDCs = new HydraDetector(dirtyDataPath, trueDCsPath).detect();
     Input di = new DirtyData(dirtyDataPath, excludedLinesPath, headerPath).getInput();
-    Set<TCell> cellsFromGTVios = getCellIdentyfiersFromVios(vioSetOfGroundTruthDCs.getViosSet(), di);
+    Set<TCell> cellsFromGTVios = getCellIdentyfiersFromVios(vioSetOfGroundTruthDCs.getViosSet(),
+        di);
     Set<TCell> cellsFromTrueVios = getCellIdentyfiersFromVios(vioSetOfTrueDCs.getViosSet(), di);
     log.info("Cells of GTDCs: {}, {}", cellsFromGTVios.size(),
         cellsFromGTVios.stream().findAny());
@@ -251,7 +261,8 @@ public class UGuideDiscoveryTest {
         .sample(new File(dirtyDataPath), topKOfCluster, maxInCluster,
             null, true, null);
     List<List<String>> linesWithHeader = sampleResult.getLinesWithHeader();
-    log.info("Write {} lines(with header line) to file: {}", linesWithHeader.size(), sampledDataPath);
+    log.info("Write {} lines(with header line) to file: {}", linesWithHeader.size(),
+        sampledDataPath);
     FileUtil.writeListLinesToFile(linesWithHeader, new File(sampledDataPath));
     Set<Integer> errorLinesInSample = sampleResult.getLineIndices().stream()
         .filter(i -> errorLinesContainingChanges.contains(i)).collect(
