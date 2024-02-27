@@ -30,10 +30,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Lingfeng
  */
+@Slf4j
 public class Evaluation {
 
   /**
@@ -143,31 +145,40 @@ public class Evaluation {
     String cleanDataPath = this.cleanData.getDataPath();
     String dirtyDataPath = this.dirtyData.getDataPath();
     String headerPath = this.cleanData.getHeaderPath();
+    log.info("CleanDataPath={}", cleanDataPath);
+    log.info("DirtyDataPath={}", dirtyDataPath);
+    log.info("HeaderPath={}", headerPath);
 
     // 发现groundTruth规则
 //    DiscoveryEntry.doDiscovery(dataPath, groundTruthDCsPath);
     // 读取groundTruth规则
+    log.info("GroundTruthDCsPath={}", this.groundTruthDCsPath);
     List<DenialConstraint> dcList = DCLoader.load(headerPath, this.groundTruthDCsPath);
     // 检测冲突，结果应该为0
+    log.debug("Confirm clean data has NO vios wrt ground truth DCs");
     DCViolationSet viosOnClean = new HydraDetector(cleanDataPath, this.groundTruthDCsPath).detect();
     int sizeClean = viosOnClean.size();
     if (sizeClean != 0) {
-      throw new RuntimeException("Error discovery of DCs on clean data");
+      throw new RuntimeException("Found vios of gtDCs on clean data");
     }
     // 检测冲突，设定GroundTruth规则应当在脏数据集上发现的冲突数量
+    log.debug("Confirm dirty data HAS vios wrt ground truth DCs");
     DCViolationSet viosOnDirty = new HydraDetector(dirtyDataPath, this.groundTruthDCsPath).detect();
     int sizeDirty = viosOnDirty.size();
     if (sizeDirty == 0) {
-      throw new RuntimeException("Error discovery of DCs on dirty data");
+      throw new RuntimeException("No vios of gtDCs on dirty data");
     }
     // 设定GroundTruth
     this.groundTruthViolations = viosOnDirty.getViosSet();
     this.groundTruthDCs.addAll(dcList);
+    log.info("GroundTruthDCsSize={}, ViosSize={}",
+        this.groundTruthDCs.size(), this.groundTruthViolations.size());
     for (DenialConstraint gtDC : this.groundTruthDCs) {
       this.gtTree.add(PredicateSetFactory.create(gtDC.getPredicateSet()).getBitset());
     }
     // 设定errors(changes)
     List<TChange> changes = loadChanges(this.cleanData.getChangesPath());
+    log.info("Changes: {}", changes.size());
     this.cellIdentifiersOfChanges = getCellIdentifiersOfChanges(changes);
     this.errorLinesOfChanges = getErrorLinesContainingChanges(changes);
   }
@@ -376,13 +387,15 @@ public class Evaluation {
 
     @Override
     public String toString() {
-      String result = String.format(
-          "%s/%s/%s(trueVios/candiVios/gtVios), %s/%s/%s(trueDCs/candiDCs/gtDCs), "
-              + "%s,%s,%s(cellQuestions/dcQuestions/tupleQuestions), "
-              + "%s,%s(cellsOfTrueVios, cellsOfChanges)",
-          this.trueVios, this.candiVios, this.gtVios, this.trueDCs, this.candiDCs, this.gtDCs,
-          this.cellQuestions, this.dcQuestions, this.tupleQuestions,
-          this.cellsOfTrueVios, this.cellsOfChanges);
+      String result = String.format("%s/%s/%s(trueVios/candiVios/gtVios), "
+              + "%s/%s/%s(trueDCs/candiDCs/gtDCs), "
+              + "%s,%s(cellsOfTrueVios, cellsOfChanges), "
+              + "%s,%s,%s(cellQ/dcQ/tupleQ)",
+          this.trueVios, this.candiVios, this.gtVios,
+          this.trueDCs, this.candiDCs, this.gtDCs,
+          this.cellsOfTrueVios, this.cellsOfChanges,
+          this.cellQuestions, this.dcQuestions, this.tupleQuestions
+      );
       return result;
     }
   }

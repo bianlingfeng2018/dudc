@@ -1,5 +1,7 @@
 package edu.fudan.utils;
 
+import static edu.fudan.conf.DefaultConf.topK;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -38,12 +40,11 @@ public class DCUtil {
   public static List<DenialConstraint> generateTopKDCs(int topK, String dcsPath,
       String headerPath, Set<DenialConstraint> excludedDCs) {
     List<DenialConstraint> dcList = DCLoader.load(headerPath, dcsPath, excludedDCs);
-    log.info("Read dcs size = {}, excluded dcs size = {}", dcList.size(), excludedDCs.size());
+    log.debug("Read dcs size = {}, excluded(visited) dcs size = {}", dcList.size(), excludedDCs.size());
     dcList.sort((o1, o2) -> {
       return Integer.compare(o1.getPredicateCount(), o2.getPredicateCount());
     });
-    log.debug("Sorted dcs: {}", dcList);
-    List<DenialConstraint> topKDCs = dcList.subList(0, topK);
+    List<DenialConstraint> topKDCs = dcList.subList(0, Math.min(topK, dcList.size()));
     return topKDCs;
   }
 
@@ -54,7 +55,7 @@ public class DCUtil {
       String s = DCFormatUtil.convertDC2String(dc);
       result.add(s);
     }
-    log.info("Write top-k dcs to file {}", topKDCsPath);
+    log.debug("Write top-{} DCs to file: {}", topK, topKDCsPath);
     FileUtil.writeStringLinesToFile(result, new File(topKDCsPath));
   }
 
@@ -109,7 +110,6 @@ public class DCUtil {
   }
 
   public static Set<TCell> getCellIdentifiersOfChanges(List<TChange> changes) {
-    log.info("Changes size(total errors number)={}", changes.size());
     Set<TCell> cellIdentifiersOfChanges = Sets.newHashSet();
     for (TChange c : changes) {
       cellIdentifiersOfChanges.add(

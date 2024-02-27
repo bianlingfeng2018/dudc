@@ -30,7 +30,7 @@ public class ColumnAwareWeightedClusterSampler {
         // 排除列
         continue;
       }
-      log.info("Sampling column " + c.getName());
+//      log.debug("Sampling column " + c.getName());
       // 构建valueMap
       Map<Object, WeightedCluster> valueMap = new HashMap<>();
       for (int i = 0; i < input.getLineCount(); ++i) {

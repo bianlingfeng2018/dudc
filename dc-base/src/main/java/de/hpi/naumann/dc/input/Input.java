@@ -148,7 +148,7 @@ public class Input {
 			}
 		}
 
-		log.info("rebuild: " + (System.currentTimeMillis() - time));
+//		log.debug("rebuild: " + (System.currentTimeMillis() - time));
 		return input2s;
 	}
 

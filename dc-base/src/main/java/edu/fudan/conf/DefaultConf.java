@@ -10,7 +10,7 @@ public class DefaultConf {
   public static int topK = 5;
   public static String defaultTable = "xxx";
   // Loop
-  public static int maxDiscoveryRound = 20;
+  public static int maxDiscoveryRound = 2;
   public static int maxCellQuestionBudget = 10;
   public static int maxTupleQuestionBudget = 10;
   public static int maxDCQuestionBudget = 10;

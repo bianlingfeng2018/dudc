@@ -92,9 +92,9 @@ public class HydraDetector {
   public DCViolationSet detect() {
     IEvidenceSet sampleEvidence =
         new SystematicLinearEvidenceSetBuilder(predicates, sampleRounds).buildEvidenceSet(input);
-    log.info("Checking " + set.size() + " DCs.");
+    log.debug("Checking " + set.size() + " DCs.");
 
-    log.info("Building selectivity estimation");
+//    log.debug("Building selectivity estimation");
 
     // frequency estimation predicate pairs
     Multiset<PredicatePair> paircountDC = frequencyEstimationForPredicatePairs(set);
@@ -108,7 +108,7 @@ public class HydraDetector {
 
     IndexProvider<PartitionRefiner> indexProvider = new IndexProvider<>();
 
-    log.info("Grouping DCs..");
+//    log.debug("Grouping DCs..");
     Map<IBitSet, List<DenialConstraint>> predicateDCMap = groupDCs(set, sortedPredicatePairs,
         indexProvider,
         selectivityCount);
@@ -117,7 +117,7 @@ public class HydraDetector {
 
     SuperSetWalker walker = new SuperSetWalker(predicateDCMap.keySet(), refinerPriorities);
 
-    log.info("Calculating partitions..");
+//    log.debug("Calculating partitions..");
 
     HashEvidenceSet resultEv = new HashEvidenceSet();
     DCViolationSet violationSet = new DCViolationSet();

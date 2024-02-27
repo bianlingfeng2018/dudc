@@ -29,7 +29,7 @@ public class TupleSampler {
   public SampleResult sample(File dataF, int topKOfCluster, int maxInCluster,
       Set<Integer> skippedColumns, boolean requireHeader, Set<Integer> excludedLines)
       throws FileNotFoundException, InputGenerationException, InputIterationException {
-    log.info("Sampling: {}", dataF.toString());
+    log.info("Input file: {}", dataF.toString());
     DefaultFileInputGenerator actualGenerator = new DefaultFileInputGenerator(dataF);
     Input input = new Input(actualGenerator.generateNewCopy());
     log.info("Input size: {}", input.getLineCount());
@@ -43,13 +43,12 @@ public class TupleSampler {
     log.debug("Sample time = {} ms", timeSample);
     log.info("Sampled size = {}", sampled.size());
 
-    log.info("Get lines according to sampled line indices...");
-    List<List<String>> lines = convertInt2Str(actualGenerator, sampled, requireHeader);
-    log.info("Sampling done");
+//    log.debug("Get lines according to sampled line indices...");
+    List<List<String>> lines = getLinesWithHeader(actualGenerator, sampled, requireHeader);
     return new SampleResult(sampled, lines);
   }
 
-  private static List<List<String>> convertInt2Str(DefaultFileInputGenerator actualGenerator,
+  private static List<List<String>> getLinesWithHeader(DefaultFileInputGenerator actualGenerator,
       Set<Integer> sampled, boolean requireHeader)
       throws InputGenerationException, InputIterationException {
     ArrayList<List<String>> lines = Lists.newArrayList();
