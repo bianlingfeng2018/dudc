@@ -36,7 +36,7 @@
   </root>
 
   <!-- LOG specific package -->
-  <logger name="edu.fudan" level="info" additivity="false">
+  <logger name="edu.fudan" level="debug" additivity="false">
     <appender-ref ref="RollingFile"/>
     <appender-ref ref="Console"/>
   </logger>

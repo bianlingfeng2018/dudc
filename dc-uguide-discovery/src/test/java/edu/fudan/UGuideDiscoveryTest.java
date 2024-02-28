@@ -73,6 +73,8 @@ public class UGuideDiscoveryTest {
       "result_rules\\dcs_hospital.out";
   private final String groundTruthDCsPath = baseDir + File.separator +
       "result_rules\\dcs_hospital_ground.out";
+  private final String groundTruthDCsInjectErrorPath = baseDir + File.separator +
+      "result_rules\\dcs_hospital_ground_inject_error.out";
   private final String candidateDCsPath = baseDir + File.separator +
       "result_rules\\dcs_hospital_candidate.out";
   private final String trueDCsPath = baseDir + File.separator +
@@ -103,7 +105,7 @@ public class UGuideDiscoveryTest {
 
   @Test
   public void testGenTopKDCs() throws IOException {
-    List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(10, dcsPathForFCDC, headerPath, null);
+    List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(70, dcsPathForFCDC, headerPath, null);
     DCUtil.persistTopKDCs(topKDCs, topKDCsPath);
   }
 
@@ -153,8 +155,10 @@ public class UGuideDiscoveryTest {
   public void testFalseDCsDetect()
       throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
     // TODO: Violation size: tureDcs,candiDCs,gtDCs并无大小关系，因为冲突之间可能有元组对的重合，一对元组可能涉及多个冲突
-    DCViolationSet vios1 = new HydraDetector(cleanDataPath, trueDCsPath).detect();
-    DCViolationSet vios2 = new HydraDetector(dirtyDataPath, trueDCsPath).detect();
+//    String path = groundTruthDCsPath;
+    String path = groundTruthDCsInjectErrorPath;
+    DCViolationSet vios1 = new HydraDetector(cleanDataPath, path).detect();
+    DCViolationSet vios2 = new HydraDetector(dirtyDataPath, path).detect();
     log.info("vios1={}, vios2={}", vios1.size(), vios2.size());
   }
 

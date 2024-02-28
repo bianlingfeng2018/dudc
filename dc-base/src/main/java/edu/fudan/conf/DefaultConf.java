@@ -10,11 +10,11 @@ public class DefaultConf {
   public static int topK = 5;
   public static String defaultTable = "xxx";
   // Loop
-  public static int maxDiscoveryRound = 2;
-  public static int maxCellQuestionBudget = 10;
-  public static int maxTupleQuestionBudget = 10;
-  public static int maxDCQuestionBudget = 10;
+  public static int maxDiscoveryRound = 50;
+  public static int maxCellQuestionBudget = 1000;
+  public static int maxTupleQuestionBudget = 300;
+  public static int maxDCQuestionBudget = 5;
   // Sample
-  public static int topKOfCluster = 2;
-  public static int maxInCluster = 2;
+  public static int topKOfCluster = 5;
+  public static int maxInCluster = 3;
 }

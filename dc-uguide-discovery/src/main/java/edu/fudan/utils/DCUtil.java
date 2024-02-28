@@ -37,10 +37,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DCUtil {
 
-  public static List<DenialConstraint> generateTopKDCs(int topK, String dcsPath,
+  public static List<DenialConstraint> generateTopKDCs(int topK, String inputDCsPath,
       String headerPath, Set<DenialConstraint> excludedDCs) {
-    List<DenialConstraint> dcList = DCLoader.load(headerPath, dcsPath, excludedDCs);
-    log.debug("Read dcs size = {}, excluded(visited) dcs size = {}", dcList.size(), excludedDCs.size());
+    List<DenialConstraint> dcList = DCLoader.load(headerPath, inputDCsPath, excludedDCs);
+    int excludeSize = excludedDCs == null ? 0 : excludedDCs.size();
+    log.debug("Read dcs size = {}, excluded(visited) dcs size = {}", dcList.size(), excludeSize);
     dcList.sort((o1, o2) -> {
       return Integer.compare(o1.getPredicateCount(), o2.getPredicateCount());
     });

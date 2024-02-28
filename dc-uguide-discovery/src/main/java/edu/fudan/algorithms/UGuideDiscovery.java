@@ -84,7 +84,7 @@ public class UGuideDiscovery {
     evaluation.setUp();
     // 模拟多轮采样+用户交互，以达到发现所有真冲突的目的
     int round = 0;
-    while (round < maxDiscoveryRound && !evaluation.allTrueViolationsFound()) {
+    while (canProcess(round)) {
       round++;
       log.info("------ Round {} -------", round);
       // 采样
@@ -105,6 +105,18 @@ public class UGuideDiscovery {
     log.info("Finish");
   }
 
+  private boolean canProcess(int round) {
+    if (round >= maxDiscoveryRound) {
+      log.info("Reach max round");
+      return false;
+    }
+    if (evaluation.allTrueViolationsFound()) {
+      log.info("All changes covered");
+      return false;
+    }
+    return true;
+  }
+
   private void persistResult() throws IOException {
     log.info("====== 7.Persist result ======");
     String trueDCsPath = evaluation.getTrueDCsPath();
@@ -115,7 +127,8 @@ public class UGuideDiscovery {
     log.info("ExcludedLinesPath={}", excludedLinesPath);
     persistDCs(evaluation.getTrueDCs(), trueDCsPath);
     persistDCs(evaluation.getCandidateDCs(), candidateDCsPath);
-    persistExcludedLines(this.dirtyData.getDataPath(), evaluation.getExcludedLines(), excludedLinesPath);
+    persistExcludedLines(this.dirtyData.getDataPath(), evaluation.getExcludedLines(),
+        excludedLinesPath);
   }
 
   private void askDCQuestion()
@@ -124,10 +137,15 @@ public class UGuideDiscovery {
     // 确认真DC，并删除真DC发现的冲突元组
     Set<DenialConstraint> questions = evaluation.genDCQuestionsFromCurrState(maxDCQuestionBudget);
     int numb = questions.size();
-    log.info("DCQuestions/MaxDCQuestionBudget={}/{}", numb, maxDCQuestionBudget);
+    int currDCsSize = evaluation.getCurrDCs().size();
+    log.info("DCQuestions/MaxDCQuestionBudget/CurrDCsSize={}/{}/{}", numb, maxDCQuestionBudget, currDCsSize);
     evaluation.addDCBudget(numb);
     Set<DenialConstraint> trueDCs = questions.stream().filter(dc -> evaluation.isTrueDC(dc))
         .collect(Collectors.toSet());
+    log.info("TureDCs(DCsQ): {}", trueDCs.size());
+    for (DenialConstraint dc : trueDCs) {
+      log.debug("{}", DCFormatUtil.convertDC2String(dc));
+    }
     Set<Integer> lines = Sets.newHashSet();
     // 检查TrueDCs在dirtyData上产生的所有冲突
     DCViolationSet vios = new HydraDetector(dirtyData.getDataPath(), trueDCs).detect();
@@ -146,7 +164,8 @@ public class UGuideDiscovery {
     // 在采样数据中，推荐一些元组让用户判断
     Set<Integer> questions = evaluation.genTupleQuestionsFromCurrState(maxTupleQuestionBudget);
     int numb = questions.size();
-    log.info("TupleQuestions/MaxTupleQuestionBudget={}/{}", numb, maxTupleQuestionBudget);
+    int sampleSize = evaluation.getSampleResultSize();
+    log.info("TupleQuestions/MaxTupleQuestionBudget/SampleSize={}/{}/{}", numb, maxTupleQuestionBudget, sampleSize);
     evaluation.addTupleBudget(numb);
     evaluation.excludeErrorLinesInSample(questions);
   }
@@ -156,7 +175,8 @@ public class UGuideDiscovery {
     // 推荐一些让用户判断冲突
     Set<DCViolation> questions = evaluation.genCellQuestionsFromCurrState(maxCellQuestionBudget);
     int numb = questions.size();
-    log.info("CellQuestions/MaxCellQuestionBudget={}/{}", numb, maxCellQuestionBudget);
+    int currViosSize = evaluation.getCurrVios().size();
+    log.info("CellQuestions/MaxCellQuestionBudget/CurrViosSize={}/{}/{}", numb, maxCellQuestionBudget, currViosSize);
     evaluation.addCellBudget(numb);
     Set<DenialConstraint> dcsUnchecked = Sets.newHashSet();
     Set<DenialConstraint> dcsFromQuestions = getDCsSetFromViolations(questions);
@@ -234,18 +254,18 @@ public class UGuideDiscovery {
     }
     // TODO: 当本轮发现的规则都是不产生冲突的规则时，不会确认真冲突，因此dirtyLines不变化
     Set<Integer> excludedLines = result.getExcludedLines();
-    log.debug("Excluded lines(CellQ, TupleQ, DCsQ) = {}", excludedLines.size());
+    log.info("Excluded lines(CellQ, TupleQ, DCsQ) = {}", excludedLines.size());
     // TODO: 通过Tuple问题排除sample中的错误行
     Set<Integer> errorLinesInSample = result.getErrorLinesInSample();
     Set<Integer> errorLinesInSampleAndExcluded = errorLinesInSample.stream()
         .filter(i -> excludedLines.contains(i))
         .collect(Collectors.toSet());
-    log.debug("ErrorLinesInSampleAndInExcluded/ErrorLinesInSample = {}/{}",
+    log.info("ErrorLinesInSampleAndInExcluded/ErrorLinesInSample = {}/{}",
         errorLinesInSampleAndExcluded.size(),
         errorLinesInSample.size());
     // 通过TrueDCs排除的元组
     Set<Integer> curExcludedLinesOfTrueDCs = result.getCurExcludedLinesOfTrueDCs();
-    log.debug("CurExcludedLinesOfTrueDCs(DCsQ) = {}", curExcludedLinesOfTrueDCs.size());
+    log.info("CurExcludedLinesOfTrueDCs(DCsQ) = {}", curExcludedLinesOfTrueDCs.size());
     log.info(result.toString());
   }
 

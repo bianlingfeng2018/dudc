@@ -114,6 +114,7 @@ public class Evaluation {
   /**
    * Current round violations. Choose violation question from them.
    */
+  @Getter
   private final Set<DCViolation> currVios = Sets.newHashSet();
 
   /**
@@ -330,6 +331,11 @@ public class Evaluation {
   public Set<DCViolation> genCellQuestionsFromCurrState(int maxQueryBudget) {
     List<DCViolation> chosenVios = getRandomElements(this.currVios, maxQueryBudget);
     return new HashSet<>(chosenVios);
+  }
+
+  public int getSampleResultSize() {
+    Set<Integer> lineIndices = this.sampleResult.getLineIndices();
+    return lineIndices.size();
   }
 
   public Set<Integer> genTupleQuestionsFromCurrState(int maxQueryBudget) {
