@@ -95,8 +95,8 @@ public class UGuideDiscovery {
       detect();
       // 多轮提问
       askCellQuestion();
-      askTupleQuestion();
-      askDCQuestion();
+//      askTupleQuestion();
+//      askDCQuestion();
       // 评价真冲突/假冲突
       evaluate();
       // 输出结果
@@ -134,6 +134,7 @@ public class UGuideDiscovery {
   private void askDCQuestion()
       throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
     log.info("===== 5.3 Ask DC question ======");
+    // TODO: 也可以确认假DC并排除
     // 确认真DC，并删除真DC发现的冲突元组
     Set<DenialConstraint> questions = evaluation.genDCQuestionsFromCurrState(maxDCQuestionBudget);
     int numb = questions.size();
@@ -286,10 +287,12 @@ public class UGuideDiscovery {
   private void discoveryDCs()
       throws IOException {
     log.info("====== 3.Discovery DCs from sample ======");
+    // TODO:现在发现的规则没有加入g1，有的规则冲突太多，明显是假阳性，且影响后续的效率
     BasicDCGenerator generator = new BasicDCGenerator(sampledData.getDataPath(),
-        // TODO:现在发现的规则没有加入g1，有的规则冲突太多，明显是假阳性，且影响后续的效率
         candidateDCs.getDcsPathForFCDC(), sampledData.getHeaderPath());
     generator.setExcludeDCs(evaluation.getVisitedDCs());
+    // 设定近似阈值
+    generator.setErrorThreshold(evaluation.getErrorThreshold());
     Set<DenialConstraint> dcs = generator.generateDCsForUser();
 
     DCUtil.persistTopKDCs(new ArrayList<>(dcs), candidateDCs.getTopKDCsPath());

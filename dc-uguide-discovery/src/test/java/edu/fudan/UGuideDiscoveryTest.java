@@ -22,6 +22,7 @@ import de.hpi.naumann.dc.predicates.sets.PredicateSetFactory;
 import de.metanome.algorithm_integration.Operator;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
+import edu.fudan.algorithms.BasicDCGenerator;
 import edu.fudan.algorithms.DCLoader;
 import edu.fudan.algorithms.DCViolation;
 import edu.fudan.algorithms.DCViolationSet;
@@ -38,6 +39,7 @@ import edu.fudan.utils.DCUtil;
 import edu.fudan.utils.FileUtil;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -104,8 +106,18 @@ public class UGuideDiscoveryTest {
   }
 
   @Test
+  public void testGenGroundTruthDCsUsingDCFinder() {
+    BasicDCGenerator generator = new BasicDCGenerator(sampledDataPath,
+        dcsPathForFCDC, headerPath);
+    generator.setExcludeDCs(new HashSet<>());
+    generator.setErrorThreshold(0.001);
+    Set<DenialConstraint> dcs = generator.generateDCsForUser();
+    log.info("DCs size={}", dcs.size());
+  }
+
+  @Test
   public void testGenTopKDCs() throws IOException {
-    List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(70, dcsPathForFCDC, headerPath, null);
+    List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(5, dcsPathForFCDC, headerPath, null);
     DCUtil.persistTopKDCs(topKDCs, topKDCsPath);
   }
 

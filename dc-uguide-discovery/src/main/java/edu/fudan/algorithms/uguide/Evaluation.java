@@ -1,6 +1,7 @@
 package edu.fudan.algorithms.uguide;
 
 import static edu.fudan.algorithms.uguide.Strategy.getRandomElements;
+import static edu.fudan.conf.DefaultConf.defaultErrorThreshold;
 import static edu.fudan.utils.DCUtil.getCellIdentifiersOfChanges;
 import static edu.fudan.utils.DCUtil.getCellIdentyfiersFromVios;
 import static edu.fudan.utils.DCUtil.getErrorLinesContainingChanges;
@@ -129,8 +130,12 @@ public class Evaluation {
   private Set<Integer> errorLinesOfChanges = Sets.newHashSet();
   private Set<Integer> errorLinesInSample = Sets.newHashSet();
   private Set<TCell> cellIdentifiersOfTrueVios = Sets.newHashSet();
+  private Set<TCell> cellsOfTrueViosAndChanges = Sets.newHashSet();
   private SampleResult sampleResult = new SampleResult(new HashSet<>(), new ArrayList<>());
   private Set<Integer> curExcludedLinesOfTrueDCs = Sets.newHashSet();
+  @Getter
+  @Setter
+  private double errorThreshold = 0.0;
 
   public Evaluation(CleanData cleanData, DirtyData dirtyData, String groundTruthDCsPath,
       String candidateDCsPath, String trueDCsPath) {
@@ -182,6 +187,8 @@ public class Evaluation {
     log.info("Changes: {}", changes.size());
     this.cellIdentifiersOfChanges = getCellIdentifiersOfChanges(changes);
     this.errorLinesOfChanges = getErrorLinesContainingChanges(changes);
+    // 设定errorThreshold
+    this.errorThreshold = defaultErrorThreshold;
   }
 
   public void update(Set<DenialConstraint> candidateDCs,
@@ -272,6 +279,9 @@ public class Evaluation {
     // 评价error cells发现个数
     this.cellIdentifiersOfTrueVios = getCellIdentyfiersFromVios(this.trueViolations,
         this.dirtyData.getInput());
+    this.cellsOfTrueViosAndChanges = this.cellIdentifiersOfTrueVios.stream()
+        .filter(tc -> this.cellIdentifiersOfChanges.contains(tc))
+        .collect(Collectors.toSet());
     // 评价sample的error lines
     result.setCurExcludedLinesOfTrueDCs(this.curExcludedLinesOfTrueDCs);
     result.setErrorLinesInSample(this.errorLinesInSample);
@@ -288,6 +298,7 @@ public class Evaluation {
     result.setTupleQuestions(this.tupleBudgetUsed);
     result.setCellsOfChanges(this.cellIdentifiersOfChanges.size());
     result.setCellsOfTrueVios(this.cellIdentifiersOfTrueVios.size());
+    result.setCellsOfTrueViosAndChanges(this.cellsOfTrueViosAndChanges.size());
     return result;
   }
 
@@ -386,6 +397,7 @@ public class Evaluation {
     private int tupleQuestions = 0;
     private int cellsOfChanges = 0;
     private int cellsOfTrueVios = 0;
+    private int cellsOfTrueViosAndChanges = 0;
     private Map<DenialConstraint, Integer> dcStrVioSizeMap = Maps.newHashMap();
     private Set<Integer> errorLinesInSample = Sets.newHashSet();
     private Set<Integer> excludedLines = Sets.newHashSet();
@@ -395,11 +407,11 @@ public class Evaluation {
     public String toString() {
       String result = String.format("%s/%s/%s(trueVios/candiVios/gtVios), "
               + "%s/%s/%s(trueDCs/candiDCs/gtDCs), "
-              + "%s,%s(cellsOfTrueVios, cellsOfChanges), "
-              + "%s,%s,%s(cellQ/dcQ/tupleQ)",
+              + "%s/%s/%s(cellsOfTrueViosAndChanges/cellsOfTrueVios/cellsOfChanges), "
+              + "%s/%s/%s(cellQ/dcQ/tupleQ)",
           this.trueVios, this.candiVios, this.gtVios,
           this.trueDCs, this.candiDCs, this.gtDCs,
-          this.cellsOfTrueVios, this.cellsOfChanges,
+          this.cellsOfTrueViosAndChanges, this.cellsOfTrueVios, this.cellsOfChanges,
           this.cellQuestions, this.dcQuestions, this.tupleQuestions
       );
       return result;

@@ -1,6 +1,8 @@
 package edu.fudan.utils;
 
 import static edu.fudan.conf.DefaultConf.topK;
+import static edu.fudan.transformat.DCFormatUtil.extractColNameAndType;
+import static edu.fudan.transformat.DCFormatUtil.isLegalIndex4DCString;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -12,12 +14,15 @@ import de.hpi.naumann.dc.paritions.LinePair;
 import de.hpi.naumann.dc.predicates.Predicate;
 import de.hpi.naumann.dc.predicates.operands.ColumnOperand;
 import de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
+import de.metanome.algorithms.dcfinder.predicates.sets.PredicateSet;
+import edu.fudan.DCMinderToolsException;
 import edu.fudan.algorithms.DCLoader;
 import edu.fudan.algorithms.DCViolation;
 import edu.fudan.algorithms.DCViolationSet;
 import edu.fudan.algorithms.uguide.TCell;
 import edu.fudan.algorithms.uguide.TChange;
 import edu.fudan.transformat.DCFormatUtil;
+import edu.fudan.transformat.OperationStr;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -167,5 +172,41 @@ public class DCUtil {
     ParsedColumn<?> column = filtered.get(0);
     Comparable value = column.getValue(index == 0 ? line1 : line2);
     return value;
+  }
+
+  public static String convertDCFinderDC2Str(
+      de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint dc)
+      throws DCMinderToolsException {
+    List<String> predicates = Lists.newArrayList();
+    PredicateSet predicateSet = dc.getPredicateSet();
+    for (de.metanome.algorithms.dcfinder.predicates.Predicate p : predicateSet) {
+      de.metanome.algorithms.dcfinder.predicates.operands.ColumnOperand<?> operand1 = p.getOperand1();
+      de.metanome.algorithms.dcfinder.predicates.operands.ColumnOperand<?> operand2 = p.getOperand2();
+      int operand1Index = operand1.getIndex() + 1;
+      int operand2Index = operand2.getIndex() + 1;
+      String col1Name = extractColNameAndType(operand1.getColumn().getName())[0];
+      String col2Name = extractColNameAndType(operand2.getColumn().getName())[0];
+      String op = OperationStr.opObject2StringMap.get(p.getOperator());
+      if (!isLegalIndex4DCString(operand1Index) ||
+          !isLegalIndex4DCString(operand2Index)) {
+        throw new DCMinderToolsException("Illegal column index for DC string");
+      }
+      String predicate = "t"
+          + operand1Index
+          + "."
+          + col1Name
+          + op
+          + "t"
+          + operand2Index
+          + "."
+          + col2Name;
+      predicates.add(predicate);
+    }
+    String dcStr = "not("
+        + predicates.stream()
+        .sorted()
+        .collect(Collectors.joining("^"))
+        + ")";
+    return dcStr;
   }
 }

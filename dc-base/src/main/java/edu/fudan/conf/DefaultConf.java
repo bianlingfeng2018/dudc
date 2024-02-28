@@ -11,10 +11,13 @@ public class DefaultConf {
   public static String defaultTable = "xxx";
   // Loop
   public static int maxDiscoveryRound = 50;
-  public static int maxCellQuestionBudget = 1000;
+  public static int maxCellQuestionBudget = 100;
   public static int maxTupleQuestionBudget = 300;
   public static int maxDCQuestionBudget = 5;
   // Sample
   public static int topKOfCluster = 5;
   public static int maxInCluster = 3;
+  // ADC
+//  public static double defaultErrorThreshold = 0.001;
+  public static double defaultErrorThreshold = 0.0;
 }
