@@ -24,6 +24,7 @@ import edu.fudan.algorithms.uguide.Evaluation;
 import edu.fudan.algorithms.uguide.Evaluation.EvalResult;
 import edu.fudan.algorithms.uguide.SampledData;
 import edu.fudan.transformat.DCFormatUtil;
+import edu.fudan.utils.CSVWriter;
 import edu.fudan.utils.DCUtil;
 import edu.fudan.utils.FileUtil;
 import java.io.BufferedReader;
@@ -68,13 +69,14 @@ public class UGuideDiscovery {
       String groundTruthDCsPath,
       String candidateDCsPath,
       String trueDCsPath,
-      String headerPath) {
+      String headerPath,
+      String csvResultPath) {
     this.cleanData = new CleanData(cleanDataPath, headerPath, changesPath);
     this.dirtyData = new DirtyData(dirtyDataPath, excludedLinesPath, headerPath);
     this.sampledData = new SampledData(sampledDataPath, headerPath);
     this.candidateDCs = new CandidateDCs(dcsPathForFCDC, evidencesPathForFCDC, topKDCsPath);
     this.evaluation = new Evaluation(cleanData, dirtyData, groundTruthDCsPath, candidateDCsPath,
-        trueDCsPath);
+        trueDCsPath, csvResultPath);
   }
 
   public void guidedDiscovery()
@@ -95,8 +97,8 @@ public class UGuideDiscovery {
       detect();
       // 多轮提问
       askCellQuestion();
-//      askTupleQuestion();
-//      askDCQuestion();
+      askTupleQuestion();
+      askDCQuestion();
       // 评价真冲突/假冲突
       evaluate();
       // 输出结果
@@ -129,6 +131,8 @@ public class UGuideDiscovery {
     persistDCs(evaluation.getCandidateDCs(), candidateDCsPath);
     persistExcludedLines(this.dirtyData.getDataPath(), evaluation.getExcludedLines(),
         excludedLinesPath);
+    // 保存结果
+    CSVWriter.writeToFile(evaluation.getCsvResultPath(), evaluation.getEvalResults());
   }
 
   private void askDCQuestion()
@@ -138,26 +142,30 @@ public class UGuideDiscovery {
     // 确认真DC，并删除真DC发现的冲突元组
     Set<DenialConstraint> questions = evaluation.genDCQuestionsFromCurrState(maxDCQuestionBudget);
     int numb = questions.size();
-    int currDCsSize = evaluation.getCurrDCs().size();
-    log.info("DCQuestions/MaxDCQuestionBudget/CurrDCsSize={}/{}/{}", numb, maxDCQuestionBudget, currDCsSize);
+    log.info("DCQuestions/MaxDCQuestionBudget/CurrDCsSize={}/{}/{}",
+        numb,
+        maxDCQuestionBudget,
+        evaluation.getCurrDCs().size());
     evaluation.addDCBudget(numb);
+    // 判断得到TrueDCs
     Set<DenialConstraint> trueDCs = questions.stream().filter(dc -> evaluation.isTrueDC(dc))
         .collect(Collectors.toSet());
     log.info("TureDCs(DCsQ): {}", trueDCs.size());
     for (DenialConstraint dc : trueDCs) {
       log.debug("{}", DCFormatUtil.convertDC2String(dc));
     }
-    Set<Integer> lines = Sets.newHashSet();
-    // 检查TrueDCs在dirtyData上产生的所有冲突
+    // 排除TrueDCs在脏数据上的冲突元组
+    Set<Integer> excludedLinesInDCsQ = Sets.newHashSet();
     DCViolationSet vios = new HydraDetector(dirtyData.getDataPath(), trueDCs).detect();
     for (DCViolation vio : vios.getViosSet()) {
       LinePair linePair = vio.getLinePair();
       int line1 = linePair.getLine1();
       int line2 = linePair.getLine2();
-      lines.add(line1);
-      lines.add(line2);
+      excludedLinesInDCsQ.add(line1);
+      excludedLinesInDCsQ.add(line2);
     }
-    evaluation.excludeLinesOfTrueDCs(lines);
+    evaluation.setExcludedLinesInDCsQ(excludedLinesInDCsQ);
+    evaluation.update(null, null, null, null, excludedLinesInDCsQ);
   }
 
   private void askTupleQuestion() {
@@ -165,10 +173,18 @@ public class UGuideDiscovery {
     // 在采样数据中，推荐一些元组让用户判断
     Set<Integer> questions = evaluation.genTupleQuestionsFromCurrState(maxTupleQuestionBudget);
     int numb = questions.size();
-    int sampleSize = evaluation.getSampleResultSize();
-    log.info("TupleQuestions/MaxTupleQuestionBudget/SampleSize={}/{}/{}", numb, maxTupleQuestionBudget, sampleSize);
+    log.info("TupleQuestions/MaxTupleQuestionBudget/SampleSize={}/{}/{}",
+        numb,
+        maxTupleQuestionBudget,
+        evaluation.getSampleResultSize());
     evaluation.addTupleBudget(numb);
-    evaluation.excludeErrorLinesInSample(questions);
+    // 排除question(sample中推荐给用户判断的元组)中的所有错误行
+    Set<Integer> excludedLinesInSample = questions.stream()
+        .filter(i -> evaluation.getErrorLinesOfChanges().contains(i))
+        .collect(Collectors.toSet());
+    evaluation.setExcludedLinesInTupleQ(excludedLinesInSample);
+    log.info("FalseTuples(excludedLinesInSample): {}", excludedLinesInSample.size());
+    evaluation.update(null, null, null, null, excludedLinesInSample);
   }
 
   private void askCellQuestion() {
@@ -176,20 +192,23 @@ public class UGuideDiscovery {
     // 推荐一些让用户判断冲突
     Set<DCViolation> questions = evaluation.genCellQuestionsFromCurrState(maxCellQuestionBudget);
     int numb = questions.size();
-    int currViosSize = evaluation.getCurrVios().size();
-    log.info("CellQuestions/MaxCellQuestionBudget/CurrViosSize={}/{}/{}", numb, maxCellQuestionBudget, currViosSize);
+    log.info("CellQuestions/MaxCellQuestionBudget/CurrViosSize={}/{}/{}",
+        numb,
+        maxCellQuestionBudget,
+        evaluation.getCurrVios().size());
     evaluation.addCellBudget(numb);
-    Set<DenialConstraint> dcsUnchecked = Sets.newHashSet();
+    Set<Integer> excludedLinesInCellQ = Sets.newHashSet();
     Set<DenialConstraint> dcsFromQuestions = getDCsSetFromViolations(questions);
+    Set<DenialConstraint> dcsUnchecked = Sets.newHashSet();
+    Set<DenialConstraint> falseDCs = Sets.newHashSet();
+    Map<DenialConstraint, Integer> dcTrustMap = Maps.newHashMap();
+    for (DenialConstraint dc : dcsFromQuestions) {
+      dcTrustMap.put(dc, 0);
+    }
     for (DenialConstraint currDC : evaluation.getCurrDCs()) {
       if (!dcsFromQuestions.contains(currDC)) {
         dcsUnchecked.add(currDC);
       }
-    }
-    Map<DenialConstraint, Integer> dcTrustMap = Maps.newHashMap();
-    Set<DenialConstraint> falseDCs = Sets.newHashSet();
-    for (DenialConstraint dc : dcsFromQuestions) {
-      dcTrustMap.put(dc, 0);
     }
     for (DCViolation vio : questions) {
       // TODO: Input和LinePair结合找出相关Cells，给用户判断是否为真冲突
@@ -199,32 +218,18 @@ public class UGuideDiscovery {
           // 若为真冲突，则增加DC的置信度
           dcTrustMap.put(dc, dcTrustMap.get(dc) + 1);
           // 若为真冲突，排除脏数据
-          evaluation.excludeLines(vio);
+          LinePair linePair = vio.getLinePair();
+          int line1 = linePair.getLine1();
+          int line2 = linePair.getLine2();
+          excludedLinesInCellQ.add(line1);
+          excludedLinesInCellQ.add(line2);
         } else {
           // 若为假冲突，排除假阳性DC
           falseDCs.add(dc);
         }
       }
-//      LinePair linePair = vio.getLinePair();
-//      int line1 = linePair.getLine1();
-//      int line2 = linePair.getLine2();
-//      for (DenialConstraint dc : vio.getDcs()) {
-//        log.debug("Violation: dc={}, linePair={}", dc.toResult().toString(), linePair);
-//        PredicateBitSet predicateSet = dc.getPredicateSet();
-//        for (Predicate p : predicateSet) {
-//          ColumnOperand<?> operand1 = p.getOperand1();
-//          ColumnOperand<?> operand2 = p.getOperand2();
-//          Operator op = p.getOperator();
-//          Comparable v1 = getCellValue(operand1, di, line1, line2);
-//          Comparable v2 = getCellValue(operand2, di, line1, line2);
-//          log.debug("Predicate: {}", p.toString());
-//          log.debug("v1={}, v2={}, op={}", v1, v2, op.getShortString());
-//          boolean eval = op.eval(v1, v2);
-//          log.debug("Satisfied={}", eval);
-//        }
-//      }
     }
-    log.info("CheckedDCs(with trusts): {}", dcTrustMap.keySet().size());
+    log.info("CheckedDCs(with trusts(TrueViolationSize)): {}", dcTrustMap.keySet().size());
     for (Entry<DenialConstraint, Integer> entry : dcTrustMap.entrySet()) {
       log.debug("{}, {}", DCFormatUtil.convertDC2String(entry.getKey()), entry.getValue());
     }
@@ -242,32 +247,47 @@ public class UGuideDiscovery {
     for (DenialConstraint dc : dcsUnchecked) {
       log.debug("{}", DCFormatUtil.convertDC2String(dc));
     }
-    evaluation.update(null, falseDCs, null, null, null);
+    evaluation.setExcludedLinesInCellQ(excludedLinesInCellQ);
+    evaluation.update(null, falseDCs, null, null, excludedLinesInCellQ);
   }
 
   private void evaluate() throws DCMinderToolsException {
     log.info("====== 6.Evaluate the true violations and false violations ======");
     EvalResult result = evaluation.evaluate();
-    Map<DenialConstraint, Integer> map = result.getDcStrVioSizeMap();
-    log.info("Final Candidate DCs(with viosSize): {}", map.keySet().size());
-    for (DenialConstraint dc : map.keySet()) {
-      log.debug("{}: {}", DCFormatUtil.convertDC2String(dc), map.get(dc));
+    // 打印结果信息
+    // 最终的candiDCs及其对应的冲突个数信息
+    Map<DenialConstraint, Integer> candiDCViosMap = result.getCandiDCViosMap();
+    log.info("CandiDCViosMap: {}", candiDCViosMap.keySet().size());
+    for (DenialConstraint dc : candiDCViosMap.keySet()) {
+      log.debug("{}: {}", DCFormatUtil.convertDC2String(dc), candiDCViosMap.get(dc));
     }
-    // TODO: 当本轮发现的规则都是不产生冲突的规则时，不会确认真冲突，因此dirtyLines不变化
-    Set<Integer> excludedLines = result.getExcludedLines();
-    log.info("Excluded lines(CellQ, TupleQ, DCsQ) = {}", excludedLines.size());
-    // TODO: 通过Tuple问题排除sample中的错误行
-    Set<Integer> errorLinesInSample = result.getErrorLinesInSample();
-    Set<Integer> errorLinesInSampleAndExcluded = errorLinesInSample.stream()
-        .filter(i -> excludedLines.contains(i))
-        .collect(Collectors.toSet());
+    // 排除的元组信息
+    // TODO: 当本轮发现的规则没有冲突时（可能是因为规则过拟合或者规则与注入错误无关），
+    //  ExcludedLines(CellQ)为零，这样数据无法继续变得更干净，下一轮可能还是相同的结果，这样效率较低。
     log.info("ErrorLinesInSampleAndInExcluded/ErrorLinesInSample = {}/{}",
-        errorLinesInSampleAndExcluded.size(),
-        errorLinesInSample.size());
-    // 通过TrueDCs排除的元组
-    Set<Integer> curExcludedLinesOfTrueDCs = result.getCurExcludedLinesOfTrueDCs();
-    log.info("CurExcludedLinesOfTrueDCs(DCsQ) = {}", curExcludedLinesOfTrueDCs.size());
-    log.info(result.toString());
+        result.getErrorLinesInSampleAndExcluded(),
+        result.getErrorLinesInSample());
+    log.info("ExcludedLinesOfCellQ/OfTupleQ/OfDCsQ/ExcludedLines = {}/{}/{}/{}",
+        result.getExcludedLinesOfCellQ(),
+        result.getExcludedLinesOfTupleQ(),
+        result.getExcludedLinesOfDCsQ(),
+        result.getExcludedLines());
+    log.info("TrueVios/CandiVios/GTVios = {}/{}/{}",
+        result.getViolationsTrue(),
+        result.getViolationsCandidate(),
+        result.getViolationsGroundTruth());
+    log.info("TrueDCs/CandiDCs/GTDCs = {}/{}/{}",
+        result.getDCsTrue(),
+        result.getDCsCandidate(),
+        result.getDCsGroundTruth());
+    log.info("CellsOfTrueViosAndChanges/CellsOfTrueVios/CellsOfChanges = {}/{}/{}",
+        result.getCellsOfTrueViosAndChanges(),
+        result.getCellsOfTrueVios(),
+        result.getCellsOfChanges());
+    log.info("CellQuestion/TupleQuestion/DCQuestion = {}/{}/{}",
+        result.getQuestionsCell(),
+        result.getQuestionsTuple(),
+        result.getQuestionsDC());
   }
 
   private void detect()

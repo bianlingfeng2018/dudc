@@ -8,6 +8,7 @@ import static edu.fudan.utils.DCUtil.getErrorLinesContainingChanges;
 import static edu.fudan.utils.DCUtil.loadChanges;
 
 import ch.javasoft.bitset.search.NTreeSearch;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
@@ -126,24 +127,36 @@ public class Evaluation {
   private int cellBudgetUsed = 0;
   private int dcBudgetUsed = 0;
   private int tupleBudgetUsed = 0;
-  private Set<TCell> cellIdentifiersOfChanges = Sets.newHashSet();
+  @Getter
   private Set<Integer> errorLinesOfChanges = Sets.newHashSet();
   private Set<Integer> errorLinesInSample = Sets.newHashSet();
-  private Set<TCell> cellIdentifiersOfTrueVios = Sets.newHashSet();
+  private Set<Integer> errorLinesInSampleAndExcluded = Sets.newHashSet();
+  private Set<TCell> cellsOfChanges = Sets.newHashSet();
+  private Set<TCell> cellsOfTrueVios = Sets.newHashSet();
   private Set<TCell> cellsOfTrueViosAndChanges = Sets.newHashSet();
+  @Setter
+  private Set<Integer> excludedLinesInCellQ = Sets.newHashSet();
+  @Setter
+  private Set<Integer> excludedLinesInTupleQ = Sets.newHashSet();
+  @Setter
+  private Set<Integer> excludedLinesInDCsQ = Sets.newHashSet();
   private SampleResult sampleResult = new SampleResult(new HashSet<>(), new ArrayList<>());
-  private Set<Integer> curExcludedLinesOfTrueDCs = Sets.newHashSet();
   @Getter
   @Setter
   private double errorThreshold = 0.0;
+  @Getter
+  private List<EvalResult> evalResults = Lists.newArrayList();
+  @Getter
+  private final String csvResultPath;
 
   public Evaluation(CleanData cleanData, DirtyData dirtyData, String groundTruthDCsPath,
-      String candidateDCsPath, String trueDCsPath) {
+      String candidateDCsPath, String trueDCsPath, String csvResultPath) {
     this.cleanData = cleanData;
     this.dirtyData = dirtyData;
     this.groundTruthDCsPath = groundTruthDCsPath;
     this.candidateDCsPath = candidateDCsPath;
     this.trueDCsPath = trueDCsPath;
+    this.csvResultPath = csvResultPath;
   }
 
   public void setUp()
@@ -185,7 +198,7 @@ public class Evaluation {
     // 设定errors(changes)
     List<TChange> changes = loadChanges(this.cleanData.getChangesPath());
     log.info("Changes: {}", changes.size());
-    this.cellIdentifiersOfChanges = getCellIdentifiersOfChanges(changes);
+    this.cellsOfChanges = getCellIdentifiersOfChanges(changes);
     this.errorLinesOfChanges = getErrorLinesContainingChanges(changes);
     // 设定errorThreshold
     this.errorThreshold = defaultErrorThreshold;
@@ -195,7 +208,7 @@ public class Evaluation {
       Set<DenialConstraint> falseDCs,
       Set<DCViolation> candidateViolations,
       Set<DCViolation> falseViolations,
-      Set<Integer> dirtyLines) {
+      Set<Integer> excludedLines) {
     if (candidateDCs != null) {
       // 记录当前状态
       this.currDCs.clear();
@@ -216,7 +229,7 @@ public class Evaluation {
           // 删除和DC相关的冲突
           this.candidateViolations.remove(vio);
           // TODO: 增加需要排除的脏数据，FalseDC不一定对应的是脏数据，有可能是缺少反例，需要进一步判断
-//          excludeDirtyLines(vio);
+//          excludeLinesInVio(vio);
         }
       }
     }
@@ -233,9 +246,9 @@ public class Evaluation {
         this.candidateViolations.remove(vio);
       }
     }
-    if (dirtyLines != null) {
+    if (excludedLines != null) {
       // 增加需要排除的脏数据
-      this.excludedLines.addAll(dirtyLines);
+      this.excludedLines.addAll(excludedLines);
     }
   }
 
@@ -277,28 +290,36 @@ public class Evaluation {
       }
     }
     // 评价error cells发现个数
-    this.cellIdentifiersOfTrueVios = getCellIdentyfiersFromVios(this.trueViolations,
+    this.cellsOfTrueVios = getCellIdentyfiersFromVios(this.trueViolations,
         this.dirtyData.getInput());
-    this.cellsOfTrueViosAndChanges = this.cellIdentifiersOfTrueVios.stream()
-        .filter(tc -> this.cellIdentifiersOfChanges.contains(tc))
+    this.cellsOfTrueViosAndChanges = this.cellsOfTrueVios.stream()
+        .filter(tc -> this.cellsOfChanges.contains(tc))
+        .collect(Collectors.toSet());
+    // 评价sample中已排除的错误元组数量
+    this.errorLinesInSampleAndExcluded = this.errorLinesInSample.stream()
+        .filter(i -> this.excludedLines.contains(i))
         .collect(Collectors.toSet());
     // 评价sample的error lines
-    result.setCurExcludedLinesOfTrueDCs(this.curExcludedLinesOfTrueDCs);
-    result.setErrorLinesInSample(this.errorLinesInSample);
-    result.setTrueDCs(this.trueDCs.size());
-    result.setCandiDCs(this.candidateDCs.size());
-    result.setGtDCs(this.groundTruthDCs.size());
-    result.setTrueVios(this.trueViolations.size());
-    result.setCandiVios(this.candidateViolations.size());
-    result.setGtVios(this.groundTruthViolations.size());
-    result.setDcStrVioSizeMap(candiDCViosMap);
-    result.setExcludedLines(this.excludedLines);
-    result.setCellQuestions(this.cellBudgetUsed);
-    result.setDcQuestions(this.dcBudgetUsed);
-    result.setTupleQuestions(this.tupleBudgetUsed);
-    result.setCellsOfChanges(this.cellIdentifiersOfChanges.size());
-    result.setCellsOfTrueVios(this.cellIdentifiersOfTrueVios.size());
+    result.setExcludedLines(this.excludedLines.size());
+    result.setExcludedLinesOfCellQ(this.excludedLinesInCellQ.size());
+    result.setExcludedLinesOfTupleQ(this.excludedLinesInTupleQ.size());
+    result.setExcludedLinesOfDCsQ(this.excludedLinesInDCsQ.size());
+    result.setErrorLinesInSample(this.errorLinesInSample.size());
+    result.setErrorLinesInSampleAndExcluded(this.errorLinesInSampleAndExcluded.size());
+    result.setDCsTrue(this.trueDCs.size());
+    result.setDCsCandidate(this.candidateDCs.size());
+    result.setDCsGroundTruth(this.groundTruthDCs.size());
+    result.setViolationsTrue(this.trueViolations.size());
+    result.setViolationsCandidate(this.candidateViolations.size());
+    result.setViolationsGroundTruth(this.groundTruthViolations.size());
+    result.setQuestionsCell(this.cellBudgetUsed);
+    result.setQuestionsTuple(this.tupleBudgetUsed);
+    result.setQuestionsDC(this.dcBudgetUsed);
+    result.setCellsOfChanges(this.cellsOfChanges.size());
+    result.setCellsOfTrueVios(this.cellsOfTrueVios.size());
     result.setCellsOfTrueViosAndChanges(this.cellsOfTrueViosAndChanges.size());
+    result.setCandiDCViosMap(candiDCViosMap);
+    this.evalResults.add(result);
     return result;
   }
 
@@ -323,7 +344,7 @@ public class Evaluation {
   public boolean allTrueViolationsFound() {
 //    boolean b = trueDCsMoreThanGroundTruthDCs();
 //    boolean b = trueViosMoreThanGroundTruthVios();
-    boolean b = this.cellIdentifiersOfTrueVios.containsAll(this.cellIdentifiersOfChanges);
+    boolean b = this.cellsOfTrueVios.containsAll(this.cellsOfChanges);
     return b;
   }
 
@@ -360,61 +381,28 @@ public class Evaluation {
     return new HashSet<>(chosenDCs);
   }
 
-  public void excludeLines(DCViolation vio) {
-    LinePair linePair = vio.getLinePair();
-    int line1 = linePair.getLine1();
-    int line2 = linePair.getLine2();
-    this.excludedLines.add(line1);
-    this.excludedLines.add(line2);
-  }
-
-  public void excludeErrorLinesInSample(Set<Integer> recommendedLines) {
-    // 排除question(sample中推荐给用户判断的元组)中的所有错误行
-    Set<Integer> errors = recommendedLines.stream()
-        .filter(i -> this.errorLinesOfChanges.contains(i))
-        .collect(Collectors.toSet());
-    this.excludedLines.addAll(errors);
-  }
-
-  public void excludeLinesOfTrueDCs(Set<Integer> viosLinesOfTrueDCs) {
-    this.excludedLines.addAll(viosLinesOfTrueDCs);
-    // 记录当前轮排除的和TrueDCs相关的冲突元组
-    this.curExcludedLinesOfTrueDCs = viosLinesOfTrueDCs;
-  }
-
   @Getter
   @Setter
   public class EvalResult {
 
-    private int trueVios = 0;
-    private int candiVios = 0;
-    private int gtVios = 0;
-    private int trueDCs = 0;
-    private int candiDCs = 0;
-    private int gtDCs = 0;
-    private int cellQuestions = 0;
-    private int dcQuestions = 0;
-    private int tupleQuestions = 0;
+    private int violationsTrue = 0;
+    private int violationsCandidate = 0;
+    private int violationsGroundTruth = 0;
+    private int DCsTrue = 0;
+    private int DCsCandidate = 0;
+    private int DCsGroundTruth = 0;
+    private int QuestionsCell = 0;
+    private int QuestionsTuple = 0;
+    private int QuestionsDC = 0;
     private int cellsOfChanges = 0;
     private int cellsOfTrueVios = 0;
     private int cellsOfTrueViosAndChanges = 0;
-    private Map<DenialConstraint, Integer> dcStrVioSizeMap = Maps.newHashMap();
-    private Set<Integer> errorLinesInSample = Sets.newHashSet();
-    private Set<Integer> excludedLines = Sets.newHashSet();
-    private Set<Integer> curExcludedLinesOfTrueDCs = Sets.newHashSet();
-
-    @Override
-    public String toString() {
-      String result = String.format("%s/%s/%s(trueVios/candiVios/gtVios), "
-              + "%s/%s/%s(trueDCs/candiDCs/gtDCs), "
-              + "%s/%s/%s(cellsOfTrueViosAndChanges/cellsOfTrueVios/cellsOfChanges), "
-              + "%s/%s/%s(cellQ/dcQ/tupleQ)",
-          this.trueVios, this.candiVios, this.gtVios,
-          this.trueDCs, this.candiDCs, this.gtDCs,
-          this.cellsOfTrueViosAndChanges, this.cellsOfTrueVios, this.cellsOfChanges,
-          this.cellQuestions, this.dcQuestions, this.tupleQuestions
-      );
-      return result;
-    }
+    private int excludedLines = 0;
+    private int excludedLinesOfCellQ = 0;
+    private int excludedLinesOfTupleQ = 0;
+    private int excludedLinesOfDCsQ = 0;
+    private int errorLinesInSample = 0;
+    private int errorLinesInSampleAndExcluded = 0;
+    private Map<DenialConstraint, Integer> candiDCViosMap = Maps.newHashMap();
   }
 }

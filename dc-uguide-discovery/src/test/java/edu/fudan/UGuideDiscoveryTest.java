@@ -81,6 +81,8 @@ public class UGuideDiscoveryTest {
       "result_rules\\dcs_hospital_candidate.out";
   private final String trueDCsPath = baseDir + File.separator +
       "result_rules\\dcs_hospital_candidate_true.out";
+  private final String csvResultPath = baseDir + File.separator +
+      "evaluation\\eval_error_detect_hospital.csv";
 
   @Test
   public void testOneRoundUGuide()
@@ -96,7 +98,8 @@ public class UGuideDiscoveryTest {
         groundTruthDCsPath,
         candidateDCsPath,
         trueDCsPath,
-        headerPath);
+        headerPath,
+        csvResultPath);
     ud.guidedDiscovery();
   }
 
