@@ -5,6 +5,7 @@ import static edu.fudan.conf.DefaultConf.maxDCQuestionBudget;
 import static edu.fudan.conf.DefaultConf.maxDiscoveryRound;
 import static edu.fudan.conf.DefaultConf.maxInCluster;
 import static edu.fudan.conf.DefaultConf.maxTupleQuestionBudget;
+import static edu.fudan.conf.DefaultConf.questionsConf;
 import static edu.fudan.conf.DefaultConf.topKOfCluster;
 import static edu.fudan.utils.DataUtil.getDCsSetFromViolations;
 
@@ -96,9 +97,15 @@ public class UGuideDiscovery {
       // 检测冲突
       detect();
       // 多轮提问
-      askCellQuestion();
-      askTupleQuestion();
-      askDCQuestion();
+      if (questionsConf[0] == 1) {
+        askCellQuestion();
+      }
+      if (questionsConf[1] == 1) {
+        askTupleQuestion();
+      }
+      if (questionsConf[2] == 1) {
+        askDCQuestion();
+      }
       // 评价真冲突/假冲突
       evaluate();
       // 输出结果
