@@ -49,7 +49,7 @@ public class DCFinderMetanome extends DCFinder implements DenialConstraintAlgori
 		PredicateBuilder predicates = new PredicateBuilder(input, noCrossColumn, minimumSharedValue);
 		log.info("Size of the predicate space:" + predicates.getPredicates().size());
 
-		DenialConstraintSet dcs = super.run(input, predicates, errorThreshold);
+		DenialConstraintSet dcs = super.run(input, predicates, errorThreshold, null);
 		log.info("Result size: " + dcs.size());
 		for (DenialConstraint dc : dcs) {
 			resultReceiver.receiveResult(dc.toResult());

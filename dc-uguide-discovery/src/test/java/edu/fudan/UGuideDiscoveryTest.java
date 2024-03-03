@@ -22,12 +22,14 @@ import de.hpi.naumann.dc.predicates.sets.PredicateSetFactory;
 import de.metanome.algorithm_integration.Operator;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
+import de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraintSet;
 import edu.fudan.algorithms.BasicDCGenerator;
 import edu.fudan.algorithms.DCLoader;
 import edu.fudan.algorithms.DCViolation;
 import edu.fudan.algorithms.DCViolationSet;
 import edu.fudan.algorithms.DiscoveryEntry;
 import edu.fudan.algorithms.HydraDetector;
+import edu.fudan.algorithms.RLDCGenerator;
 import edu.fudan.algorithms.TupleSampler;
 import edu.fudan.algorithms.TupleSampler.SampleResult;
 import edu.fudan.algorithms.UGuideDiscovery;
@@ -38,6 +40,7 @@ import edu.fudan.transformat.DCFormatUtil;
 import edu.fudan.utils.DCUtil;
 import edu.fudan.utils.FileUtil;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
@@ -109,6 +112,17 @@ public class UGuideDiscoveryTest {
   }
 
   @Test
+  public void testDiscoveryDCsUsingDCFinder()
+      throws InputGenerationException, InputIterationException, FileNotFoundException {
+    // 这里只是为了生成证据集，因此不用管errorThreshold
+//    DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(sampledDataPath,
+//        defaultErrorThreshold, evidencesPathForFCDC);
+    DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(sampledDataPath,
+        0, null);
+    log.info("Result size: " + dcs.size());
+  }
+
+  @Test
   public void testGenGroundTruthDCsUsingDCFinder() {
     BasicDCGenerator generator = new BasicDCGenerator(sampledDataPath,
         dcsPathForFCDC, headerPath);
@@ -116,6 +130,15 @@ public class UGuideDiscoveryTest {
     generator.setErrorThreshold(0.001);
     Set<DenialConstraint> dcs = generator.generateDCsForUser();
     log.info("DCs size={}", dcs.size());
+  }
+
+  @Test
+  public void testGenGroundTruthDCsUsingDCMiner() {
+    RLDCGenerator generator = new RLDCGenerator(sampledDataPath, headerPath, topKDCsPath);
+    generator.setExcludeDCs(new HashSet<>());
+    generator.setErrorThreshold(0.001);
+    Set<DenialConstraint> dcs = generator.generateDCsForUser();
+    log.info("DCMiner DCs size={}", dcs.size());
   }
 
   @Test

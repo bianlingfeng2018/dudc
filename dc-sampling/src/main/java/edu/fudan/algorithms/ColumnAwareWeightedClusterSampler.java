@@ -5,6 +5,8 @@ import de.hpi.naumann.dc.evidenceset.build.sampling.OrderedCluster;
 import de.hpi.naumann.dc.input.Input;
 import de.hpi.naumann.dc.input.ParsedColumn;
 import gnu.trove.iterator.TIntIterator;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ColumnAwareWeightedClusterSampler {
+
+  private final boolean randomCluster = false;
 
   /**
    * @param input          所有元组
@@ -44,12 +48,10 @@ public class ColumnAwareWeightedClusterSampler {
         cluster.add(i);
       }
 
-      List<WeightedCluster> sorted = valueMap.values().stream()
-          .sorted()
-          .collect(Collectors.toList());
+      List<WeightedCluster> clusters = getClusterList(valueMap, randomCluster);
 
       // TODO: 如何考虑有错误混入size最大的cluster中这种情况？
-      List<WeightedCluster> selected = sorted.subList(0, Math.min(topKOfCluster, sorted.size()));
+      List<WeightedCluster> selected = clusters.subList(0, Math.min(topKOfCluster, clusters.size()));
 
       // TODO: Cluster内部采用随机策略比较好吧？避免一直得到同一个结果
       for (OrderedCluster cluster : selected) {
@@ -65,6 +67,21 @@ public class ColumnAwareWeightedClusterSampler {
       }
     }
     return lines;
+  }
+
+  private static List<WeightedCluster> getClusterList(
+      Map<Object, WeightedCluster> valueMap, boolean randomCluster) {
+    List<WeightedCluster> clusters;
+    if (randomCluster) {
+      clusters = new ArrayList<>(valueMap.values());
+      // 打乱顺序
+      Collections.shuffle(clusters);
+    } else {
+      clusters = valueMap.values().stream()
+          .sorted()
+          .collect(Collectors.toList());
+    }
+    return clusters;
   }
 
 //  private void updateSizeFrequency(Map<Integer, Integer> sfmap, WeightedCluster cluster) {
