@@ -143,21 +143,6 @@ public class UGuideDiscoveryTest {
   }
 
   @Test
-  public void testGenGroundTruthDCsUsingDCMiner() {
-    List<DenialConstraint> excludeDCs = DCLoader.load(headerPath, visitedDCsPath, new HashSet<>());
-    log.debug("Visited DCs size={}", excludeDCs.size());
-    RLDCGenerator generator = new RLDCGenerator(sampledDataPath, evidencesPathForFCDC,
-        dcsPathForDCMiner, headerPath);
-    generator.setExcludeDCs(new HashSet<>(excludeDCs));
-//    generator.setErrorThreshold(0.001);
-    Set<DenialConstraint> dcs = generator.generateDCsForUser();
-    log.info("DCMiner DCs size={}", dcs.size());
-    for (DenialConstraint dc : dcs) {
-      log.debug(DCFormatUtil.convertDC2String(dc));
-    }
-  }
-
-  @Test
   public void testGenTopKDCs() throws IOException {
     List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(5, dcsPathForFCDC, headerPath, null);
     DCUtil.persistTopKDCs(topKDCs, topKDCsPath);
@@ -340,5 +325,20 @@ public class UGuideDiscoveryTest {
   public void testDCMinerPredict() throws IOException, InterruptedException {
     String[] args4Predict = (sharedArgs + " " + predictArgs).split(" ");
     PythonCaller.predict(args4Predict);
+  }
+
+  @Test
+  public void testRLDCGenerator() {
+    List<DenialConstraint> excludeDCs = DCLoader.load(headerPath, visitedDCsPath, new HashSet<>());
+    log.debug("Visited DCs size={}", excludeDCs.size());
+    RLDCGenerator generator = new RLDCGenerator(sampledDataPath, evidencesPathForFCDC,
+        dcsPathForDCMiner, headerPath);
+    generator.setExcludeDCs(new HashSet<>(excludeDCs));
+//    generator.setErrorThreshold(0.001);
+    Set<DenialConstraint> dcs = generator.generateDCsForUser();
+    log.info("DCMiner DCs size={}", dcs.size());
+    for (DenialConstraint dc : dcs) {
+      log.debug(DCFormatUtil.convertDC2String(dc));
+    }
   }
 }
