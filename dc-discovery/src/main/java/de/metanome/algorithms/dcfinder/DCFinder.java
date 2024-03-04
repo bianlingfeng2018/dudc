@@ -59,6 +59,7 @@ public class DCFinder {
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
+      return null;
     }
 
 		DenialConstraintSet dcs = new MinimalCoverSearch(predicates.getPredicates(),

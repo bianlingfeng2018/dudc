@@ -23,6 +23,8 @@ import edu.fudan.algorithms.DCViolationSet;
 import edu.fudan.algorithms.HydraDetector;
 import edu.fudan.algorithms.TupleSampler.SampleResult;
 import edu.fudan.utils.DataUtil;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -66,6 +68,12 @@ public class Evaluation {
    */
   @Getter
   private final String trueDCsPath;
+
+  /**
+   * Path to output the final visited DCs
+   */
+  @Getter
+  private final String visitedDCsPath;
 
   /**
    * Total violations wrt ground truth DCs.
@@ -150,12 +158,13 @@ public class Evaluation {
   private final String csvResultPath;
 
   public Evaluation(CleanData cleanData, DirtyData dirtyData, String groundTruthDCsPath,
-      String candidateDCsPath, String trueDCsPath, String csvResultPath) {
+      String candidateDCsPath, String trueDCsPath, String visitedDCsPath, String csvResultPath) {
     this.cleanData = cleanData;
     this.dirtyData = dirtyData;
     this.groundTruthDCsPath = groundTruthDCsPath;
     this.candidateDCsPath = candidateDCsPath;
     this.trueDCsPath = trueDCsPath;
+    this.visitedDCsPath = visitedDCsPath;
     this.csvResultPath = csvResultPath;
   }
 
@@ -202,6 +211,8 @@ public class Evaluation {
     this.errorLinesOfChanges = getErrorLinesContainingChanges(changes);
     // 设定errorThreshold
     this.errorThreshold = defaultErrorThreshold;
+    // 确认visited为零
+    clearVisitedDCs();
   }
 
   public void update(Set<DenialConstraint> candidateDCs,
@@ -379,6 +390,16 @@ public class Evaluation {
   public Set<DenialConstraint> genDCQuestionsFromCurrState(int maxQueryBudget) {
     List<DenialConstraint> chosenDCs = getRandomElements(this.currDCs, maxQueryBudget);
     return new HashSet<>(chosenDCs);
+  }
+
+  private void clearVisitedDCs() throws IOException {
+    // 创建一个 BufferedWriter 对象
+    BufferedWriter writer = new BufferedWriter(new FileWriter(this.visitedDCsPath));
+    // 写入空字符串以清空文件内容
+    writer.write("");
+    // 关闭 BufferedWriter
+    writer.close();
+    log.info("VisitedDCsPath cleared");
   }
 
   @Getter

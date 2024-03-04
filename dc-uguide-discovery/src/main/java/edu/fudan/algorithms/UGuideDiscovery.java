@@ -1,11 +1,13 @@
 package edu.fudan.algorithms;
 
+import static edu.fudan.conf.DefaultConf.dcGenerator;
 import static edu.fudan.conf.DefaultConf.maxCellQuestionBudget;
 import static edu.fudan.conf.DefaultConf.maxDCQuestionBudget;
 import static edu.fudan.conf.DefaultConf.maxDiscoveryRound;
 import static edu.fudan.conf.DefaultConf.maxInCluster;
 import static edu.fudan.conf.DefaultConf.maxTupleQuestionBudget;
 import static edu.fudan.conf.DefaultConf.questionsConf;
+import static edu.fudan.conf.DefaultConf.topK;
 import static edu.fudan.conf.DefaultConf.topKOfCluster;
 import static edu.fudan.utils.DataUtil.getDCsSetFromViolations;
 
@@ -65,19 +67,22 @@ public class UGuideDiscovery {
       String excludedLinesPath,
       String sampledDataPath,
       String dcsPathForFCDC,
+      String dcsPathForDCMiner,
       String evidencesPathForFCDC,
       String topKDCsPath,
       String groundTruthDCsPath,
       String candidateDCsPath,
       String trueDCsPath,
+      String visitedDCsPath,
       String headerPath,
       String csvResultPath) {
     this.cleanData = new CleanData(cleanDataPath, headerPath, changesPath);
     this.dirtyData = new DirtyData(dirtyDataPath, excludedLinesPath, headerPath);
     this.sampledData = new SampledData(sampledDataPath, headerPath);
-    this.candidateDCs = new CandidateDCs(dcsPathForFCDC, evidencesPathForFCDC, topKDCsPath);
+    this.candidateDCs = new CandidateDCs(dcsPathForFCDC, dcsPathForDCMiner, evidencesPathForFCDC,
+        topKDCsPath);
     this.evaluation = new Evaluation(cleanData, dirtyData, groundTruthDCsPath, candidateDCsPath,
-        trueDCsPath, csvResultPath);
+        trueDCsPath, visitedDCsPath, csvResultPath);
   }
 
   public void guidedDiscovery()
@@ -130,12 +135,15 @@ public class UGuideDiscovery {
     log.info("====== 7.Persist result ======");
     String trueDCsPath = evaluation.getTrueDCsPath();
     String candidateDCsPath = evaluation.getCandidateDCsPath();
+    String visitedDCsPath = evaluation.getVisitedDCsPath();
     String excludedLinesPath = this.dirtyData.getExcludedLinesPath();
     log.info("TrueDCsPath={}", trueDCsPath);
     log.info("CandidateDCsPath={}", candidateDCsPath);
+    log.info("VisitedDCsPath={}", visitedDCsPath);
     log.info("ExcludedLinesPath={}", excludedLinesPath);
     persistDCs(evaluation.getTrueDCs(), trueDCsPath);
     persistDCs(evaluation.getCandidateDCs(), candidateDCsPath);
+    persistDCs(evaluation.getVisitedDCs(), visitedDCsPath);
     persistExcludedLines(this.dirtyData.getDataPath(), evaluation.getExcludedLines(),
         excludedLinesPath);
     // 保存结果
@@ -312,21 +320,20 @@ public class UGuideDiscovery {
   }
 
   private void discoveryDCs()
-      throws IOException {
+      throws IOException, DCMinderToolsException {
     log.info("====== 3.Discovery DCs from sample ======");
     // TODO:现在发现的规则没有加入g1，有的规则冲突太多，明显是假阳性，且影响后续的效率
-    BasicDCGenerator generator = new BasicDCGenerator(sampledData.getDataPath(),
-        candidateDCs.getDcsPathForFCDC(), sampledData.getHeaderPath());
-    generator.setExcludeDCs(evaluation.getVisitedDCs());
-    // 设定近似阈值
-    generator.setErrorThreshold(evaluation.getErrorThreshold());
+    log.info("DCGenerator: {}", dcGenerator);
+    DCGenerator generator = getGenerator(dcGenerator);
     Set<DenialConstraint> dcs = generator.generateDCsForUser();
 
+    if (dcs.size() != topK) {
+      throw new DCMinderToolsException(String.format("Discovery DCs error: size != %s", topK));
+    }
     DCUtil.persistTopKDCs(new ArrayList<>(dcs), candidateDCs.getTopKDCsPath());
 
     evaluation.update(dcs, null, null, null, null);
   }
-
 
   private void sample()
       throws InputGenerationException, IOException, InputIterationException {
@@ -341,6 +348,26 @@ public class UGuideDiscovery {
     FileUtil.writeListLinesToFile(sampleResult.getLinesWithHeader(), new File(out));
 
     evaluation.updateSampleResult(sampleResult);
+  }
+
+  private DCGenerator getGenerator(String dcGenerator) throws DCMinderToolsException {
+    if (dcGenerator.equals("Basic")) {
+      BasicDCGenerator generator = new BasicDCGenerator(sampledData.getDataPath(),
+          candidateDCs.getDcsPathForFCDC(), sampledData.getHeaderPath());
+      generator.setExcludeDCs(evaluation.getVisitedDCs());
+      // 设定近似阈值
+      generator.setErrorThreshold(evaluation.getErrorThreshold());
+      return generator;
+    } else if (dcGenerator.equals("DCMiner")) {
+      RLDCGenerator generator = new RLDCGenerator(sampledData.getDataPath(),
+          candidateDCs.getEvidencesPathForFCDC(),
+          candidateDCs.getDcsPathForDCMiner(),
+          sampledData.getHeaderPath());
+      generator.setExcludeDCs(evaluation.getVisitedDCs());
+      return generator;
+    } else {
+      throw new DCMinderToolsException(String.format("Unknown DCGenerator: %s", dcGenerator));
+    }
   }
 
   private void persistDCs(Set<DenialConstraint> candiDcs, String path) throws IOException {

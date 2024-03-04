@@ -1,7 +1,10 @@
 package edu.fudan;
 
 import static edu.fudan.conf.DefaultConf.maxInCluster;
+import static edu.fudan.conf.DefaultConf.predictArgs;
+import static edu.fudan.conf.DefaultConf.sharedArgs;
 import static edu.fudan.conf.DefaultConf.topKOfCluster;
+import static edu.fudan.conf.DefaultConf.trainArgs;
 import static edu.fudan.utils.DCUtil.getCellIdentifiersOfChanges;
 import static edu.fudan.utils.DCUtil.getCellIdentyfiersFromVios;
 import static edu.fudan.utils.DCUtil.getDCVioSizeMap;
@@ -29,6 +32,7 @@ import edu.fudan.algorithms.DCViolation;
 import edu.fudan.algorithms.DCViolationSet;
 import edu.fudan.algorithms.DiscoveryEntry;
 import edu.fudan.algorithms.HydraDetector;
+import edu.fudan.algorithms.PythonCaller;
 import edu.fudan.algorithms.RLDCGenerator;
 import edu.fudan.algorithms.TupleSampler;
 import edu.fudan.algorithms.TupleSampler.SampleResult;
@@ -72,6 +76,8 @@ public class UGuideDiscoveryTest {
       "preprocessed_data\\preprocessed_hospital_dirty_sample.csv";
   private final String dcsPathForFCDC = baseDir + File.separator +
       "evidence_set\\dcs_fcdc_hospital.out";
+  private final String dcsPathForDCMiner = baseDir + File.separator +
+      "result_rules\\dcminer_5_hospital.csv";
   private final String evidencesPathForFCDC = baseDir + File.separator +
       "evidence_set\\evidence_set_fcdc_hospital.csv";
   private final String topKDCsPath = baseDir + File.separator +
@@ -84,6 +90,8 @@ public class UGuideDiscoveryTest {
       "result_rules\\dcs_hospital_candidate.out";
   private final String trueDCsPath = baseDir + File.separator +
       "result_rules\\dcs_hospital_candidate_true.out";
+  private final String visitedDCsPath = baseDir + File.separator +
+      "evidence_set\\excluded_rules_hospital.csv";
   private final String csvResultPath = baseDir + File.separator +
       "evaluation\\eval_error_detect_hospital.csv";
 
@@ -96,11 +104,13 @@ public class UGuideDiscoveryTest {
         excludedLinesPath,
         sampledDataPath,
         dcsPathForFCDC,
+        dcsPathForDCMiner,
         evidencesPathForFCDC,
         topKDCsPath,
         groundTruthDCsPath,
         candidateDCsPath,
         trueDCsPath,
+        visitedDCsPath,
         headerPath,
         csvResultPath);
     ud.guidedDiscovery();
@@ -134,11 +144,17 @@ public class UGuideDiscoveryTest {
 
   @Test
   public void testGenGroundTruthDCsUsingDCMiner() {
-    RLDCGenerator generator = new RLDCGenerator(sampledDataPath, headerPath, topKDCsPath);
-    generator.setExcludeDCs(new HashSet<>());
-    generator.setErrorThreshold(0.001);
+    List<DenialConstraint> excludeDCs = DCLoader.load(headerPath, visitedDCsPath, new HashSet<>());
+    log.debug("Visited DCs size={}", excludeDCs.size());
+    RLDCGenerator generator = new RLDCGenerator(sampledDataPath, evidencesPathForFCDC,
+        dcsPathForDCMiner, headerPath);
+    generator.setExcludeDCs(new HashSet<>(excludeDCs));
+//    generator.setErrorThreshold(0.001);
     Set<DenialConstraint> dcs = generator.generateDCsForUser();
     log.info("DCMiner DCs size={}", dcs.size());
+    for (DenialConstraint dc : dcs) {
+      log.debug(DCFormatUtil.convertDC2String(dc));
+    }
   }
 
   @Test
@@ -314,4 +330,15 @@ public class UGuideDiscoveryTest {
     log.info("ErrorLinesInSample: {}", errorLinesInSample);  // [2336, 2481, 2456, 2506]
   }
 
+  @Test
+  public void testDCMiner() throws IOException, InterruptedException {
+    String[] args4Train = (sharedArgs + " " + trainArgs).split(" ");
+    PythonCaller.trainModel(args4Train);
+  }
+
+  @Test
+  public void testDCMinerPredict() throws IOException, InterruptedException {
+    String[] args4Predict = (sharedArgs + " " + predictArgs).split(" ");
+    PythonCaller.predict(args4Predict);
+  }
 }
