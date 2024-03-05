@@ -328,7 +328,8 @@ public class UGuideDiscovery {
     Set<DenialConstraint> dcs = generator.generateDCsForUser();
 
     if (dcs.size() != topK) {
-      throw new DCMinderToolsException(String.format("Discovery DCs error: size != %s", topK));
+      throw new DCMinderToolsException(String.format("Discovery DCs size is not %s: %s",
+          topK, dcs.size()));
     }
     DCUtil.persistTopKDCs(new ArrayList<>(dcs), candidateDCs.getTopKDCsPath());
 
