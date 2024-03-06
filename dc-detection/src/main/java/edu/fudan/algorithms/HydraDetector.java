@@ -93,6 +93,7 @@ public class HydraDetector {
     IEvidenceSet sampleEvidence =
         new SystematicLinearEvidenceSetBuilder(predicates, sampleRounds).buildEvidenceSet(input);
     log.debug("Checking " + set.size() + " DCs.");
+    log.debug("Input size {}", input.getLineCount());
 
 //    log.debug("Building selectivity estimation");
 

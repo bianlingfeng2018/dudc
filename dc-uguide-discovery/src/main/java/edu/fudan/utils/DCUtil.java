@@ -70,7 +70,7 @@ public class DCUtil {
       DCViolationSet vioSet) {
     Map<DenialConstraint, Integer> dcViosSizeMap = Maps.newHashMap();
     for (DCViolation vio : vioSet.getViosSet()) {
-      List<DenialConstraint> dcs = vio.getDcs();
+      List<DenialConstraint> dcs = vio.getDenialConstraintList();
       for (DenialConstraint dc : dcs) {
         if (dcViosSizeMap.containsKey(dc)) {
           Integer count = dcViosSizeMap.get(dc);
@@ -127,7 +127,7 @@ public class DCUtil {
   public static Set<TCell> getCellIdentyfiersFromVios(Set<DCViolation> vioSet, Input di) {
     Set<TCell> cellIdentifiers = Sets.newHashSet();
     for (DCViolation vio : vioSet) {
-      List<DenialConstraint> dcs = vio.getDcs();
+      List<DenialConstraint> dcs = vio.getDenialConstraintList();
       for (DenialConstraint dc : dcs) {
         LinePair linePair = vio.getLinePair();
         int line1 = linePair.getLine1();

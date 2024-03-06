@@ -16,6 +16,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import ch.javasoft.bitset.search.NTreeSearch;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.input.Input;
@@ -74,7 +75,7 @@ public class UGuideDiscoveryTest {
       "preprocessed_data\\preprocessed_hospital_dirty_excluded.csv";
   private final String sampledDataPath = baseDir + File.separator +
       "preprocessed_data\\preprocessed_hospital_dirty_sample.csv";
-  private final String dcsPathForFCDC = baseDir + File.separator +
+  private final String fullGTDCsPath = baseDir + File.separator +
       "evidence_set\\dcs_fcdc_hospital.out";
   private final String dcsPathForDCMiner = baseDir + File.separator +
       "result_rules\\dcminer_5_hospital.csv";
@@ -103,7 +104,7 @@ public class UGuideDiscoveryTest {
         dirtyDataPath,
         excludedLinesPath,
         sampledDataPath,
-        dcsPathForFCDC,
+        fullGTDCsPath,
         dcsPathForDCMiner,
         evidencesPathForFCDC,
         topKDCsPath,
@@ -117,16 +118,19 @@ public class UGuideDiscoveryTest {
   }
 
   @Test
-  public void testGenGroundTruthDCs() {
-    DiscoveryEntry.doDiscovery(cleanDataPath, dcsPathForFCDC);
+  public void testGenGroundTruthDCsUsingFDCD() {
+    // 用2023年最新的FDCD算法生成干净规则集合
+    DiscoveryEntry.doDiscovery(cleanDataPath, fullGTDCsPath);
   }
 
   @Test
   public void testDiscoveryDCsUsingDCFinder()
       throws InputGenerationException, InputIterationException, FileNotFoundException {
-    // 这里只是为了生成证据集，因此不用管errorThreshold
+    // 1.当evidenceFile不为null，则生成证据集（作为DCMiner训练模型的输入），此时errorThreshold不重要
 //    DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(sampledDataPath,
 //        defaultErrorThreshold, evidencesPathForFCDC);
+
+    // 2.当evidenceFile为null，则生成规则集合
     DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(sampledDataPath,
         0, null);
     log.info("Result size: " + dcs.size());
@@ -134,17 +138,19 @@ public class UGuideDiscoveryTest {
 
   @Test
   public void testGenGroundTruthDCsUsingDCFinder() {
-    BasicDCGenerator generator = new BasicDCGenerator(sampledDataPath,
-        dcsPathForFCDC, headerPath);
+    // 用2019年的DCFinder算法生成干净规则集合，同时返回top-k规则集合
+    // TODO: 进一步优化封装
+    BasicDCGenerator generator = new BasicDCGenerator(cleanDataPath,
+        fullGTDCsPath, headerPath);
     generator.setExcludeDCs(new HashSet<>());
-    generator.setErrorThreshold(0.001);
+    generator.setErrorThreshold(0.0);
     Set<DenialConstraint> dcs = generator.generateDCsForUser();
     log.info("DCs size={}", dcs.size());
   }
 
   @Test
   public void testGenTopKDCs() throws IOException {
-    List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(5, dcsPathForFCDC, headerPath, null);
+    List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(5, fullGTDCsPath, headerPath, null);
     DCUtil.persistTopKDCs(topKDCs, topKDCsPath);
   }
 
@@ -194,11 +200,31 @@ public class UGuideDiscoveryTest {
   public void testFalseDCsDetect()
       throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
     // TODO: Violation size: tureDcs,candiDCs,gtDCs并无大小关系，因为冲突之间可能有元组对的重合，一对元组可能涉及多个冲突
-//    String path = groundTruthDCsPath;
-    String path = groundTruthDCsInjectErrorPath;
+    String path = groundTruthDCsPath;
+//    String path = groundTruthDCsInjectErrorPath;
     DCViolationSet vios1 = new HydraDetector(cleanDataPath, path).detect();
     DCViolationSet vios2 = new HydraDetector(dirtyDataPath, path).detect();
     log.info("vios1={}, vios2={}", vios1.size(), vios2.size());
+    Map<DenialConstraint, Integer> dcViosMap = Maps.newHashMap();
+    if (vios1.size() != 0) {
+      Set<DCViolation> viosSet = vios1.getViosSet();
+      for (DCViolation vio : viosSet) {
+        List<DenialConstraint> dcs = vio.getDenialConstraintList();
+        for (DenialConstraint dc : dcs) {
+          // 统计每个dc关联多少个冲突
+          if (dcViosMap.containsKey(dc)) {
+            Integer i = dcViosMap.get(dc);
+            dcViosMap.put(dc, i + 1);
+          } else {
+            dcViosMap.put(dc, 1);
+          }
+        }
+      }
+    }
+    // TODO: 奇怪有时候会在干净数据集上发现冲突
+    for (DenialConstraint dc : dcViosMap.keySet()) {
+      log.debug("{}->{}", DCFormatUtil.convertDC2String(dc), dcViosMap.get(dc));
+    }
   }
 
   @Test
@@ -208,7 +234,7 @@ public class UGuideDiscoveryTest {
     DCViolationSet vioSet = detector.detect();
     log.info("VioSet = {}", vioSet.size());
     for (DCViolation vio : vioSet.getViosSet()) {
-      List<DenialConstraint> dcs = vio.getDcs();
+      List<DenialConstraint> dcs = vio.getDenialConstraintList();
       assertEquals(1, dcs.size());
     }
   }
@@ -340,5 +366,20 @@ public class UGuideDiscoveryTest {
     for (DenialConstraint dc : dcs) {
       log.debug(DCFormatUtil.convertDC2String(dc));
     }
+  }
+
+  @Test
+  public void testMinimizeDCs() {
+    // 测试准备注入错误的20条DCs已经是最小化的、没有重复的。
+    String DCsPath = baseDir + File.separator +
+        "result_rules\\dcs_hospital_ground_inject_error_20.out";
+    List<DenialConstraint> dcs = DCLoader.load(headerPath, DCsPath, new HashSet<>());
+    de.hpi.naumann.dc.denialcontraints.DenialConstraintSet set = new de.hpi.naumann.dc.denialcontraints.DenialConstraintSet();
+    for (DenialConstraint dc : dcs) {
+      set.add(dc);
+    }
+    log.debug("Before size = {}", set.size());
+    set.minimize();
+    log.debug("After size = {}", set.size());
   }
 }

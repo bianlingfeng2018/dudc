@@ -33,6 +33,7 @@ public class DCLoader {
       while ((line = br2.readLine()) != null) {
         DenialConstraint dc = DCFormatUtil.convertString2DC(line, header);
         // Exclude DCs situation
+        // TODO: 用implies比contains排除的范围更广
         if (excludedDCs != null && excludedDCs.contains(dc)) {
           continue;
         }

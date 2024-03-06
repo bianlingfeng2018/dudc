@@ -1,6 +1,7 @@
 package edu.fudan.algorithms.uguide;
 
 import static edu.fudan.algorithms.uguide.Strategy.getRandomElements;
+import static edu.fudan.conf.DefaultConf.debugDCVioMap;
 import static edu.fudan.conf.DefaultConf.defaultErrorThreshold;
 import static edu.fudan.utils.DCUtil.getCellIdentifiersOfChanges;
 import static edu.fudan.utils.DCUtil.getCellIdentyfiersFromVios;
@@ -236,6 +237,11 @@ public class Evaluation {
       for (DenialConstraint falseDC : falseDCs) {
         this.candidateDCs.remove(falseDC);
         Set<DCViolation> vios = map.get(falseDC);
+        // 对于CellQ，是根据假冲突判断的falseDC，且在后面才删除，所以falseDC可以找到对应冲突并remove，
+        // 对于DCsQ，是直接判断falseDC的，当这个规则是真规则但是不在groundTruth中时，可能没有冲突，所以这里要判空容错。
+        if (vios == null) {
+          continue;
+        }
         for (DCViolation vio : vios) {
           // 删除和DC相关的冲突
           this.candidateViolations.remove(vio);
@@ -245,11 +251,16 @@ public class Evaluation {
       }
     }
     if (candidateViolations != null) {
-      // 记录当前状态
-      this.currVios.clear();
-      this.currVios.addAll(candidateViolations);
       // 增加相关的冲突
       this.candidateViolations.addAll(candidateViolations);
+      // 增加真冲突（增量增加，开销较小）
+      for (DCViolation candiVio : candidateViolations) {
+        for (DenialConstraint dc : candiVio.getDenialConstraintList()) {
+          if (isTrueViolation(dc, candiVio.getLinePair())) {
+            this.trueViolations.add(candiVio);
+          }
+        }
+      }
     }
     if (falseViolations != null) {
       // 删除相关的冲突
@@ -261,6 +272,12 @@ public class Evaluation {
       // 增加需要排除的脏数据
       this.excludedLines.addAll(excludedLines);
     }
+  }
+
+  public void updateCurrState(Set<DCViolation> candidateViolations) {
+    // 记录当前状态
+    this.currVios.clear();
+    this.currVios.addAll(candidateViolations);
   }
 
   public void addCellBudget(int numb) {
@@ -277,39 +294,48 @@ public class Evaluation {
 
   public EvalResult evaluate() throws DCMinderToolsException {
     EvalResult result = new EvalResult();
-    // 评价最终的候选规则及其关联的冲突个数
-    Map<DenialConstraint, Integer> candiDCViosMap = Maps.newHashMap();
     // 评价真规则和假规则个数
+    long t1 = System.currentTimeMillis();
     for (DenialConstraint candiDC : this.candidateDCs) {
-      candiDCViosMap.put(candiDC, 0);
       if (isTrueDC(candiDC)) {
         this.trueDCs.add(candiDC);
       }
     }
-    // 评价真冲突和假冲突个数
-    for (DCViolation candiVio : this.candidateViolations) {
-      List<DenialConstraint> dcs = candiVio.getDcs();
-      for (DenialConstraint dc : dcs) {
-        if (isTrueViolation(dc, candiVio.getLinePair())) {
-          this.trueViolations.add(candiVio);
+    long t2 = System.currentTimeMillis();
+    log.debug("Eval 1 time = {}s", (t2 - t1) / 1000);
+    // 测试时，评价最终的候选规则及其关联的冲突个数
+    Map<DenialConstraint, Integer> candiDCViosMap = Maps.newHashMap();
+    if (debugDCVioMap) {
+      for (DenialConstraint candiDC : this.candidateDCs) {
+        candiDCViosMap.put(candiDC, 0);
+      }
+      for (DCViolation candiVio : this.candidateViolations) {
+        List<DenialConstraint> dcs = candiVio.getDenialConstraintList();
+        for (DenialConstraint dc : dcs) {
+          Integer i = candiDCViosMap.get(dc);
+          if (i == null) {
+            throw new DCMinderToolsException("No candiDC found for a candiVio!!!");
+          }
+          candiDCViosMap.put(dc, i + 1);
         }
-        Integer i = candiDCViosMap.get(dc);
-        if (i == null) {
-          throw new DCMinderToolsException("No candiDC found for a candiVio!!!");
-        }
-        candiDCViosMap.put(dc, i + 1);
       }
     }
+    long t3 = System.currentTimeMillis();
+    log.debug("Eval 2 time = {}s", (t3 - t2) / 1000.0);
     // 评价error cells发现个数
     this.cellsOfTrueVios = getCellIdentyfiersFromVios(this.trueViolations,
         this.dirtyData.getInput());
     this.cellsOfTrueViosAndChanges = this.cellsOfTrueVios.stream()
         .filter(tc -> this.cellsOfChanges.contains(tc))
         .collect(Collectors.toSet());
+    long t4 = System.currentTimeMillis();
+    log.debug("Eval 3 time = {}s", (t4 - t3) / 1000.0);
     // 评价sample中已排除的错误元组数量
     this.errorLinesInSampleAndExcluded = this.errorLinesInSample.stream()
         .filter(i -> this.excludedLines.contains(i))
         .collect(Collectors.toSet());
+    long t5 = System.currentTimeMillis();
+    log.debug("Eval 4 time = {}s", (t5 - t4) / 1000.0);
     // 评价sample的error lines
     result.setExcludedLines(this.excludedLines.size());
     result.setExcludedLinesOfCellQ(this.excludedLinesInCellQ.size());

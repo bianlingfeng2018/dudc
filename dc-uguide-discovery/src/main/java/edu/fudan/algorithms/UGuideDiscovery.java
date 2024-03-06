@@ -1,5 +1,6 @@
 package edu.fudan.algorithms;
 
+import static edu.fudan.algorithms.uguide.Strategy.getRandomElements;
 import static edu.fudan.conf.DefaultConf.dcGenerator;
 import static edu.fudan.conf.DefaultConf.maxCellQuestionBudget;
 import static edu.fudan.conf.DefaultConf.maxDCQuestionBudget;
@@ -37,6 +38,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -169,6 +171,13 @@ public class UGuideDiscovery {
     for (DenialConstraint dc : trueDCs) {
       log.debug("{}", DCFormatUtil.convertDC2String(dc));
     }
+    // 判断得到TrueDCs
+    Set<DenialConstraint> falseDCs = questions.stream().filter(dc -> !evaluation.isTrueDC(dc))
+        .collect(Collectors.toSet());
+      log.info("FalseDCs(DCsQ): {}", falseDCs.size());
+    for (DenialConstraint dc : falseDCs) {
+      log.debug("{}", DCFormatUtil.convertDC2String(dc));
+    }
     // 排除TrueDCs在脏数据上的冲突元组
     Set<Integer> excludedLinesInDCsQ = Sets.newHashSet();
     DCViolationSet vios = new HydraDetector(dirtyData.getDataPath(), trueDCs).detect();
@@ -179,8 +188,13 @@ public class UGuideDiscovery {
       excludedLinesInDCsQ.add(line1);
       excludedLinesInDCsQ.add(line2);
     }
-    evaluation.setExcludedLinesInDCsQ(excludedLinesInDCsQ);
-    evaluation.update(null, null, null, null, excludedLinesInDCsQ);
+    // TODO: 优选排除的元组
+    int sizeBefore = excludedLinesInDCsQ.size();
+    int sizeAfter = (int) (sizeBefore * 0.1);
+    Set<Integer> excludedLinesInDCsQRandom = new HashSet<>(getRandomElements(excludedLinesInDCsQ, sizeAfter));
+    log.debug("ExcludedLinesInDCsQRandom before {}, after {}", sizeBefore, sizeAfter);
+    evaluation.setExcludedLinesInDCsQ(excludedLinesInDCsQRandom);
+    evaluation.update(null, falseDCs, null, null, excludedLinesInDCsQRandom);
   }
 
   private void askTupleQuestion() {
@@ -227,7 +241,7 @@ public class UGuideDiscovery {
     }
     for (DCViolation vio : questions) {
       // TODO: Input和LinePair结合找出相关Cells，给用户判断是否为真冲突
-      List<DenialConstraint> dcs = vio.getDcs();
+      List<DenialConstraint> dcs = vio.getDenialConstraintList();
       for (DenialConstraint dc : dcs) {
         if (evaluation.isTrueViolation(dc, vio.getLinePair())) {
           // 若为真冲突，则增加DC的置信度
@@ -316,7 +330,10 @@ public class UGuideDiscovery {
     log.info("Vios = {}", vios.size());
 
     // update candidate DCs and violations
-    evaluation.update(null, null, vios.getViosSet(), null, null);
+    Set<DCViolation> violations = vios.getViosSet();
+    evaluation.update(null, null, violations, null, null);
+    // update current violations, which will be used to choose questions
+    evaluation.updateCurrState(violations);
   }
 
   private void discoveryDCs()

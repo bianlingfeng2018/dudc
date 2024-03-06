@@ -2,9 +2,7 @@ package edu.fudan.algorithms;
 
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.paritions.LinePair;
-import de.metanome.algorithm_integration.Predicate;
 import edu.fudan.transformat.DCFormatUtil;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import lombok.Getter;
@@ -15,19 +13,19 @@ import lombok.Getter;
 @Getter
 public class DCViolation {
 
-  private List<DenialConstraint> dcs;
+  private List<DenialConstraint> denialConstraintList;
 
   private LinePair linePair;
 
-  public DCViolation(List<DenialConstraint> dcs, LinePair linePair) {
-    this.dcs = dcs;
+  public DCViolation(List<DenialConstraint> denialConstraintList, LinePair linePair) {
+    this.denialConstraintList = denialConstraintList;
     this.linePair = linePair;
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("[dcs=");
-    for (DenialConstraint dc : dcs) {
+    for (DenialConstraint dc : denialConstraintList) {
       String dcStr = DCFormatUtil.convertDC2String(dc);
       sb.append(dcStr)
           .append(",");
@@ -44,7 +42,7 @@ public class DCViolation {
   @Override
   public int hashCode() {
     int result = Objects.hashCode(linePair);
-    for (DenialConstraint dc : dcs) {
+    for (DenialConstraint dc : denialConstraintList) {
       result = 31 * result + Objects.hashCode(dc);
     }
     return result;
@@ -62,9 +60,9 @@ public class DCViolation {
     if (!linePair.equals(tarObj.getLinePair())) {
       return false;
     }
-    List<DenialConstraint> tarObjDcs = tarObj.getDcs();
-    for (int i = 0; i < dcs.size(); i++) {
-      DenialConstraint dc = dcs.get(i);
+    List<DenialConstraint> tarObjDcs = tarObj.getDenialConstraintList();
+    for (int i = 0; i < denialConstraintList.size(); i++) {
+      DenialConstraint dc = denialConstraintList.get(i);
       DenialConstraint tarObjDc = tarObjDcs.get(i);
       if (!dc.equals(tarObjDc)) {
         return false;

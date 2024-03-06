@@ -21,10 +21,11 @@ public class DefaultConf {
   public static double defaultErrorThreshold = 0.001;
 //  public static double defaultErrorThreshold = 0;
   // CellQ TupleQ DCsQ
-  public static Integer[] questionsConf = new Integer[]{1, 0, 0};
+  public static Integer[] questionsConf = new Integer[]{1, 1, 1};
+  public static boolean debugDCVioMap = false;
   // DCMiner
   // TODO: 慎用static final关键字，因为修改后需要重新mvn clean一下才生效
-  public static String dcGenerator = "DCMiner";  // Basic DCMiner
+  public static String dcGenerator = "Basic";  // Basic DCMiner
   public static String condaScript = "C:\\Users\\66413\\anaconda3\\Scripts\\conda";
   public static String trainScript = "D:\\MyFile\\gitee\\dc_miner\\notebooks\\run_train.py";
   public static String predictScript = "D:\\MyFile\\gitee\\dc_miner\\notebooks\\run_play.py";

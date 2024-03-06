@@ -32,7 +32,7 @@ public class DataUtil {
   public static Set<DenialConstraint> getDCsSetFromViolations(Set<DCViolation> vioSet) {
     Set<DenialConstraint> dcs = Sets.newHashSet();
     for (DCViolation vio : vioSet) {
-      dcs.addAll(vio.getDcs());
+      dcs.addAll(vio.getDenialConstraintList());
     }
     return dcs;
   }
@@ -49,7 +49,7 @@ public class DataUtil {
 
   private static void add2Map(DCViolation violation,
       Map<DenialConstraint, Set<DCViolation>> dcViosMap) {
-    List<DenialConstraint> dcs = violation.getDcs();
+    List<DenialConstraint> dcs = violation.getDenialConstraintList();
     for (DenialConstraint dc : dcs) {
       addOrCreate(dc, violation, dcViosMap);
     }
