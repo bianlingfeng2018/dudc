@@ -20,6 +20,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.input.Input;
+import de.hpi.naumann.dc.paritions.LinePair;
 import de.hpi.naumann.dc.predicates.Predicate;
 import de.hpi.naumann.dc.predicates.operands.ColumnOperand;
 import de.hpi.naumann.dc.predicates.sets.PredicateSetFactory;
@@ -38,6 +39,7 @@ import edu.fudan.algorithms.RLDCGenerator;
 import edu.fudan.algorithms.TupleSampler;
 import edu.fudan.algorithms.TupleSampler.SampleResult;
 import edu.fudan.algorithms.UGuideDiscovery;
+import edu.fudan.algorithms.uguide.CellQuestionSelector;
 import edu.fudan.algorithms.uguide.DirtyData;
 import edu.fudan.algorithms.uguide.TCell;
 import edu.fudan.algorithms.uguide.TChange;
@@ -230,6 +232,8 @@ public class UGuideDiscoveryTest {
   @Test
   public void testAllViolationHasOnlyOneDC()
       throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
+    // 测试一个冲突在什么情况下才会关联多个DC？hydra的判断标准是什么？
+    // 目前测一个vio就只对应一个DC
     HydraDetector detector = new HydraDetector(dirtyDataPath, groundTruthDCsPath);
     DCViolationSet vioSet = detector.detect();
     log.info("VioSet = {}", vioSet.size());
@@ -382,4 +386,46 @@ public class UGuideDiscoveryTest {
     set.minimize();
     log.debug("After size = {}", set.size());
   }
+
+  // Question strategy
+  @Test
+  public void testTuplePairDCsMapping()
+      throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
+    // 测试一个LinePair可能关联多个DC
+    HydraDetector detector = new HydraDetector(dirtyDataPath, groundTruthDCsPath);
+    DCViolationSet vioSet = detector.detect();
+    Map<LinePair, Set<DenialConstraint>> linePairDCsMap = Maps.newHashMap();
+    for (DCViolation vio : vioSet.getViosSet()) {
+      LinePair linePair = vio.getLinePair();
+      List<DenialConstraint> dcList = vio.getDenialConstraintList();
+      if (linePairDCsMap.containsKey(linePair)) {
+        Set<DenialConstraint> set = linePairDCsMap.get(linePair);
+        set.addAll(dcList);
+      } else {
+        linePairDCsMap.put(linePair, new HashSet<>(dcList));
+      }
+    }
+    int size1 = vioSet.size();  // 冲突个数
+    int size2 = linePairDCsMap.size();  // 元组对个数
+    log.debug("Violations = {}, LinePairs = {}", size1, size2);
+    assertTrue(size1 >= size2);
+
+    // 打印 LinePair -> DCs
+    Set<DenialConstraint> next = linePairDCsMap.values().iterator().next();
+    log.debug("DCs size = {}", next.size());
+  }
+
+  @Test
+  public void testCellQuestion()
+      throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
+    // TODO: 目前发现一个BART的大bug，注入错误后，输出的dirty版本数据单引号变成两个单引号'->''
+    // CellQ算法
+    CellQuestionSelector selector = new CellQuestionSelector(fullGTDCsPath,
+        dirtyDataPath, excludedLinesPath, headerPath, changesPath);
+    selector.setBudget(1000);
+    selector.setDelta(0.1);
+    selector.setCanBreakEarly(true);
+    selector.simulate();
+  }
+
 }

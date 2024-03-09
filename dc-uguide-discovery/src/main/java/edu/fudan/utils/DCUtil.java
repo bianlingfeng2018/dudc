@@ -130,26 +130,33 @@ public class DCUtil {
       List<DenialConstraint> dcs = vio.getDenialConstraintList();
       for (DenialConstraint dc : dcs) {
         LinePair linePair = vio.getLinePair();
-        int line1 = linePair.getLine1();
-        int line2 = linePair.getLine2();
-        PredicateBitSet predicateSet = dc.getPredicateSet();
-        for (Predicate predicate : predicateSet) {
-          ColumnOperand<?> operand1 = predicate.getOperand1();
-          ColumnOperand<?> operand2 = predicate.getOperand2();
-          String colName1 = operand1.getColumn().getName();
-          String colName2 = operand2.getColumn().getName();
-          int o1 = operand1.getIndex();
-          int o2 = operand2.getIndex();
-          int li1 = o1 == 0 ? line1 : line2;
-          int li2 = o2 == 0 ? line1 : line2;
-          Comparable<?> value1 = getCellValue(operand1, di, line1, line2);
-          Comparable<?> value2 = getCellValue(operand2, di, line1, line2);
-          cellIdentifiers.add(new TCell(li1, colName1.toLowerCase(), value1.toString()));
-          cellIdentifiers.add(new TCell(li2, colName2.toLowerCase(), value2.toString()));
-        }
+        Set<TCell> cellsOfViolation = getCellsOfViolation(di, dc, linePair);
+        cellIdentifiers.addAll(cellsOfViolation);
       }
     }
     return cellIdentifiers;
+  }
+
+  public static Set<TCell> getCellsOfViolation(Input di, DenialConstraint dc, LinePair linePair) {
+    Set<TCell> cellsOfViolation = Sets.newHashSet();
+    int line1 = linePair.getLine1();
+    int line2 = linePair.getLine2();
+    PredicateBitSet predicateSet = dc.getPredicateSet();
+    for (Predicate predicate : predicateSet) {
+      ColumnOperand<?> operand1 = predicate.getOperand1();
+      ColumnOperand<?> operand2 = predicate.getOperand2();
+      String colName1 = operand1.getColumn().getName();
+      String colName2 = operand2.getColumn().getName();
+      int o1 = operand1.getIndex();
+      int o2 = operand2.getIndex();
+      int li1 = o1 == 0 ? line1 : line2;
+      int li2 = o2 == 0 ? line1 : line2;
+      Comparable<?> value1 = getCellValue(operand1, di, line1, line2);
+      Comparable<?> value2 = getCellValue(operand2, di, line1, line2);
+      cellsOfViolation.add(new TCell(li1, colName1.toLowerCase(), value1.toString()));
+      cellsOfViolation.add(new TCell(li2, colName2.toLowerCase(), value2.toString()));
+    }
+    return cellsOfViolation;
   }
 
 
