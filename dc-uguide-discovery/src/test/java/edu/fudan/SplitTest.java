@@ -17,4 +17,12 @@ public class SplitTest {
       System.out.println(part);
     }
   }
+
+  @Test
+  public void testMath() {
+    int i1 = (int) Math.floor(0.2);
+    double i2 = Math.floor(0.2);
+    System.out.println(i1);
+    System.out.println(i2);
+  }
 }

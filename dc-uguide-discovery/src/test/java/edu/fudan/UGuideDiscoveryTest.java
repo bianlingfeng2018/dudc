@@ -1,5 +1,6 @@
 package edu.fudan;
 
+import static edu.fudan.conf.DefaultConf.maxCellQuestionBudget;
 import static edu.fudan.conf.DefaultConf.maxInCluster;
 import static edu.fudan.conf.DefaultConf.predictArgs;
 import static edu.fudan.conf.DefaultConf.sharedArgs;
@@ -11,6 +12,7 @@ import static edu.fudan.utils.DCUtil.getDCVioSizeMap;
 import static edu.fudan.utils.DCUtil.getErrorLinesContainingChanges;
 import static edu.fudan.utils.DCUtil.loadChanges;
 import static edu.fudan.utils.DCUtil.loadDirtyDataExcludedLines;
+import static edu.fudan.utils.DataUtil.generateNewCopy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -39,7 +41,9 @@ import edu.fudan.algorithms.RLDCGenerator;
 import edu.fudan.algorithms.TupleSampler;
 import edu.fudan.algorithms.TupleSampler.SampleResult;
 import edu.fudan.algorithms.UGuideDiscovery;
-import edu.fudan.algorithms.uguide.CellQuestionSelector;
+import edu.fudan.algorithms.uguide.CellQuestion;
+import edu.fudan.algorithms.uguide.CellQuestionResult;
+import edu.fudan.algorithms.uguide.CellQuestionV2;
 import edu.fudan.algorithms.uguide.DirtyData;
 import edu.fudan.algorithms.uguide.TCell;
 import edu.fudan.algorithms.uguide.TChange;
@@ -420,12 +424,24 @@ public class UGuideDiscoveryTest {
       throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
     // TODO: 目前发现一个BART的大bug，注入错误后，输出的dirty版本数据单引号变成两个单引号'->''
     // CellQ算法
-    CellQuestionSelector selector = new CellQuestionSelector(fullGTDCsPath,
-        dirtyDataPath, excludedLinesPath, headerPath, changesPath);
-    selector.setBudget(1000);
-    selector.setDelta(0.1);
-    selector.setCanBreakEarly(true);
+    String dcsPath = this.fullGTDCsPath;
+    String dataPath = this.dirtyDataPath;
+    String headerPath = this.headerPath;
+    String changesPath = this.changesPath;
+    Set<DCViolation> vios = new HydraDetector(dataPath, dcsPath).detect().getViosSet();
+    Input di = generateNewCopy(dataPath);
+    Set<TCell> cellsOfChanges = getCellIdentifiersOfChanges(loadChanges(changesPath));
+    List<DenialConstraint> dcs = DCLoader.load(headerPath, dcsPath);
+    log.debug("DCs={}", dcs.size());
+    log.debug("Violations={}", vios.size());
+    log.debug("CellsOfChanges={}", cellsOfChanges.size());
+    log.debug("CellQBudgets={}", maxCellQuestionBudget);
+    CellQuestion selector = new CellQuestionV2(di, cellsOfChanges, new HashSet<>(dcs), vios);
+
     selector.simulate();
+    CellQuestionResult result = selector.getResult();
+
+    log.debug(result.toString());
   }
 
 }

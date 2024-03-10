@@ -10,10 +10,8 @@ import static edu.fudan.conf.DefaultConf.maxTupleQuestionBudget;
 import static edu.fudan.conf.DefaultConf.questionsConf;
 import static edu.fudan.conf.DefaultConf.topK;
 import static edu.fudan.conf.DefaultConf.topKOfCluster;
-import static edu.fudan.utils.DataUtil.getDCsSetFromViolations;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.paritions.LinePair;
@@ -22,6 +20,10 @@ import de.metanome.algorithm_integration.input.InputIterationException;
 import edu.fudan.DCMinderToolsException;
 import edu.fudan.algorithms.TupleSampler.SampleResult;
 import edu.fudan.algorithms.uguide.CandidateDCs;
+import edu.fudan.algorithms.uguide.CellQuestion;
+import edu.fudan.algorithms.uguide.CellQuestionResult;
+import edu.fudan.algorithms.uguide.CellQuestionV1;
+import edu.fudan.algorithms.uguide.CellQuestionV2;
 import edu.fudan.algorithms.uguide.CleanData;
 import edu.fudan.algorithms.uguide.DirtyData;
 import edu.fudan.algorithms.uguide.Evaluation;
@@ -41,7 +43,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -174,7 +175,7 @@ public class UGuideDiscovery {
     // 判断得到TrueDCs
     Set<DenialConstraint> falseDCs = questions.stream().filter(dc -> !evaluation.isTrueDC(dc))
         .collect(Collectors.toSet());
-      log.info("FalseDCs(DCsQ): {}", falseDCs.size());
+    log.info("FalseDCs(DCsQ): {}", falseDCs.size());
     for (DenialConstraint dc : falseDCs) {
       log.debug("{}", DCFormatUtil.convertDC2String(dc));
     }
@@ -191,7 +192,8 @@ public class UGuideDiscovery {
     // TODO: 优选排除的元组
     int sizeBefore = excludedLinesInDCsQ.size();
     int sizeAfter = (int) (sizeBefore * 0.1);
-    Set<Integer> excludedLinesInDCsQRandom = new HashSet<>(getRandomElements(excludedLinesInDCsQ, sizeAfter));
+    Set<Integer> excludedLinesInDCsQRandom = new HashSet<>(
+        getRandomElements(excludedLinesInDCsQ, sizeAfter));
     log.debug("ExcludedLinesInDCsQRandom before {}, after {}", sizeBefore, sizeAfter);
     evaluation.setExcludedLinesInDCsQ(excludedLinesInDCsQRandom);
     evaluation.update(null, falseDCs, null, null, excludedLinesInDCsQRandom);
@@ -216,66 +218,22 @@ public class UGuideDiscovery {
     evaluation.update(null, null, null, null, excludedLinesInSample);
   }
 
-  private void askCellQuestion() {
+  private void askCellQuestion() throws DCMinderToolsException {
     log.info("====== 5.1 Ask CELL question ======");
-    // 推荐一些让用户判断冲突
-    Set<DCViolation> questions = evaluation.genCellQuestionsFromCurrState(maxCellQuestionBudget);
-    int numb = questions.size();
+    // 可替换模块开始
+    CellQuestion selector = new CellQuestionV1(evaluation);
+//    CellQuestion selector = new CellQuestionV2(evaluation);
+    // 可替换模块结束
+    selector.simulate();
+    CellQuestionResult result = selector.getResult();
+    Set<Integer> excludedLinesInCellQ = result.getExcludedLines();
+    Set<DenialConstraint> falseDCs = result.getFalseDCs();
+    int questionNum = selector.getBudgetUsed();
     log.info("CellQuestions/MaxCellQuestionBudget/CurrViosSize={}/{}/{}",
-        numb,
+        questionNum,
         maxCellQuestionBudget,
         evaluation.getCurrVios().size());
-    evaluation.addCellBudget(numb);
-    Set<Integer> excludedLinesInCellQ = Sets.newHashSet();
-    Set<DenialConstraint> dcsFromQuestions = getDCsSetFromViolations(questions);
-    Set<DenialConstraint> dcsUnchecked = Sets.newHashSet();
-    Set<DenialConstraint> falseDCs = Sets.newHashSet();
-    Map<DenialConstraint, Integer> dcTrustMap = Maps.newHashMap();
-    for (DenialConstraint dc : dcsFromQuestions) {
-      dcTrustMap.put(dc, 0);
-    }
-    for (DenialConstraint currDC : evaluation.getCurrDCs()) {
-      if (!dcsFromQuestions.contains(currDC)) {
-        dcsUnchecked.add(currDC);
-      }
-    }
-    for (DCViolation vio : questions) {
-      // TODO: Input和LinePair结合找出相关Cells，给用户判断是否为真冲突
-      List<DenialConstraint> dcs = vio.getDenialConstraintList();
-      for (DenialConstraint dc : dcs) {
-        if (evaluation.isTrueViolation(dc, vio.getLinePair())) {
-          // 若为真冲突，则增加DC的置信度
-          dcTrustMap.put(dc, dcTrustMap.get(dc) + 1);
-          // 若为真冲突，排除脏数据
-          LinePair linePair = vio.getLinePair();
-          int line1 = linePair.getLine1();
-          int line2 = linePair.getLine2();
-          excludedLinesInCellQ.add(line1);
-          excludedLinesInCellQ.add(line2);
-        } else {
-          // 若为假冲突，排除假阳性DC
-          falseDCs.add(dc);
-        }
-      }
-    }
-    log.info("CheckedDCs(with trusts(TrueViolationSize)): {}", dcTrustMap.keySet().size());
-    for (Entry<DenialConstraint, Integer> entry : dcTrustMap.entrySet()) {
-      log.debug("{}, {}", DCFormatUtil.convertDC2String(entry.getKey()), entry.getValue());
-    }
-    // TODO: 1、置信度为真冲突个数，置信度低的可能是假阳性规则？2、冲突个数太多的（无论真假），可能是假阳性规则？
-    log.info("FalseDCs: {}", falseDCs.size());
-    for (DenialConstraint falseDC : falseDCs) {
-      log.debug("{}", DCFormatUtil.convertDC2String(falseDC));
-    }
-    // TODO: 未检查的DC可能是因为其冲突没有取样，也可能是因为没有产生冲突，如果是这样：
-    //  1、它是一个真规则，也是groundTruth，但是没有注入错误。（这种情况要避免？是groundTruth规则就要注入错误，否则该规则对减少冲突没贡献）
-    //  2、它是一个真规则，不是groundTruth，没有注入错误。（此时该规则对检测冲突无贡献）
-    //  3、可能是假规则吗？因为假规则一般都会产生一些冲突，但是是否绝对？
-    //  1和2的情况目前是默认放到候选规则中，但是并不确定它是真规则，只有评估的时候可以确认，后面是否可以增加用户判断？
-    log.info("UncheckedDCs: {}", dcsUnchecked.size());
-    for (DenialConstraint dc : dcsUnchecked) {
-      log.debug("{}", DCFormatUtil.convertDC2String(dc));
-    }
+    evaluation.addCellBudget(questionNum);
     evaluation.setExcludedLinesInCellQ(excludedLinesInCellQ);
     evaluation.update(null, falseDCs, null, null, excludedLinesInCellQ);
   }

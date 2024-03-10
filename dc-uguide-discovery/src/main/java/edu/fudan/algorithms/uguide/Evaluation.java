@@ -51,6 +51,7 @@ public class Evaluation {
   /**
    * Dirty data
    */
+  @Getter
   private final DirtyData dirtyData;
 
   /**
@@ -140,6 +141,7 @@ public class Evaluation {
   private Set<Integer> errorLinesOfChanges = Sets.newHashSet();
   private Set<Integer> errorLinesInSample = Sets.newHashSet();
   private Set<Integer> errorLinesInSampleAndExcluded = Sets.newHashSet();
+  @Getter
   private Set<TCell> cellsOfChanges = Sets.newHashSet();
   private Set<TCell> cellsOfTrueVios = Sets.newHashSet();
   private Set<TCell> cellsOfTrueViosAndChanges = Sets.newHashSet();
