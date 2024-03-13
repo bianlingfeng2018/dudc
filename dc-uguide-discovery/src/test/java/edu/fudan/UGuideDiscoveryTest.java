@@ -1,11 +1,15 @@
 package edu.fudan;
 
+import static edu.fudan.CorrelationTest.correlationByUserPath;
+import static edu.fudan.conf.DefaultConf.defaultErrorThreshold;
 import static edu.fudan.conf.DefaultConf.maxCellQuestionBudget;
 import static edu.fudan.conf.DefaultConf.maxInCluster;
 import static edu.fudan.conf.DefaultConf.predictArgs;
 import static edu.fudan.conf.DefaultConf.sharedArgs;
 import static edu.fudan.conf.DefaultConf.topKOfCluster;
 import static edu.fudan.conf.DefaultConf.trainArgs;
+import static edu.fudan.utils.CorrelationUtil.getDCScoreUniformMap;
+import static edu.fudan.utils.CorrelationUtil.readColumnCorrScoreMap;
 import static edu.fudan.utils.DCUtil.getCellIdentifiersOfChanges;
 import static edu.fudan.utils.DCUtil.getCellIdentyfiersFromVios;
 import static edu.fudan.utils.DCUtil.getDCVioSizeMap;
@@ -53,6 +57,8 @@ import edu.fudan.utils.FileUtil;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -68,38 +74,38 @@ import org.junit.Test;
 @Slf4j
 public class UGuideDiscoveryTest {
 
-  private final String baseDir = "D:\\MyFile\\gitee\\dc_miner\\data";
-  private final String headerPath = baseDir + File.separator +
+  public static String baseDir = "D:\\MyFile\\gitee\\dc_miner\\data";
+  public static String headerPath = baseDir + File.separator +
       "preprocessed_data\\preprocessed_hospital_header.csv";
-  private final String cleanDataPath = baseDir + File.separator +
+  public static String cleanDataPath = baseDir + File.separator +
       "preprocessed_data\\preprocessed_hospital.csv";
-  private final String dirtyDataPath = baseDir + File.separator +
+  public static String dirtyDataPath = baseDir + File.separator +
       "preprocessed_data\\preprocessed_hospital_dirty.csv";
-  private final String changesPath = baseDir + File.separator +
+  public static String changesPath = baseDir + File.separator +
       "preprocessed_data\\preprocessed_hospital_changes.csv";
-  private final String excludedLinesPath = baseDir + File.separator +
+  public static String excludedLinesPath = baseDir + File.separator +
       "preprocessed_data\\preprocessed_hospital_dirty_excluded.csv";
-  private final String sampledDataPath = baseDir + File.separator +
+  public static String sampledDataPath = baseDir + File.separator +
       "preprocessed_data\\preprocessed_hospital_dirty_sample.csv";
-  private final String fullGTDCsPath = baseDir + File.separator +
+  public static String fullGTDCsPath = baseDir + File.separator +
       "evidence_set\\dcs_fcdc_hospital.out";
-  private final String dcsPathForDCMiner = baseDir + File.separator +
+  public static String dcsPathForDCMiner = baseDir + File.separator +
       "result_rules\\dcminer_5_hospital.csv";
-  private final String evidencesPathForFCDC = baseDir + File.separator +
+  public static String evidencesPathForFCDC = baseDir + File.separator +
       "evidence_set\\evidence_set_fcdc_hospital.csv";
-  private final String topKDCsPath = baseDir + File.separator +
+  public static String topKDCsPath = baseDir + File.separator +
       "result_rules\\dcs_hospital.out";
-  private final String groundTruthDCsPath = baseDir + File.separator +
+  public static String groundTruthDCsPath = baseDir + File.separator +
       "result_rules\\dcs_hospital_ground.out";
-  private final String groundTruthDCsInjectErrorPath = baseDir + File.separator +
+  public static String groundTruthDCsInjectErrorPath = baseDir + File.separator +
       "result_rules\\dcs_hospital_ground_inject_error.out";
-  private final String candidateDCsPath = baseDir + File.separator +
+  public static String candidateDCsPath = baseDir + File.separator +
       "result_rules\\dcs_hospital_candidate.out";
-  private final String trueDCsPath = baseDir + File.separator +
+  public static String trueDCsPath = baseDir + File.separator +
       "result_rules\\dcs_hospital_candidate_true.out";
-  private final String visitedDCsPath = baseDir + File.separator +
+  public static String visitedDCsPath = baseDir + File.separator +
       "evidence_set\\excluded_rules_hospital.csv";
-  private final String csvResultPath = baseDir + File.separator +
+  public static String csvResultPath = baseDir + File.separator +
       "evaluation\\eval_error_detect_hospital.csv";
 
   @Test
@@ -138,7 +144,7 @@ public class UGuideDiscoveryTest {
 
     // 2.当evidenceFile为null，则生成规则集合
     DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(sampledDataPath,
-        0, null);
+        defaultErrorThreshold, null);
     log.info("Result size: " + dcs.size());
   }
 
@@ -150,6 +156,17 @@ public class UGuideDiscoveryTest {
         fullGTDCsPath, headerPath);
     generator.setExcludeDCs(new HashSet<>());
     generator.setErrorThreshold(0.0);
+    Set<DenialConstraint> dcs = generator.generateDCsForUser();
+    log.info("DCs size={}", dcs.size());
+  }
+
+  @Test
+  public void testGenADCsUsingDCFinder() {
+    // 用2019年的DCFinder算法生成近似规则集合，同时返回top-k规则集合
+    BasicDCGenerator generator = new BasicDCGenerator(dirtyDataPath,
+        fullGTDCsPath, headerPath);
+    generator.setExcludeDCs(new HashSet<>());
+    generator.setErrorThreshold(defaultErrorThreshold);
     Set<DenialConstraint> dcs = generator.generateDCsForUser();
     log.info("DCs size={}", dcs.size());
   }
@@ -250,14 +267,7 @@ public class UGuideDiscoveryTest {
   @Test
   public void testPrintDCViosMap()
       throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
-    HydraDetector detector = new HydraDetector(dirtyDataPath, candidateDCsPath);
-    DCViolationSet vioSet = detector.detect();
-    log.info("Vios size={}", vioSet.size());
-    Map<DenialConstraint, Integer> dcViosSizeMap = getDCVioSizeMap(vioSet);
-    log.info("DCStr~VioSize map:");
-    for (Entry<DenialConstraint, Integer> entry : dcViosSizeMap.entrySet()) {
-      log.info(DCFormatUtil.convertDC2String(entry.getKey()) + "~" + entry.getValue());
-    }
+    printDCViosCountMap(dirtyDataPath, candidateDCsPath);
   }
 
   @Test
@@ -444,4 +454,250 @@ public class UGuideDiscoveryTest {
     log.debug(result.toString());
   }
 
+  // Tuple strategy
+  @Test
+  public void testTupleQuestion()
+      throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
+    // TODO: 测试优先选择关联冲突多的元组，以及优先选择关联冲突规则多的元组，以及在脏数据集还是采样数据集上效果更好？
+    Set<DCViolation> vios = new HydraDetector(dirtyDataPath, fullGTDCsPath).detect().getViosSet();
+    Set<Integer> errorLines = getErrorLinesContainingChanges(loadChanges(changesPath));
+    Map<Integer, Set<DCViolation>> lineViosCountMap = Maps.newHashMap();
+    Map<Integer, Set<DenialConstraint>> lineDCsCountMap = Maps.newHashMap();
+    Set<Integer> lines = Sets.newHashSet();
+    for (DCViolation vio : vios) {
+      LinePair linePair = vio.getLinePair();
+      List<DenialConstraint> dcList = vio.getDenialConstraintList();
+      int line1 = linePair.getLine1();
+      int line2 = linePair.getLine2();
+      addToCountMap(lineViosCountMap, line1, vio);
+      addToCountMap(lineViosCountMap, line2, vio);
+      for (DenialConstraint dc : dcList) {
+        addToCountMap(lineDCsCountMap, line1, dc);
+        addToCountMap(lineDCsCountMap, line2, dc);
+      }
+
+      lines.add(line1);
+      lines.add(line2);
+    }
+
+    // 单一排序，关联vio/DC数量多的在前
+    ArrayList<Entry<Integer, Set<DCViolation>>> sortedLineVioMap = getSortedEntries(
+        lineViosCountMap);
+    ArrayList<Entry<Integer, Set<DenialConstraint>>> sortedLineDCMap = getSortedEntries(
+        lineDCsCountMap);
+    // 混合排序1:以DC数量排序为主
+    List<Entry<Integer, Set<DCViolation>>> sortedComposeDCCountPrior = sortedLineVioMap.stream()
+        .sorted(Comparator.comparingInt(entry -> {
+          int size = lineDCsCountMap.get(entry.getKey()).size();
+          return -size;
+        })).collect(Collectors.toList());
+    // 混合排序2:以vio数量排序位置
+    List<Entry<Integer, Set<DenialConstraint>>> sortedComposeVioCountPrior = sortedLineDCMap.stream()
+        .sorted(Comparator.comparingInt(entry -> {
+          int size = lineViosCountMap.get(entry.getKey()).size();
+          return -size;
+        })).collect(Collectors.toList());
+    int limit = 100;
+    // 随机
+    double errorPerByVioCount = getErrorPercent(sortedLineVioMap, errorLines, limit);
+    double errorPerByDCCount = getErrorPercent(sortedLineDCMap, errorLines, limit);
+    double errorPerByComposeDCPrior = getErrorPercent(sortedComposeDCCountPrior, errorLines, limit);
+    double errorPerByComposeVioPrior = getErrorPercent(sortedComposeVioCountPrior, errorLines,
+        limit);
+    double errorPerByRandom = getErrorPercent(lines, errorLines, limit);
+    log.debug("ErrorPerByVioCount = {}", errorPerByVioCount);
+    log.debug("ErrorPerByDCCount = {}", errorPerByDCCount);
+    log.debug("ErrorPerByComposeDCPrior = {}", errorPerByComposeDCPrior);
+    log.debug("ErrorPerByComposeVioPrior = {}", errorPerByComposeVioPrior);
+    log.debug("ErrorPerByRandom = {}", errorPerByRandom);
+  }
+
+  // DC strategy
+  @Test
+  public void testDCsQuestion()
+      throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
+    // TODO:考虑什么DC最有可能是真DC
+    //  同时考虑DC如何给出上下文辅助用户判断正误，因为直接判断比较难，同时这个上下文可以用来训练相关性打分矩阵
+    // 1.简洁性 + 覆盖率 = interesting
+    // 2.关联冲突个数，希望真冲突的个数越多越好；怎么判断真冲突？
+    // DC-Violation置信度 Line-Violations 如果一个DC是真DC，那么真的错误会出现一个Line关联非常多的Vios，但是假的DC这种情况会减少，不是少数Line cover所有Vios，而是大家比较平均？
+    // 冲突数量不能判断规则真假，冲突多少只取决于反例的个数
+    int minLenOfDC = 2;
+//    double succinctFactor = 0.8;
+    List<DenialConstraint> testDCs = DCLoader.load(headerPath, fullGTDCsPath);
+    Set<DenialConstraint> trueDCs = Sets.newHashSet();
+    List<DenialConstraint> gtDCs = DCLoader.load(headerPath, groundTruthDCsPath);
+    NTreeSearch gtTree = new NTreeSearch();
+    for (DenialConstraint gtDC : gtDCs) {
+      gtTree.add(PredicateSetFactory.create(gtDC.getPredicateSet()).getBitset());
+    }
+    for (DenialConstraint dc : testDCs) {
+      if (dc.isImpliedBy(gtTree)) {
+        // 是真DC
+        trueDCs.add(dc);
+      }
+    }
+    log.debug("TrueDCs: {}", trueDCs.size());
+    for (DenialConstraint dc : trueDCs) {
+      log.debug("{}", DCFormatUtil.convertDC2String(dc));
+    }
+    // 计算冲突个数
+    Set<DCViolation> vios = new HydraDetector(dirtyDataPath, fullGTDCsPath).detect().getViosSet();
+    Map<DenialConstraint, Set<DCViolation>> dcViosMap = Maps.newHashMap();
+    for (DCViolation vio : vios) {
+      List<DenialConstraint> dcList = vio.getDenialConstraintList();
+      for (DenialConstraint dc : dcList) {
+        if (dcViosMap.containsKey(dc)) {
+          Set<DCViolation> viosOfDC = dcViosMap.get(dc);
+          viosOfDC.add(vio);
+        } else {
+          dcViosMap.put(dc, Sets.newHashSet(vio));
+        }
+      }
+    }
+    ArrayList<Entry<DenialConstraint, Set<DCViolation>>> sortedEntries = new ArrayList<>(
+        dcViosMap.entrySet());
+    log.debug("Test DCs: {}", sortedEntries.size());
+    // 读取相关性矩阵
+    Map<String, Double> columnsCorrScoreMap = readColumnCorrScoreMap(correlationByUserPath);
+    // 计算综合分数 排序 打印
+//    int size = testDCs.size();
+//    for (int j = 1; j <= 20; j++) {
+//      int limit = Math.min(size, j * 5);
+//      log.debug("====== dcs = {} ======", limit);
+//
+//      for (int i = 0; i <= 10; i++) {
+//        double succinctFactor = i * 0.1;
+//        log.debug("------ succinctFactor = {} ------", succinctFactor);
+//        printSortResult(testDCs, columnsCorrScoreMap, minLenOfDC, succinctFactor, sortedEntries, limit,
+//            trueDCs);
+//      }
+//    }
+    printSortResult(testDCs, columnsCorrScoreMap, minLenOfDC, 0.0, sortedEntries, 20,
+        trueDCs);
+
+  }
+
+  private static void printSortResult(List<DenialConstraint> testDCs,
+      Map<String, Double> columnsCorrScoreMap, int minLenOfDC, double succinctFactor,
+      ArrayList<Entry<DenialConstraint, Set<DCViolation>>> sortedEntries, int limit,
+      Set<DenialConstraint> trueDCs) {
+    Map<DenialConstraint, Double> dcScoreUniformMap = getDCScoreUniformMap(
+        testDCs, columnsCorrScoreMap, minLenOfDC, succinctFactor);
+    // 排序
+    sortDCsByScore(sortedEntries, dcScoreUniformMap);
+    int totalDCNum = 0;
+    int trueDCNum = 0;
+
+    for (Entry<DenialConstraint, Set<DCViolation>> entry : sortedEntries) {
+      totalDCNum++;
+      if (totalDCNum > limit) {
+        break;
+      }
+      DenialConstraint dc = entry.getKey();
+      Set<DCViolation> violations = entry.getValue();
+      boolean isTrueDC = trueDCs.contains(dc);
+      if (isTrueDC) {
+        trueDCNum++;
+      }
+      log.debug("{},(len={},score={},vios={})({})", DCFormatUtil.convertDC2String(dc),
+          dc.getPredicateCount(),
+          dcScoreUniformMap.get(dc),
+          violations.size(),
+          isTrueDC);
+    }
+    log.debug("TrueDC percent = {}, limit = {}, succinctFactor = {}",
+        (double) trueDCNum / limit,
+        limit, succinctFactor);
+  }
+
+  // Dynamic g1 strategy
+  @Test
+  public void testDynamicG1() {
+    // TODO:如果待发现规则长，g1有生成太通用规则的风险，如果待发现规则短，g1有生成太特殊规则的风险
+  }
+
+  private static void sortDCsByScore(
+      ArrayList<Entry<DenialConstraint, Set<DCViolation>>> sortedEntries,
+      Map<DenialConstraint, Double> dcScoreUniformMap) {
+    // 根据简洁性+相关性和冲突个数排序
+    sortedEntries.sort(
+        Comparator
+            .comparingDouble(
+                (Entry<DenialConstraint, Set<DCViolation>> entry) -> -dcScoreUniformMap.get(
+                    entry.getKey()))
+//            .reversed()  // 综合打分（简洁性+相关性）高的在前
+            .thenComparingInt(
+                (Entry<DenialConstraint, Set<DCViolation>> entry) -> -entry.getValue().size())
+//            .reversed()  // 综合打分相同的情况下，冲突数量多的在前
+    );
+  }
+
+  private static <T> double getErrorPercent(
+      Set<Integer> lines, Set<Integer> errorLines, int limit) {
+    int errorFound = 0;
+    int i = 0;
+    for (Integer line : lines) {
+      i++;
+      if (i > limit) {
+        break;
+      }
+      if (errorLines.contains(line)) {
+        errorFound++;
+      }
+    }
+    log.debug("Error lines {} in {} limit {}", errorFound, errorLines.size(), limit);
+    double per = (double) errorFound / limit;
+    return per;
+  }
+
+  private static <T> double getErrorPercent(
+      List<Entry<Integer, Set<T>>> entries, Set<Integer> errorLines, int limit) {
+    int errorFound = 0;
+    int i = 0;
+    for (Entry<Integer, Set<T>> entry : entries) {
+      i++;
+      if (i > limit) {
+        break;
+      }
+      Integer line = entry.getKey();
+      if (errorLines.contains(line)) {
+        errorFound++;
+      }
+    }
+    log.debug("Error lines {} in {} limit {}", errorFound, errorLines.size(), limit);
+    double per = (double) errorFound / limit;
+    return per;
+  }
+
+  private static <T> ArrayList<Entry<Integer, Set<T>>> getSortedEntries(
+      Map<Integer, Set<T>> lineViosCountMap) {
+    ArrayList<Entry<Integer, Set<T>>> sortedEntries = new ArrayList<>(
+        lineViosCountMap.entrySet());
+    sortedEntries.sort(Comparator.comparingInt(entry -> -entry.getValue().size()));
+    return sortedEntries;
+  }
+
+  private static <T> void addToCountMap(Map<Integer, Set<T>> lineViosCountMap, int line, T obj) {
+    if (lineViosCountMap.containsKey(line)) {
+      Set<T> set = lineViosCountMap.get(line);
+      set.add(obj);
+    } else {
+      HashSet<T> set = new HashSet<>();
+      set.add(obj);
+      lineViosCountMap.put(line, set);
+    }
+  }
+
+  private static void printDCViosCountMap(String dataPath, String dcPath)
+      throws IOException, InputGenerationException, InputIterationException, DCMinderToolsException {
+    HydraDetector detector = new HydraDetector(dataPath, dcPath);
+    DCViolationSet vioSet = detector.detect();
+    log.info("Vios size={}", vioSet.size());
+    Map<DenialConstraint, Integer> dcViosSizeMap = getDCVioSizeMap(vioSet);
+    log.info("DCStr~VioSize map:");
+    for (Entry<DenialConstraint, Integer> entry : dcViosSizeMap.entrySet()) {
+      log.info(DCFormatUtil.convertDC2String(entry.getKey()) + "~" + entry.getValue());
+    }
+  }
 }

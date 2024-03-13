@@ -335,13 +335,6 @@ public class CellQuestionV2 implements CellQuestion {
         }
         // 全是干净的cell，说明冲突是假冲突，DC为falseDC
         if (allClean(cells, cellsOfChanges)) {
-          String dcStr = DCFormatUtil.convertDC2String(dc);
-          if ("not(t1.HospitalName!=t2.HospitalName^t1.ProviderNumber=t2.ProviderNumber)"
-              .equals(dcStr)) {
-            for (TCell cell : cells) {
-              System.out.println(cell.toString());
-            }
-          }
           falseDCs.add(dc);
         }
       }
