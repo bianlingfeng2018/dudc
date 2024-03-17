@@ -33,7 +33,8 @@ public class SamplerTest {
     // Sampling
 //    HashSet<Integer> skippedColumns = new HashSet<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15));
     HashSet<Integer> skippedColumns = new HashSet<>();
-    SampleResult sampled = new TupleSampler().sample(dataF, topKOfCluster, maxInCluster, skippedColumns, true, null);
+    SampleResult sampled = new TupleSampler().sample(dataF, topKOfCluster, maxInCluster, skippedColumns, true, null,
+        null);
     // Write to file
     log.debug("Write to file: {}", sampledDataFile);
     FileUtil.writeListLinesToFile(sampled.getLinesWithHeader(), sampledF);

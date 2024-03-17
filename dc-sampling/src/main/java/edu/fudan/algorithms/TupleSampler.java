@@ -1,7 +1,9 @@
 package edu.fudan.algorithms;
 
 import com.google.common.collect.Lists;
+import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.input.Input;
+import de.hpi.naumann.dc.paritions.LinePair;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
 import de.metanome.algorithm_integration.input.RelationalInput;
@@ -10,6 +12,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,7 +30,8 @@ public class TupleSampler {
   private final int minM = 2;
 
   public SampleResult sample(File dataF, int topKOfCluster, int maxInCluster,
-      Set<Integer> skippedColumns, boolean requireHeader, Set<Integer> excludedLines)
+      Set<Integer> skippedColumns, boolean requireHeader, Set<Integer> excludedLines,
+      Map<DenialConstraint, Set<LinePair>> falseDCLinePairMap)
       throws FileNotFoundException, InputGenerationException, InputIterationException {
     log.info("Input file: {}", dataF.toString());
     DefaultFileInputGenerator actualGenerator = new DefaultFileInputGenerator(dataF);
@@ -38,7 +42,7 @@ public class TupleSampler {
 
     long startSample = System.currentTimeMillis();
     ColumnAwareWeightedClusterSampler sampler = new ColumnAwareWeightedClusterSampler();
-    Set<Integer> sampled = sampler.sampling(input, k, m, skippedColumns, excludedLines);
+    Set<Integer> sampled = sampler.sampling(input, k, m, skippedColumns, excludedLines, falseDCLinePairMap);
     long timeSample = System.currentTimeMillis() - startSample;
     log.debug("Sample time = {} ms", timeSample);
     log.info("Sampled size = {}", sampled.size());

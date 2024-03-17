@@ -63,6 +63,10 @@ public class UGuideDiscovery {
   private final CandidateDCs candidateDCs;
   // 评价
   private final Evaluation evaluation;
+  /**
+   * 当发现的规则少于top-k个时，直接结束循环
+   */
+  private boolean breakEarly = false;
 
   public UGuideDiscovery(String cleanDataPath,
       String changesPath,
@@ -102,6 +106,10 @@ public class UGuideDiscovery {
       sample();
       // 发现规则
       discoveryDCs();
+      if (this.breakEarly) {
+        log.debug("Break early");
+        break;
+      }
       // 检测冲突
       detect();
       // 多轮提问
@@ -196,7 +204,8 @@ public class UGuideDiscovery {
         getRandomElements(excludedLinesInDCsQ, sizeAfter));
     log.debug("ExcludedLinesInDCsQRandom before {}, after {}", sizeBefore, sizeAfter);
     evaluation.setExcludedLinesInDCsQ(excludedLinesInDCsQRandom);
-    evaluation.update(null, falseDCs, null, null, excludedLinesInDCsQRandom);
+    // TODO: DCsQ排除的元组虽然是真冲突中的，但是如果排除太多会导致有的规则因为缺少反例而无法发现，这里暂时不排除
+    evaluation.update(null, falseDCs, null, null, null);
   }
 
   private void askTupleQuestion() {
@@ -221,8 +230,10 @@ public class UGuideDiscovery {
   private void askCellQuestion() throws DCMinderToolsException {
     log.info("====== 5.1 Ask CELL question ======");
     // 可替换模块开始
-    CellQuestion selector = new CellQuestionV1(evaluation);
-//    CellQuestion selector = new CellQuestionV2(evaluation);
+    // 选择Violation作为问题，判断是否是真冲突(已弃用)
+//    CellQuestion selector = new CellQuestionV1(evaluation);
+    // 选择Cell作为问题，判断是否是干净Cell
+    CellQuestion selector = new CellQuestionV2(evaluation);
     // 可替换模块结束
     selector.simulate();
     CellQuestionResult result = selector.getResult();
@@ -235,7 +246,9 @@ public class UGuideDiscovery {
         evaluation.getCurrVios().size());
     evaluation.addCellBudget(questionNum);
     evaluation.setExcludedLinesInCellQ(excludedLinesInCellQ);
-    evaluation.update(null, falseDCs, null, null, excludedLinesInCellQ);
+    // TODO:这里效率待优化
+    // TODO: CellQ排除的元组虽然是真冲突中的，但是如果排除太多会导致有的规则因为缺少反例而无法发现，这里暂时不排除
+    evaluation.update(null, falseDCs, null, null, null);
   }
 
   private void evaluate() throws DCMinderToolsException {
@@ -303,8 +316,10 @@ public class UGuideDiscovery {
     Set<DenialConstraint> dcs = generator.generateDCsForUser();
 
     if (dcs.size() != topK) {
-      throw new DCMinderToolsException(String.format("Discovery DCs size is not %s: %s",
-          topK, dcs.size()));
+//      throw new DCMinderToolsException(String.format("Discovery DCs size is not %s: %s",
+//          topK, dcs.size()));
+      // 提前结束
+      this.breakEarly = true;
     }
     DCUtil.persistTopKDCs(new ArrayList<>(dcs), candidateDCs.getTopKDCsPath());
 
@@ -314,11 +329,12 @@ public class UGuideDiscovery {
   private void sample()
       throws InputGenerationException, IOException, InputIterationException {
     Set<Integer> excludedLines = evaluation.getExcludedLines();
+    Map<DenialConstraint, Set<LinePair>> falseDCLinePairMap = evaluation.getFalseDCLinePairMap();
     log.info("====== 2.Sample from dirty data ======");
 
     SampleResult sampleResult = new TupleSampler()
         .sample(new File(dirtyData.getDataPath()), topKOfCluster, maxInCluster,
-            null, true, excludedLines);
+            null, true, excludedLines, falseDCLinePairMap);
     String out = sampledData.getDataPath();
     log.debug("Write to file: {}", out);
     FileUtil.writeListLinesToFile(sampleResult.getLinesWithHeader(), new File(out));

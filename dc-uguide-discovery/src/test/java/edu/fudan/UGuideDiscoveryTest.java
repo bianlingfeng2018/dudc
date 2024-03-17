@@ -1,6 +1,8 @@
 package edu.fudan;
 
 import static edu.fudan.CorrelationTest.correlationByUserPath;
+import static edu.fudan.algorithms.uguide.Strategy.addToCountMap;
+import static edu.fudan.algorithms.uguide.Strategy.getSortedLines;
 import static edu.fudan.conf.DefaultConf.defaultErrorThreshold;
 import static edu.fudan.conf.DefaultConf.maxCellQuestionBudget;
 import static edu.fudan.conf.DefaultConf.maxInCluster;
@@ -267,7 +269,7 @@ public class UGuideDiscoveryTest {
   @Test
   public void testPrintDCViosMap()
       throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
-    printDCViosCountMap(dirtyDataPath, candidateDCsPath);
+    printDCViosCountMap(sampledDataPath, groundTruthDCsPath);
   }
 
   @Test
@@ -346,7 +348,7 @@ public class UGuideDiscoveryTest {
     log.info("Sampling...");
     SampleResult sampleResult = new TupleSampler()
         .sample(new File(dirtyDataPath), topKOfCluster, maxInCluster,
-            null, true, null);
+            null, true, null, null);
     List<List<String>> linesWithHeader = sampleResult.getLinesWithHeader();
     log.info("Write {} lines(with header line) to file: {}", linesWithHeader.size(),
         sampledDataPath);
@@ -480,10 +482,11 @@ public class UGuideDiscoveryTest {
       lines.add(line2);
     }
 
-    // 单一排序，关联vio/DC数量多的在前
-    ArrayList<Entry<Integer, Set<DCViolation>>> sortedLineVioMap = getSortedEntries(
+    // 单一排序1:关联vio数量多的在前
+    ArrayList<Entry<Integer, Set<DCViolation>>> sortedLineVioMap = getSortedLines(
         lineViosCountMap);
-    ArrayList<Entry<Integer, Set<DenialConstraint>>> sortedLineDCMap = getSortedEntries(
+    // 单一排序2:关联DC数量多的在前
+    ArrayList<Entry<Integer, Set<DenialConstraint>>> sortedLineDCMap = getSortedLines(
         lineDCsCountMap);
     // 混合排序1:以DC数量排序为主
     List<Entry<Integer, Set<DCViolation>>> sortedComposeDCCountPrior = sortedLineVioMap.stream()
@@ -668,25 +671,6 @@ public class UGuideDiscoveryTest {
     log.debug("Error lines {} in {} limit {}", errorFound, errorLines.size(), limit);
     double per = (double) errorFound / limit;
     return per;
-  }
-
-  private static <T> ArrayList<Entry<Integer, Set<T>>> getSortedEntries(
-      Map<Integer, Set<T>> lineViosCountMap) {
-    ArrayList<Entry<Integer, Set<T>>> sortedEntries = new ArrayList<>(
-        lineViosCountMap.entrySet());
-    sortedEntries.sort(Comparator.comparingInt(entry -> -entry.getValue().size()));
-    return sortedEntries;
-  }
-
-  private static <T> void addToCountMap(Map<Integer, Set<T>> lineViosCountMap, int line, T obj) {
-    if (lineViosCountMap.containsKey(line)) {
-      Set<T> set = lineViosCountMap.get(line);
-      set.add(obj);
-    } else {
-      HashSet<T> set = new HashSet<>();
-      set.add(obj);
-      lineViosCountMap.put(line, set);
-    }
   }
 
   private static void printDCViosCountMap(String dataPath, String dcPath)

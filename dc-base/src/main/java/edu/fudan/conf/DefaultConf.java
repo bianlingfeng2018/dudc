@@ -10,7 +10,7 @@ public class DefaultConf {
   public static int topK = 5;
   public static String defaultTable = "xxx";
   // Loop
-  public static int maxDiscoveryRound = 20;
+  public static int maxDiscoveryRound = 50;
   public static int maxCellQuestionBudget = 100;
   public static int maxTupleQuestionBudget = 100;
   public static int maxDCQuestionBudget = 5;
@@ -18,10 +18,12 @@ public class DefaultConf {
   public static int topKOfCluster = 5;
   public static int maxInCluster = 3;
   // ADC
-  public static double defaultErrorThreshold = 0.001;
+  public static double defaultErrorThreshold = 0.0001;
 //  public static double defaultErrorThreshold = 0;
+  public static boolean dynamicG1 = false;
+  public static boolean optimizeWithCounter = false;
   // CellQ TupleQ DCsQ
-  public static Integer[] questionsConf = new Integer[]{1, 0, 0};
+  public static Integer[] questionsConf = new Integer[]{1, 1, 1};
   public static boolean debugDCVioMap = false;
   // DCMiner
   // TODO: 慎用static final关键字，因为修改后需要重新mvn clean一下才生效

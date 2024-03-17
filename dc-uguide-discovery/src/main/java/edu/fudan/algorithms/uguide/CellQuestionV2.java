@@ -122,6 +122,7 @@ public class CellQuestionV2 implements CellQuestion {
     Set<DCViolation> trueVios = Sets.newHashSet();
     // 如果有一个脏cell，就说明是真vio，直接改DC置信度，就不用pending了，否则需要进一步确认
     Set<TCell> pendingCells = Sets.newHashSet();
+    log.debug("Start asking cell questions...");
     for (int i = 0; i < budget; i++) {
       // 测试：当所有的falseDC找到后，可以提前结束
       if (canBreakEarly && falseDCs.size() == falseDCsSize) {
@@ -131,7 +132,7 @@ public class CellQuestionV2 implements CellQuestion {
         log.warn("Cells is empty");
         break;
       }
-      if ((i + 1) % 1000 == 0) {
+      if ((i + 1) % 100 == 0) {
         log.debug("Select {}/{}", i + 1, budget);
       }
       // TODO: 作为对比算法，我们发现，由于dirtyCell太少了，所有即便每次选取关联的DC平均置信度最低的cell的，也大概率选的是cleanCell
@@ -261,7 +262,7 @@ public class CellQuestionV2 implements CellQuestion {
       DenialConstraint dc = e.getKey();
       Double conf = e.getValue();
       if (conf > 0.0) {
-        log.debug("{} -> {}(Added to trueDCs)", DCFormatUtil.convertDC2String(dc), conf);
+        log.debug("{} -> {}(Added to possible trueDCs)", DCFormatUtil.convertDC2String(dc), conf);
         trueDCs.add(dc);
       } else {
         log.debug("{} -> {}(Added to falseDCs)", DCFormatUtil.convertDC2String(dc), conf);

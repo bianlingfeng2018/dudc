@@ -1,10 +1,12 @@
 package edu.fudan.algorithms.uguide;
 
 import java.util.Objects;
+import lombok.Getter;
 
 /**
  * @author Lingfeng
  */
+@Getter
 public class TCell {
 
   /**

@@ -89,6 +89,17 @@ public class HydraDetector {
     this.predicates = predicates;
   }
 
+  public HydraDetector(String dataPath, Set<DenialConstraint> dcs, int sampleRounds)
+      throws IOException, InputGenerationException, InputIterationException, DCMinderToolsException {
+    // TODO: 如果在某个很小的数据集上检测冲突报错，可能因为可供采样的数据集太小，可以尝试将sampleRounds设为1
+    Input input = new Input(new DefaultFileInputGenerator(new File(dataPath)).generateNewCopy());
+    PredicateBuilder predicates = new PredicateBuilder(input, noCrossColumn, minimumSharedValue);
+    this.set = DCAdapter.getHydraDCs(input, dcs);
+    this.input = input;
+    this.predicates = predicates;
+    this.sampleRounds = sampleRounds;
+  }
+
   public DCViolationSet detect() {
     IEvidenceSet sampleEvidence =
         new SystematicLinearEvidenceSetBuilder(predicates, sampleRounds).buildEvidenceSet(input);

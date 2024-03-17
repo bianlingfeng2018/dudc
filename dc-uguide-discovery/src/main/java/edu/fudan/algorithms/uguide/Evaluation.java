@@ -1,8 +1,11 @@
 package edu.fudan.algorithms.uguide;
 
+import static edu.fudan.algorithms.uguide.Strategy.addToCountMap;
 import static edu.fudan.algorithms.uguide.Strategy.getRandomElements;
+import static edu.fudan.algorithms.uguide.Strategy.getSortedLines;
 import static edu.fudan.conf.DefaultConf.debugDCVioMap;
 import static edu.fudan.conf.DefaultConf.defaultErrorThreshold;
+import static edu.fudan.conf.DefaultConf.dynamicG1;
 import static edu.fudan.utils.DCUtil.getCellIdentifiersOfChanges;
 import static edu.fudan.utils.DCUtil.getCellIdentyfiersFromVios;
 import static edu.fudan.utils.DCUtil.getErrorLinesContainingChanges;
@@ -23,14 +26,15 @@ import edu.fudan.algorithms.DCViolation;
 import edu.fudan.algorithms.DCViolationSet;
 import edu.fudan.algorithms.HydraDetector;
 import edu.fudan.algorithms.TupleSampler.SampleResult;
-import edu.fudan.utils.DataUtil;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
@@ -134,6 +138,11 @@ public class Evaluation {
    */
   @Getter
   private final Set<Integer> excludedLines = Sets.newHashSet();
+  /**
+   * 假规则及冲突元组对，冲突元组对作为这个假规则的候选反例，用于优化采样
+   */
+  @Getter
+  private final Map<DenialConstraint, Set<LinePair>> falseDCLinePairMap = Maps.newHashMap();
   private int cellBudgetUsed = 0;
   private int dcBudgetUsed = 0;
   private int tupleBudgetUsed = 0;
@@ -159,6 +168,11 @@ public class Evaluation {
   private List<EvalResult> evalResults = Lists.newArrayList();
   @Getter
   private final String csvResultPath;
+  /**
+   * 记录上次candiDC个数
+   */
+  @Getter
+  private int lastCandiDCsSize = 0;
 
   public Evaluation(CleanData cleanData, DirtyData dirtyData, String groundTruthDCsPath,
       String candidateDCsPath, String trueDCsPath, String visitedDCsPath, String csvResultPath) {
@@ -233,22 +247,30 @@ public class Evaluation {
       this.visitedDCs.addAll(candidateDCs);
     }
     if (falseDCs != null) {
-      Map<DenialConstraint, Set<DCViolation>> map = DataUtil.getDCViosMapFromVios(
-          this.candidateViolations);
       // 减少假阳性规则
       for (DenialConstraint falseDC : falseDCs) {
         this.candidateDCs.remove(falseDC);
-        Set<DCViolation> vios = map.get(falseDC);
-        // 对于CellQ，是根据假冲突判断的falseDC，且在后面才删除，所以falseDC可以找到对应冲突并remove，
-        // 对于DCsQ，是直接判断falseDC的，当这个规则是真规则但是不在groundTruth中时，可能没有冲突，所以这里要判空容错。
-        if (vios == null) {
-          continue;
-        }
-        for (DCViolation vio : vios) {
-          // 删除和DC相关的冲突
-          this.candidateViolations.remove(vio);
-          // TODO: 增加需要排除的脏数据，FalseDC不一定对应的是脏数据，有可能是缺少反例，需要进一步判断
-//          excludeLinesInVio(vio);
+      }
+      // TODO: FalseDC对应的冲突的元组都是这个falseDC的反例，但是其中可能有脏元组
+      //  目前仅将不是脏元组的反例加入采样中，一方面让采样保持干净，一方面增加反例更快发现真规则
+      //  目前判断脏元组只有TupleQ可以确定一部分
+      //  有可能所有的反例都是脏元组，这会导致一部分规则会因为采样总是缺少反例而没办法发现（错误率较低，规则较短时会好一些）
+      //  本质上是排除脏元组的同时会减少反例，这是互相矛盾的，我们目前无法兼顾。
+      // 删除和DC相关的冲突
+      Iterator<DCViolation> it = this.candidateViolations.iterator();
+      while (it.hasNext()) {
+        DCViolation vio = it.next();
+        List<DenialConstraint> dcs = vio.getDenialConstraintList();
+        for (DenialConstraint dc : dcs) {
+          if (falseDCs.contains(dc)) {
+            it.remove();
+            // 记录规则和候选反例，用于优化采样
+            if (falseDCLinePairMap.containsKey(dc)) {
+              falseDCLinePairMap.get(dc).add(vio.getLinePair());
+            } else {
+              falseDCLinePairMap.put(dc, Sets.newHashSet(vio.getLinePair()));
+            }
+          }
         }
       }
     }
@@ -296,6 +318,22 @@ public class Evaluation {
 
   public EvalResult evaluate() throws DCMinderToolsException {
     EvalResult result = new EvalResult();
+    if (dynamicG1 && this.lastCandiDCsSize == this.candidateDCs.size()) {
+      // TODO: 当candiDC数量没有增加时，即本轮top-k规则全部被判定为falseDC，此时g1需要更严格，即更小
+      //  另外，增加对比实验证明，调整g1一定需要数据能变得更干净为前提，即可以排除脏元组，否则效果会打折扣
+      //  调整g1后，之前candiDC有些就不成立，目前我们不对已经发现的candiDC做更改，因为新的g1发现的规则也不一定是对的
+      //  调整g1后，如果仍然缺少反例，可能是反例没有被采样到，也可能是反例被排除脏元组时去掉了，因此目前我们不通过增大采样窗口来增加反例
+      double factor = 0.87;  // 0.87是0.001~0.0001分成50次降低得来的
+      double newErrorThreshold = this.errorThreshold * factor;
+      log.debug("ErrorThreshold change from {} to {}", this.errorThreshold, newErrorThreshold);
+      this.errorThreshold = newErrorThreshold;
+    }
+    // g1从大到小的范围内发现的candiDC都当作真DC，兼顾了反例多的(g1可以更松)和反例少(g1需要更严格)的规则
+    // g1的本质是：不覆盖错误的元组对，同时也可能不覆盖一些反例
+    // 1.当需要反例没覆盖时，发现的规则就是TooGeneral的假规则
+    // 2.当不覆盖的错误不够时，发现的规则就是TooSpecific的假规则
+    // 还有一个吹点，就是容错能力更强，比如一开始设定了一个不太好的g1（偏大的）？
+    this.lastCandiDCsSize = this.candidateDCs.size();
     // 评价真规则和假规则个数
     long t1 = System.currentTimeMillis();
     for (DenialConstraint candiDC : this.candidateDCs) {
@@ -410,8 +448,34 @@ public class Evaluation {
   }
 
   public Set<Integer> genTupleQuestionsFromCurrState(int maxQueryBudget) {
-    List<Integer> chosenLinesInSample = getRandomElements(this.sampleResult.getLineIndices(),
-        maxQueryBudget);
+    // 随机选择元组问题
+//    List<Integer> chosenLinesInSample = getRandomElements(this.sampleResult.getLineIndices(),
+//        maxQueryBudget);
+    // 优化选择元组问题
+    Map<Integer, Set<DCViolation>> lineViosCountMap = Maps.newHashMap();
+    Map<Integer, Set<DenialConstraint>> lineDCsCountMap = Maps.newHashMap();
+    for (DCViolation vio : this.currVios) {
+      LinePair linePair = vio.getLinePair();
+      List<DenialConstraint> dcList = vio.getDenialConstraintList();
+      int line1 = linePair.getLine1();
+      int line2 = linePair.getLine2();
+      addToCountMap(lineViosCountMap, line1, vio);
+      addToCountMap(lineViosCountMap, line2, vio);
+      for (DenialConstraint dc : dcList) {
+        addToCountMap(lineDCsCountMap, line1, dc);
+        addToCountMap(lineDCsCountMap, line2, dc);
+      }
+    }
+    // 关联vio数量多的在前
+    ArrayList<Entry<Integer, Set<DCViolation>>> sortedLineVioMap = getSortedLines(
+        lineViosCountMap);
+    List<Entry<Integer, Set<DCViolation>>> subList = sortedLineVioMap.subList(0,
+        Math.min(maxQueryBudget, sortedLineVioMap.size()));
+    Set<Integer> chosenLinesInSample = Sets.newHashSet();
+    for (Entry<Integer, Set<DCViolation>> entry : subList) {
+      Integer key = entry.getKey();
+      chosenLinesInSample.add(key);
+    }
     return new HashSet<>(chosenLinesInSample);
   }
 
