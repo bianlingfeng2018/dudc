@@ -1,10 +1,11 @@
 package de.hpi.naumann.dc.input;
 
-import com.google.common.collect.HashMultiset;
-import de.metanome.algorithm_integration.ColumnIdentifier;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+
+import com.google.common.collect.HashMultiset;
+
+import de.metanome.algorithm_integration.ColumnIdentifier;
 
 public class ParsedColumn<T extends Comparable<T>> {
 	private final String tableName;
@@ -91,28 +92,4 @@ public class ParsedColumn<T extends Comparable<T>> {
 		return ((double) sharedCount) / ((double) totalCount);
 	}
 
-	@Override
-	public int hashCode() {
-//		return super.hashCode();
-		return Objects.hash(tableName, name, index, type);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-//		return super.equals(obj);
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null || getClass() != obj.getClass()) {
-			return false;
-		}
-		ParsedColumn tarObj = (ParsedColumn) obj;
-		if (!tableName.equals(tarObj.tableName) ||
-				!name.equals(tarObj.name) ||
-				index != tarObj.index ||
-				!type.equals(tarObj.type)) {
-			return false;
-		}
-		return true;
-	}
 }

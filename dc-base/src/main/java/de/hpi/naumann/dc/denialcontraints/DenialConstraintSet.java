@@ -105,10 +105,6 @@ public class DenialConstraintSet implements Iterable<DenialConstraint> {
 		constraints.add(dc);
 	}
 
-	public void remove(DenialConstraint dc) {
-		constraints.remove(dc);
-	}
-
 
 	@Override
 	public Iterator<DenialConstraint> iterator() {
