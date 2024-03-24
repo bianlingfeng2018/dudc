@@ -1,7 +1,6 @@
 package edu.fudan.algorithms;
 
-import static edu.fudan.algorithms.uguide.Strategy.getRandomElements;
-import static edu.fudan.conf.DefaultConf.dcGenerator;
+import static edu.fudan.conf.DefaultConf.dcGeneratorConf;
 import static edu.fudan.conf.DefaultConf.maxCellQuestionBudget;
 import static edu.fudan.conf.DefaultConf.maxDCQuestionBudget;
 import static edu.fudan.conf.DefaultConf.maxDiscoveryRound;
@@ -10,25 +9,26 @@ import static edu.fudan.conf.DefaultConf.maxTupleQuestionBudget;
 import static edu.fudan.conf.DefaultConf.questionsConf;
 import static edu.fudan.conf.DefaultConf.topK;
 import static edu.fudan.conf.DefaultConf.topKOfCluster;
+import static edu.fudan.utils.FileUtil.generateNewCopy;
+import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
+import de.hpi.naumann.dc.input.Input;
 import de.hpi.naumann.dc.paritions.LinePair;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
-import edu.fudan.DCMinderToolsException;
 import edu.fudan.algorithms.TupleSampler.SampleResult;
 import edu.fudan.algorithms.uguide.CandidateDCs;
 import edu.fudan.algorithms.uguide.CellQuestion;
 import edu.fudan.algorithms.uguide.CellQuestionResult;
-import edu.fudan.algorithms.uguide.CellQuestionV1;
 import edu.fudan.algorithms.uguide.CellQuestionV2;
-import edu.fudan.algorithms.uguide.CleanData;
-import edu.fudan.algorithms.uguide.DirtyData;
+import edu.fudan.algorithms.uguide.CleanDS;
+import edu.fudan.algorithms.uguide.DirtyDS;
 import edu.fudan.algorithms.uguide.Evaluation;
 import edu.fudan.algorithms.uguide.Evaluation.EvalResult;
-import edu.fudan.algorithms.uguide.SampledData;
+import edu.fudan.algorithms.uguide.SampleDS;
+import edu.fudan.algorithms.uguide.TCell;
 import edu.fudan.transformat.DCFormatUtil;
 import edu.fudan.utils.CSVWriter;
 import edu.fudan.utils.DCUtil;
@@ -40,7 +40,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,11 +53,11 @@ import lombok.extern.slf4j.Slf4j;
 public class UGuideDiscovery {
 
   // 干净数据
-  private final CleanData cleanData;
+  private final CleanDS cleanDS;
   // 脏数据
-  private final DirtyData dirtyData;
+  private final DirtyDS dirtyDS;
   // 采样数据
-  private final SampledData sampledData;
+  private final SampleDS sampleDS;
   // 候选规则
   private final CandidateDCs candidateDCs;
   // 评价
@@ -83,17 +82,17 @@ public class UGuideDiscovery {
       String visitedDCsPath,
       String headerPath,
       String csvResultPath) {
-    this.cleanData = new CleanData(cleanDataPath, headerPath, changesPath);
-    this.dirtyData = new DirtyData(dirtyDataPath, excludedLinesPath, headerPath);
-    this.sampledData = new SampledData(sampledDataPath, headerPath);
+    this.cleanDS = new CleanDS(cleanDataPath, headerPath, changesPath);
+    this.dirtyDS = new DirtyDS(dirtyDataPath, excludedLinesPath, headerPath);
+    this.sampleDS = new SampleDS(sampledDataPath, headerPath);
     this.candidateDCs = new CandidateDCs(dcsPathForFCDC, dcsPathForDCMiner, evidencesPathForFCDC,
         topKDCsPath);
-    this.evaluation = new Evaluation(cleanData, dirtyData, groundTruthDCsPath, candidateDCsPath,
+    this.evaluation = new Evaluation(cleanDS, dirtyDS, groundTruthDCsPath, candidateDCsPath,
         trueDCsPath, visitedDCsPath, csvResultPath);
   }
 
   public void guidedDiscovery()
-      throws InputGenerationException, IOException, InputIterationException, DCMinderToolsException {
+      throws InputGenerationException, IOException, InputIterationException {
     // 设定groundTruth
     log.info("====== 1.Setup ======");
     evaluation.setUp();
@@ -102,6 +101,8 @@ public class UGuideDiscovery {
     while (canProcess(round)) {
       round++;
       log.info("------ Round {} -------", round);
+      // 修复
+      simRepairing();
       // 采样
       sample();
       // 发现规则
@@ -127,7 +128,17 @@ public class UGuideDiscovery {
       // 输出结果
       persistResult();
     }
+    // 打印最终的DC和检测得到的Violation（仅仅用于测试）
+    printFinalDCsAndViolations();
     log.info("Finish");
+  }
+
+  private void printFinalDCsAndViolations() {
+    log.debug("PrintFinalDCsAndViolations:");
+    Set<DenialConstraint> trueDCs = evaluation.getTrueDCs();
+    DCViolationSet violations =
+        new HydraDetector(this.dirtyDS.getDataPath(), trueDCs).detect();
+    log.debug("TrueDCs={}, violations={}", trueDCs.size(), violations.size());
   }
 
   private boolean canProcess(int round) {
@@ -136,8 +147,8 @@ public class UGuideDiscovery {
       return false;
     }
     if (evaluation.allTrueViolationsFound()) {
-      log.info("All changes covered");
-      return false;
+      log.info("All changes covered!!!");
+//      return false;
     }
     return true;
   }
@@ -147,7 +158,7 @@ public class UGuideDiscovery {
     String trueDCsPath = evaluation.getTrueDCsPath();
     String candidateDCsPath = evaluation.getCandidateDCsPath();
     String visitedDCsPath = evaluation.getVisitedDCsPath();
-    String excludedLinesPath = this.dirtyData.getExcludedLinesPath();
+    String excludedLinesPath = dirtyDS.getExcludedLinesPath();
     log.info("TrueDCsPath={}", trueDCsPath);
     log.info("CandidateDCsPath={}", candidateDCsPath);
     log.info("VisitedDCsPath={}", visitedDCsPath);
@@ -155,103 +166,109 @@ public class UGuideDiscovery {
     persistDCs(evaluation.getTrueDCs(), trueDCsPath);
     persistDCs(evaluation.getCandidateDCs(), candidateDCsPath);
     persistDCs(evaluation.getVisitedDCs(), visitedDCsPath);
-    persistExcludedLines(this.dirtyData.getDataPath(), evaluation.getExcludedLines(),
+    persistExcludedLines(dirtyDS.getDataPath(), evaluation.getExcludedLines(),
         excludedLinesPath);
     // 保存结果
     CSVWriter.writeToFile(evaluation.getCsvResultPath(), evaluation.getEvalResults());
   }
 
-  private void askDCQuestion()
-      throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
+  private void askDCQuestion() {
     log.info("===== 5.3 Ask DC question ======");
-    // TODO: 也可以确认假DC并排除
-    // 确认真DC，并删除真DC发现的冲突元组
+    // 给用户推荐DC进行判断
     Set<DenialConstraint> questions = evaluation.genDCQuestionsFromCurrState(maxDCQuestionBudget);
-    int numb = questions.size();
+    int qNum = questions.size();
     log.info("DCQuestions/MaxDCQuestionBudget/CurrDCsSize={}/{}/{}",
-        numb,
+        qNum,
         maxDCQuestionBudget,
         evaluation.getCurrDCs().size());
-    evaluation.addDCBudget(numb);
-    // 判断得到TrueDCs
+    evaluation.addDCBudget(qNum);
+    // 判断得到真DC
     Set<DenialConstraint> trueDCs = questions.stream().filter(dc -> evaluation.isTrueDC(dc))
         .collect(Collectors.toSet());
     log.info("TureDCs(DCsQ): {}", trueDCs.size());
     for (DenialConstraint dc : trueDCs) {
       log.debug("{}", DCFormatUtil.convertDC2String(dc));
     }
-    // 判断得到TrueDCs
+    // 判断得到假DC
     Set<DenialConstraint> falseDCs = questions.stream().filter(dc -> !evaluation.isTrueDC(dc))
         .collect(Collectors.toSet());
     log.info("FalseDCs(DCsQ): {}", falseDCs.size());
     for (DenialConstraint dc : falseDCs) {
       log.debug("{}", DCFormatUtil.convertDC2String(dc));
     }
-    // 排除TrueDCs在脏数据上的冲突元组
-    Set<Integer> excludedLinesInDCsQ = Sets.newHashSet();
-    DCViolationSet vios = new HydraDetector(dirtyData.getDataPath(), trueDCs).detect();
-    for (DCViolation vio : vios.getViosSet()) {
-      LinePair linePair = vio.getLinePair();
-      int line1 = linePair.getLine1();
-      int line2 = linePair.getLine2();
-      excludedLinesInDCsQ.add(line1);
-      excludedLinesInDCsQ.add(line2);
-    }
-    // TODO: 优选排除的元组
-    int sizeBefore = excludedLinesInDCsQ.size();
-    int sizeAfter = (int) (sizeBefore * 0.1);
-    Set<Integer> excludedLinesInDCsQRandom = new HashSet<>(
-        getRandomElements(excludedLinesInDCsQ, sizeAfter));
-    log.debug("ExcludedLinesInDCsQRandom before {}, after {}", sizeBefore, sizeAfter);
-    evaluation.setExcludedLinesInDCsQ(excludedLinesInDCsQRandom);
+//    // 排除真DC在脏数据上的冲突元组
+//    Set<Integer> excludedLinesInDCsQ = Sets.newHashSet();
+//    DCViolationSet vios = new HydraDetector(evaluation.getDirtyDS().getDataPath(), trueDCs).detect();
+//    for (DCViolation vio : vios.getViosSet()) {
+//      LinePair linePair = vio.getLinePair();
+//      int line1 = linePair.getLine1();
+//      int line2 = linePair.getLine2();
+//      excludedLinesInDCsQ.add(line1);
+//      excludedLinesInDCsQ.add(line2);
+//    }
+//    // TODO: 优选排除的元组
+//    int sizeBefore = excludedLinesInDCsQ.size();
+//    int sizeAfter = (int) (sizeBefore * 0.1);
+//    Set<Integer> excludedLinesInDCsQRandom = new HashSet<>(
+//        getRandomElements(excludedLinesInDCsQ, sizeAfter));
+//    log.debug("ExcludedLinesInDCsQRandom before {}, after {}", sizeBefore, sizeAfter);
+//    evaluation.setExcludedLinesInDCsQ(excludedLinesInDCsQRandom);
     // TODO: DCsQ排除的元组虽然是真冲突中的，但是如果排除太多会导致有的规则因为缺少反例而无法发现，这里暂时不排除
     evaluation.update(null, falseDCs, null, null, null);
   }
 
   private void askTupleQuestion() {
     log.info("===== 5.2 Ask TUPLE question =====");
-    // 在采样数据中，推荐一些元组让用户判断
+    // 在脏数据中，推荐一些元组让用户判断
     Set<Integer> questions = evaluation.genTupleQuestionsFromCurrState(maxTupleQuestionBudget);
-    int numb = questions.size();
+    int qNum = questions.size();
     log.info("TupleQuestions/MaxTupleQuestionBudget/SampleSize={}/{}/{}",
-        numb,
+        qNum,
         maxTupleQuestionBudget,
         evaluation.getSampleResultSize());
-    evaluation.addTupleBudget(numb);
-    // 排除question(sample中推荐给用户判断的元组)中的所有错误行
-    Set<Integer> excludedLinesInSample = questions.stream()
-        .filter(i -> evaluation.getErrorLinesOfChanges().contains(i))
+    evaluation.addTupleBudget(qNum);
+    // 排除错误行
+    Set<Integer> excludedLines = questions.stream()
+        .filter(lineIndex -> evaluation.getErrorLinesOfChanges().contains(lineIndex))
         .collect(Collectors.toSet());
-    evaluation.setExcludedLinesInTupleQ(excludedLinesInSample);
-    log.info("FalseTuples(excludedLinesInSample): {}", excludedLinesInSample.size());
-    evaluation.update(null, null, null, null, excludedLinesInSample);
+    evaluation.setExcludedLinesInTupleQ(excludedLines);
+    log.info("FalseTuples(excludedLinesInDirty): {}", excludedLines.size());
+    log.debug("TupleQuestion exclude : {}", excludedLines);
+    evaluation.update(null, null, null, null, excludedLines);
   }
 
-  private void askCellQuestion() throws DCMinderToolsException {
+  private void askCellQuestion() {
     log.info("====== 5.1 Ask CELL question ======");
-    // 可替换模块开始
     // 选择Violation作为问题，判断是否是真冲突(已弃用)
 //    CellQuestion selector = new CellQuestionV1(evaluation);
     // 选择Cell作为问题，判断是否是干净Cell
-    CellQuestion selector = new CellQuestionV2(evaluation);
-    // 可替换模块结束
+    Input input = generateNewCopy(evaluation.getDirtyDS().getDataPath());
+    Set<TCell> cellsOfChanges = evaluation.getCellsOfChanges();
+    Set<DenialConstraint> currDCs = evaluation.getCurrDCs();
+    Set<DCViolation> currVios = evaluation.getCurrVios();
+    CellQuestion selector = new CellQuestionV2(input,
+        cellsOfChanges,
+        currDCs,
+        currVios
+    );
+
     selector.simulate();
     CellQuestionResult result = selector.getResult();
-    Set<Integer> excludedLinesInCellQ = result.getExcludedLines();
     Set<DenialConstraint> falseDCs = result.getFalseDCs();
-    int questionNum = selector.getBudgetUsed();
+//    Set<Integer> excludedLinesInCellQ = result.getExcludedLines();
+    int qNum = selector.getBudgetUsed();
     log.info("CellQuestions/MaxCellQuestionBudget/CurrViosSize={}/{}/{}",
-        questionNum,
+        qNum,
         maxCellQuestionBudget,
-        evaluation.getCurrVios().size());
-    evaluation.addCellBudget(questionNum);
-    evaluation.setExcludedLinesInCellQ(excludedLinesInCellQ);
+        currVios.size());
+    evaluation.addCellBudget(qNum);
+//    evaluation.setExcludedLinesInCellQ(excludedLinesInCellQ);
     // TODO:这里效率待优化
     // TODO: CellQ排除的元组虽然是真冲突中的，但是如果排除太多会导致有的规则因为缺少反例而无法发现，这里暂时不排除
     evaluation.update(null, falseDCs, null, null, null);
   }
 
-  private void evaluate() throws DCMinderToolsException {
+  private void evaluate() {
     log.info("====== 6.Evaluate the true violations and false violations ======");
     EvalResult result = evaluation.evaluate();
     // 打印结果信息
@@ -290,33 +307,24 @@ public class UGuideDiscovery {
         result.getQuestionsDC());
   }
 
-  private void detect()
-      throws IOException, InputGenerationException, InputIterationException, DCMinderToolsException {
+  private void detect() {
     log.info("====== 4.Detect violations on dirty data ======");
-//    String dataPath = sampledData.getDataPath();
-    String dataPath = dirtyData.getDataPath();
-    String topKDCsPath = candidateDCs.getTopKDCsPath();
-    HydraDetector detector = new HydraDetector(dataPath, topKDCsPath);
-    DCViolationSet vios = detector.detect();
-    log.info("Vios = {}", vios.size());
-
-    // update candidate DCs and violations
+    DCViolationSet vios =
+        new HydraDetector(evaluation.getDirtyDS().getDataPath(), evaluation.getCurrDCs()).detect();
     Set<DCViolation> violations = vios.getViosSet();
+    log.info("Violations = {}", violations.size());
+
     evaluation.update(null, null, violations, null, null);
-    // update current violations, which will be used to choose questions
-    evaluation.updateCurrState(violations);
   }
 
-  private void discoveryDCs()
-      throws IOException, DCMinderToolsException {
+  private void discoveryDCs() {
     log.info("====== 3.Discovery DCs from sample ======");
-    // TODO:现在发现的规则没有加入g1，有的规则冲突太多，明显是假阳性，且影响后续的效率
-    log.info("DCGenerator: {}", dcGenerator);
-    DCGenerator generator = getGenerator(dcGenerator);
+    log.info("DCGeneratorConf: {}", dcGeneratorConf);
+    DCGenerator generator = getGenerator(dcGeneratorConf);
     Set<DenialConstraint> dcs = generator.generateDCsForUser();
 
     if (dcs.size() != topK) {
-//      throw new DCMinderToolsException(String.format("Discovery DCs size is not %s: %s",
+//      throw new RuntimeException(String.format("Discovery DCs size is not %s: %s",
 //          topK, dcs.size()));
       // 提前结束
       this.breakEarly = true;
@@ -329,36 +337,59 @@ public class UGuideDiscovery {
   private void sample()
       throws InputGenerationException, IOException, InputIterationException {
     Set<Integer> excludedLines = evaluation.getExcludedLines();
+    // 如果采用了修复策略，则采样前excludedLines已经被修复，从而为空
+    if (excludedLines.size() != 0) {
+      throw new RuntimeException("Illegal excludedLines size");
+    }
     Map<DenialConstraint, Set<LinePair>> falseDCLinePairMap = evaluation.getFalseDCLinePairMap();
     log.info("====== 2.Sample from dirty data ======");
 
     SampleResult sampleResult = new TupleSampler()
-        .sample(new File(dirtyData.getDataPath()), topKOfCluster, maxInCluster,
+        .sample(new File(dirtyDS.getDataPath()), topKOfCluster, maxInCluster,
             null, true, excludedLines, falseDCLinePairMap);
-    String out = sampledData.getDataPath();
-    log.debug("Write to file: {}", out);
-    FileUtil.writeListLinesToFile(sampleResult.getLinesWithHeader(), new File(out));
+    String samplePath = sampleDS.getDataPath();
+    log.debug("Write to file: {}", samplePath);
+    FileUtil.writeListLinesToFile(sampleResult.getLinesWithHeader(), new File(samplePath));
 
     evaluation.updateSampleResult(sampleResult);
   }
 
-  private DCGenerator getGenerator(String dcGenerator) throws DCMinderToolsException {
+  private void simRepairing()
+      throws InputGenerationException, InputIterationException, IOException {
+    // 将需要排除的脏数据行进行修复
+    Set<Integer> excludedLines = evaluation.getExcludedLines();
+    log.debug("====== 1.x SimRepairing excludedLines: {} ====== ", excludedLines.size());
+    log.debug("REPAIR = {}", excludedLines);
+
+    // 修复excludedLines
+    String dirtyPath = dirtyDS.getDataPath();
+    File dirtyFile = new File(dirtyPath);
+    List<List<String>> repairedLinesWithHeader = getRepairedLinesWithHeader(excludedLines,
+        evaluation.getLineChangesMap(), dirtyFile);
+    log.debug("Write to file: {}", dirtyPath);
+    FileUtil.writeListLinesToFile(repairedLinesWithHeader, dirtyFile);
+
+    // 更新changes（excludedLines已经修复，因此需要从changes中删除）
+    evaluation.updateChangesByExcludedLines();
+  }
+
+  private DCGenerator getGenerator(String dcGenerator) {
     if (dcGenerator.equals("Basic")) {
-      BasicDCGenerator generator = new BasicDCGenerator(sampledData.getDataPath(),
-          candidateDCs.getDcsPathForFCDC(), sampledData.getHeaderPath());
+      BasicDCGenerator generator = new BasicDCGenerator(sampleDS.getDataPath(),
+          candidateDCs.getDcsPathForFCDC(), sampleDS.getHeaderPath());
       generator.setExcludeDCs(evaluation.getVisitedDCs());
       // 设定近似阈值
       generator.setErrorThreshold(evaluation.getErrorThreshold());
       return generator;
     } else if (dcGenerator.equals("DCMiner")) {
-      RLDCGenerator generator = new RLDCGenerator(sampledData.getDataPath(),
+      RLDCGenerator generator = new RLDCGenerator(sampleDS.getDataPath(),
           candidateDCs.getEvidencesPathForFCDC(),
           candidateDCs.getDcsPathForDCMiner(),
-          sampledData.getHeaderPath());
+          sampleDS.getHeaderPath());
       generator.setExcludeDCs(evaluation.getVisitedDCs());
       return generator;
     } else {
-      throw new DCMinderToolsException(String.format("Unknown DCGenerator: %s", dcGenerator));
+      throw new RuntimeException(String.format("Unknown DCGenerator: %s", dcGenerator));
     }
   }
 

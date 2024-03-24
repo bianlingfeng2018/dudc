@@ -7,16 +7,15 @@ import lombok.Getter;
  * @author Lingfeng
  */
 @Getter
-public class CleanData {
+public class DirtyDS {
 
   private final String dataPath;
+  private final String excludedLinesPath;
   private final String headerPath;
-  private final String changesPath;
 
-  public CleanData(String dataPath, String headerPath, String changesPath) {
+  public DirtyDS(String dataPath, String excludedLinesPath, String headerPath) {
     this.dataPath = dataPath;
+    this.excludedLinesPath = excludedLinesPath;
     this.headerPath = headerPath;
-    this.changesPath = changesPath;
   }
-
 }

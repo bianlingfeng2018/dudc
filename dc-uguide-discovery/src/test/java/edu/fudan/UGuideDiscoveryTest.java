@@ -234,7 +234,7 @@ public class UGuideDiscoveryTest {
    */
   @Test
   public void testDetectDCViolationUsingHydra() {
-    HydraDetector detector = new HydraDetector(dirtyDataPath, universalDCsPath, headerPath);
+    HydraDetector detector = new HydraDetector(dirtyDataPath, trueDCsPath, headerPath);
     detectUsingHydraDetector(detector);
   }
 

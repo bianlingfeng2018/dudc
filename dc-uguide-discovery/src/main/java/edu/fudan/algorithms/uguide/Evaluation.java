@@ -6,10 +6,11 @@ import static edu.fudan.algorithms.uguide.Strategy.getSortedLines;
 import static edu.fudan.conf.DefaultConf.debugDCVioMap;
 import static edu.fudan.conf.DefaultConf.defaultErrorThreshold;
 import static edu.fudan.conf.DefaultConf.dynamicG1;
-import static edu.fudan.utils.DCUtil.getCellIdentifiersOfChanges;
-import static edu.fudan.utils.DCUtil.getCellIdentyfiersFromVios;
+import static edu.fudan.utils.DCUtil.genLineChangesMap;
+import static edu.fudan.utils.DCUtil.getCellsOfViolations;
 import static edu.fudan.utils.DCUtil.getErrorLinesContainingChanges;
 import static edu.fudan.utils.DCUtil.loadChanges;
+import static edu.fudan.utils.FileUtil.generateNewCopy;
 
 import ch.javasoft.bitset.search.NTreeSearch;
 import com.google.common.collect.Lists;
@@ -19,14 +20,14 @@ import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.paritions.LinePair;
 import de.hpi.naumann.dc.predicates.sets.PredicateSetFactory;
 import de.metanome.algorithm_integration.input.InputGenerationException;
-import de.metanome.algorithm_integration.input.InputIterationException;
-import edu.fudan.DCMinderToolsException;
 import edu.fudan.algorithms.DCLoader;
 import edu.fudan.algorithms.DCViolation;
 import edu.fudan.algorithms.DCViolationSet;
 import edu.fudan.algorithms.HydraDetector;
 import edu.fudan.algorithms.TupleSampler.SampleResult;
+import edu.fudan.utils.DCUtil;
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,13 +51,13 @@ public class Evaluation {
   /**
    * Clean data
    */
-  private final CleanData cleanData;
+  private final CleanDS cleanDS;
 
   /**
    * Dirty data
    */
   @Getter
-  private final DirtyData dirtyData;
+  private final DirtyDS dirtyDS;
 
   /**
    * Path of ground truth DCs
@@ -162,7 +163,6 @@ public class Evaluation {
   private Set<Integer> excludedLinesInDCsQ = Sets.newHashSet();
   private SampleResult sampleResult = new SampleResult(new HashSet<>(), new ArrayList<>());
   @Getter
-  @Setter
   private double errorThreshold = 0.0;
   @Getter
   private List<EvalResult> evalResults = Lists.newArrayList();
@@ -173,11 +173,14 @@ public class Evaluation {
    */
   @Getter
   private int lastCandiDCsSize = 0;
+  @Getter
+  private Map<Integer, Map<Integer, String>> lineChangesMap;
+  private List<TChange> changes;
 
-  public Evaluation(CleanData cleanData, DirtyData dirtyData, String groundTruthDCsPath,
+  public Evaluation(CleanDS cleanDS, DirtyDS dirtyDS, String groundTruthDCsPath,
       String candidateDCsPath, String trueDCsPath, String visitedDCsPath, String csvResultPath) {
-    this.cleanData = cleanData;
-    this.dirtyData = dirtyData;
+    this.cleanDS = cleanDS;
+    this.dirtyDS = dirtyDS;
     this.groundTruthDCsPath = groundTruthDCsPath;
     this.candidateDCsPath = candidateDCsPath;
     this.trueDCsPath = trueDCsPath;
@@ -185,13 +188,12 @@ public class Evaluation {
     this.csvResultPath = csvResultPath;
   }
 
-  public void setUp()
-      throws DCMinderToolsException, IOException, InputGenerationException, InputIterationException {
-    String cleanDataPath = this.cleanData.getDataPath();
-    String dirtyDataPath = this.dirtyData.getDataPath();
-    String headerPath = this.cleanData.getHeaderPath();
-    log.info("CleanDataPath={}", cleanDataPath);
-    log.info("DirtyDataPath={}", dirtyDataPath);
+  public void setUp() throws IOException, InputGenerationException {
+    String cleanPath = this.cleanDS.getDataPath();
+    String dirtyPath = this.dirtyDS.getDataPath();
+    String headerPath = this.cleanDS.getHeaderPath();
+    log.info("CleanPath={}", cleanPath);
+    log.info("DirtyPath={}", dirtyPath);
     log.info("HeaderPath={}", headerPath);
 
     // 发现groundTruth规则
@@ -200,17 +202,17 @@ public class Evaluation {
     log.info("GroundTruthDCsPath={}", this.groundTruthDCsPath);
     List<DenialConstraint> dcList = DCLoader.load(headerPath, this.groundTruthDCsPath);
     // 检测冲突，结果应该为0
-    log.debug("Confirm clean data has NO vios wrt ground truth DCs");
-    DCViolationSet viosOnClean = new HydraDetector(cleanDataPath, this.groundTruthDCsPath).detect();
-    int sizeClean = viosOnClean.size();
-    if (sizeClean != 0) {
+    log.debug("Confirm clean data HAS NO vios wrt ground truth DCs");
+    DCViolationSet viosOnClean =
+        new HydraDetector(cleanPath, this.groundTruthDCsPath, headerPath).detect();
+    if (viosOnClean.size() != 0) {
       throw new RuntimeException("Found vios of gtDCs on clean data");
     }
     // 检测冲突，设定GroundTruth规则应当在脏数据集上发现的冲突数量
     log.debug("Confirm dirty data HAS vios wrt ground truth DCs");
-    DCViolationSet viosOnDirty = new HydraDetector(dirtyDataPath, this.groundTruthDCsPath).detect();
-    int sizeDirty = viosOnDirty.size();
-    if (sizeDirty == 0) {
+    DCViolationSet viosOnDirty =
+        new HydraDetector(dirtyPath, this.groundTruthDCsPath, headerPath).detect();
+    if (viosOnDirty.size() == 0) {
       throw new RuntimeException("No vios of gtDCs on dirty data");
     }
     // 设定GroundTruth
@@ -222,29 +224,28 @@ public class Evaluation {
       this.gtTree.add(PredicateSetFactory.create(gtDC.getPredicateSet()).getBitset());
     }
     // 设定errors(changes)
-    List<TChange> changes = loadChanges(this.cleanData.getChangesPath());
+    List<TChange> changes = loadChanges(this.cleanDS.getChangesPath());
     log.info("Changes: {}", changes.size());
-    this.cellsOfChanges = getCellIdentifiersOfChanges(changes);
-    this.errorLinesOfChanges = getErrorLinesContainingChanges(changes);
+    this.changes = changes;
+    this.updateChanges();
     // 设定errorThreshold
     this.errorThreshold = defaultErrorThreshold;
     // 确认visited为零
-    clearVisitedDCs();
+    this.clearVisitedDCs();
   }
 
-  public void update(Set<DenialConstraint> candidateDCs,
+  public void update(Set<DenialConstraint> newCandiDCs,
       Set<DenialConstraint> falseDCs,
-      Set<DCViolation> candidateViolations,
+      Set<DCViolation> newCandiVios,
       Set<DCViolation> falseViolations,
       Set<Integer> excludedLines) {
-    if (candidateDCs != null) {
-      // 记录当前状态
-      this.currDCs.clear();
-      this.currDCs.addAll(candidateDCs);
+    // 更新当前状态
+    updateCurrState(newCandiDCs, newCandiVios);
+    if (newCandiDCs != null) {
       // 增加候选规则
-      this.candidateDCs.addAll(candidateDCs);
+      this.candidateDCs.addAll(newCandiDCs);
       // 记录已经访问过的DC
-      this.visitedDCs.addAll(candidateDCs);
+      this.visitedDCs.addAll(newCandiDCs);
     }
     if (falseDCs != null) {
       // 减少假阳性规则
@@ -260,26 +261,29 @@ public class Evaluation {
       Iterator<DCViolation> it = this.candidateViolations.iterator();
       while (it.hasNext()) {
         DCViolation vio = it.next();
-        List<DenialConstraint> dcs = vio.getDenialConstraintList();
-        for (DenialConstraint dc : dcs) {
-          if (falseDCs.contains(dc)) {
-            it.remove();
-            // 记录规则和候选反例，用于优化采样
-            if (falseDCLinePairMap.containsKey(dc)) {
-              falseDCLinePairMap.get(dc).add(vio.getLinePair());
-            } else {
-              falseDCLinePairMap.put(dc, Sets.newHashSet(vio.getLinePair()));
-            }
+        List<DenialConstraint> dcs = vio.getDenialConstraintsNoData();
+        if (dcs.size() != 1) {
+          throw new RuntimeException("Illegal dcs size");
+        }
+        DenialConstraint dc = dcs.get(0);
+        LinePair linePair = vio.getLinePair();
+        if (falseDCs.contains(dc)) {
+          it.remove();
+          // 记录规则和候选反例，用于优化采样
+          if (falseDCLinePairMap.containsKey(dc)) {
+            falseDCLinePairMap.get(dc).add(linePair);
+          } else {
+            falseDCLinePairMap.put(dc, Sets.newHashSet(linePair));
           }
         }
       }
     }
-    if (candidateViolations != null) {
+    if (newCandiVios != null) {
       // 增加相关的冲突
-      this.candidateViolations.addAll(candidateViolations);
+      this.candidateViolations.addAll(newCandiVios);
       // 增加真冲突（增量增加，开销较小）
-      for (DCViolation candiVio : candidateViolations) {
-        for (DenialConstraint dc : candiVio.getDenialConstraintList()) {
+      for (DCViolation candiVio : newCandiVios) {
+        for (DenialConstraint dc : candiVio.getDenialConstraintsNoData()) {
           if (isTrueViolation(dc, candiVio.getLinePair())) {
             this.trueViolations.add(candiVio);
           }
@@ -298,10 +302,15 @@ public class Evaluation {
     }
   }
 
-  public void updateCurrState(Set<DCViolation> candidateViolations) {
-    // 记录当前状态
-    this.currVios.clear();
-    this.currVios.addAll(candidateViolations);
+  public void updateCurrState(Set<DenialConstraint> dcs, Set<DCViolation> violations) {
+    if (dcs != null) {
+      this.currDCs.clear();
+      this.currDCs.addAll(dcs);
+    }
+    if (violations != null) {
+      this.currVios.clear();
+      this.currVios.addAll(violations);
+    }
   }
 
   public void addCellBudget(int numb) {
@@ -316,7 +325,7 @@ public class Evaluation {
     this.tupleBudgetUsed += numb;
   }
 
-  public EvalResult evaluate() throws DCMinderToolsException {
+  public EvalResult evaluate() {
     EvalResult result = new EvalResult();
     if (dynamicG1 && this.lastCandiDCsSize == this.candidateDCs.size()) {
       // TODO: 当candiDC数量没有增加时，即本轮top-k规则全部被判定为falseDC，此时g1需要更严格，即更小
@@ -350,21 +359,23 @@ public class Evaluation {
         candiDCViosMap.put(candiDC, 0);
       }
       for (DCViolation candiVio : this.candidateViolations) {
-        List<DenialConstraint> dcs = candiVio.getDenialConstraintList();
-        for (DenialConstraint dc : dcs) {
-          Integer i = candiDCViosMap.get(dc);
-          if (i == null) {
-            throw new DCMinderToolsException("No candiDC found for a candiVio!!!");
-          }
-          candiDCViosMap.put(dc, i + 1);
+        List<DenialConstraint> dcs = candiVio.getDenialConstraintsNoData();
+        if (dcs.size() != 1) {
+          throw new RuntimeException("Illegal dcs size");
         }
+        DenialConstraint dc = dcs.get(0);
+        Integer cnt = candiDCViosMap.get(dc);
+        if (cnt == null) {
+          throw new RuntimeException("No candiDC found for a candiVio!!!");
+        }
+        candiDCViosMap.put(dc, cnt + 1);
       }
     }
     long t3 = System.currentTimeMillis();
     log.debug("Eval 2 time = {}s", (t3 - t2) / 1000.0);
     // 评价error cells发现个数
-    this.cellsOfTrueVios = getCellIdentyfiersFromVios(this.trueViolations,
-        this.dirtyData.getInput());
+    this.cellsOfTrueVios = getCellsOfViolations(this.trueViolations,
+        generateNewCopy(this.dirtyDS.getDataPath()));
     this.cellsOfTrueViosAndChanges = this.cellsOfTrueVios.stream()
         .filter(tc -> this.cellsOfChanges.contains(tc))
         .collect(Collectors.toSet());
@@ -372,7 +383,7 @@ public class Evaluation {
     log.debug("Eval 3 time = {}s", (t4 - t3) / 1000.0);
     // 评价sample中已排除的错误元组数量
     this.errorLinesInSampleAndExcluded = this.errorLinesInSample.stream()
-        .filter(i -> this.excludedLines.contains(i))
+        .filter(lineIndex -> this.excludedLines.contains(lineIndex))
         .collect(Collectors.toSet());
     long t5 = System.currentTimeMillis();
     log.debug("Eval 4 time = {}s", (t5 - t4) / 1000.0);
@@ -419,6 +430,7 @@ public class Evaluation {
   }
 
   public boolean allTrueViolationsFound() {
+    // TODO: 如何判断所有冲突已经找到？或者找到冲突的召回率和准确率如何定义？
 //    boolean b = trueDCsMoreThanGroundTruthDCs();
 //    boolean b = trueViosMoreThanGroundTruthVios();
     boolean b = this.cellsOfTrueVios.containsAll(this.cellsOfChanges);
@@ -453,30 +465,24 @@ public class Evaluation {
 //        maxQueryBudget);
     // 优化选择元组问题
     Map<Integer, Set<DCViolation>> lineViosCountMap = Maps.newHashMap();
-    Map<Integer, Set<DenialConstraint>> lineDCsCountMap = Maps.newHashMap();
     for (DCViolation vio : this.currVios) {
       LinePair linePair = vio.getLinePair();
-      List<DenialConstraint> dcList = vio.getDenialConstraintList();
       int line1 = linePair.getLine1();
       int line2 = linePair.getLine2();
       addToCountMap(lineViosCountMap, line1, vio);
       addToCountMap(lineViosCountMap, line2, vio);
-      for (DenialConstraint dc : dcList) {
-        addToCountMap(lineDCsCountMap, line1, dc);
-        addToCountMap(lineDCsCountMap, line2, dc);
-      }
     }
     // 关联vio数量多的在前
     ArrayList<Entry<Integer, Set<DCViolation>>> sortedLineVioMap = getSortedLines(
         lineViosCountMap);
     List<Entry<Integer, Set<DCViolation>>> subList = sortedLineVioMap.subList(0,
         Math.min(maxQueryBudget, sortedLineVioMap.size()));
-    Set<Integer> chosenLinesInSample = Sets.newHashSet();
+    Set<Integer> chosenLines = Sets.newHashSet();
     for (Entry<Integer, Set<DCViolation>> entry : subList) {
       Integer key = entry.getKey();
-      chosenLinesInSample.add(key);
+      chosenLines.add(key);
     }
-    return new HashSet<>(chosenLinesInSample);
+    return new HashSet<>(chosenLines);
   }
 
   public Set<DenialConstraint> genDCQuestionsFromCurrState(int maxQueryBudget) {
@@ -484,14 +490,56 @@ public class Evaluation {
     return new HashSet<>(chosenDCs);
   }
 
-  private void clearVisitedDCs() throws IOException {
+  /**
+   * 清理已经访问过的DC
+   */
+  private void clearVisitedDCs() {
     // 创建一个 BufferedWriter 对象
-    BufferedWriter writer = new BufferedWriter(new FileWriter(this.visitedDCsPath));
-    // 写入空字符串以清空文件内容
-    writer.write("");
-    // 关闭 BufferedWriter
-    writer.close();
-    log.info("VisitedDCsPath cleared");
+    BufferedWriter bw = null;
+    try {
+      bw = new BufferedWriter(new FileWriter(this.visitedDCsPath));
+      // 写入空字符串以清空文件内容
+      bw.write("");
+      // 关闭 BufferedWriter
+      bw.close();
+      log.info("VisitedDCsPath cleared");
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    } finally {
+      try {
+        if (bw != null) {
+          bw.close();
+        }
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+  /**
+   * 更新changes，如果excludedLines被修复，则对应的change也应当删除
+   */
+  public void updateChangesByExcludedLines()
+      throws InputGenerationException, FileNotFoundException {
+    Iterator<TChange> it = this.changes.iterator();
+    while (it.hasNext()) {
+      TChange next = it.next();
+      if (this.excludedLines.contains(next.getLineIndex())) {
+        it.remove();
+      }
+    }
+    this.updateChanges();
+    this.excludedLines.clear();
+  }
+
+  /**
+   * 重新计算changes相关的数据
+   */
+  public void updateChanges()
+      throws InputGenerationException, FileNotFoundException {
+    this.lineChangesMap = genLineChangesMap(this.dirtyDS.getDataPath(), this.changes);
+    this.cellsOfChanges = DCUtil.getCellsOfChanges(this.changes);
+    this.errorLinesOfChanges = getErrorLinesContainingChanges(this.changes);
   }
 
   @Getter

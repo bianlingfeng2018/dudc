@@ -1,19 +1,22 @@
 package edu.fudan.algorithms.uguide;
 
+
 import lombok.Getter;
 
 /**
  * @author Lingfeng
  */
 @Getter
-public class SampledData {
+public class CleanDS {
 
   private final String dataPath;
   private final String headerPath;
+  private final String changesPath;
 
-  public SampledData(String dataPath, String headerPath) {
+  public CleanDS(String dataPath, String headerPath, String changesPath) {
     this.dataPath = dataPath;
     this.headerPath = headerPath;
+    this.changesPath = changesPath;
   }
 
 }

@@ -48,6 +48,8 @@ public class ColumnAwareWeightedClusterSampler {
           int line1 = linePair.getLine1();
           int line2 = linePair.getLine2();
 
+          // TODO: 目前加入修复策略后，可以保证excludedLines为空，从而假DC的反例一定不会被排除，但尚不能保证该反例修复后仍然还是反例
+          //  即，当修复假DC反例时，若修复与这个DC相关的cell，则可能修复后就不再是反例，因此下一步可以考虑限制只能修复与这个DC无关的cell
           if (!excludedLines.contains(line1) && !excludedLines.contains(line2)) {
             leastOneLinePairAdded = true;
             lines.add(line1);
