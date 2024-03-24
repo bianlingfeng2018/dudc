@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * @author Lingfeng
  */
-public class OperationStr {
+public class OperatorConst {
 
   public final static String equal = "=";
   public final static String unequal = "!=";
@@ -18,7 +18,7 @@ public class OperationStr {
   public final static String[] legalOperations =
       {unequal, greaterEqual, lessEqual, greater, less, equal};
 
-  public static Map<String, Operator> opString2ObjectMap = new HashMap<String, Operator>() {{
+  static Map<String, Operator> str2objMap = new HashMap<String, Operator>() {{
     put(equal, Operator.EQUAL);
     put(unequal, Operator.UNEQUAL);
     put(greater, Operator.GREATER);
@@ -27,7 +27,7 @@ public class OperationStr {
     put(lessEqual, Operator.LESS_EQUAL);
   }};
 
-  public static Map<Operator, String> opObject2StringMap = new HashMap<Operator, String>() {{
+  static Map<Operator, String> obj2strMap = new HashMap<Operator, String>() {{
     put(Operator.EQUAL, equal);
     put(Operator.UNEQUAL, unequal);
     put(Operator.GREATER, greater);

@@ -12,13 +12,16 @@ import static edu.fudan.conf.DefaultConf.topKOfCluster;
 import static edu.fudan.conf.DefaultConf.trainArgs;
 import static edu.fudan.utils.CorrelationUtil.getDCScoreUniformMap;
 import static edu.fudan.utils.CorrelationUtil.readColumnCorrScoreMap;
-import static edu.fudan.utils.DCUtil.getCellIdentifiersOfChanges;
-import static edu.fudan.utils.DCUtil.getCellIdentyfiersFromVios;
-import static edu.fudan.utils.DCUtil.getDCVioSizeMap;
+import static edu.fudan.utils.DCUtil.genLineChangesMap;
+import static edu.fudan.utils.DCUtil.getCellsOfChanges;
+import static edu.fudan.utils.DCUtil.getCellsOfViolation;
+import static edu.fudan.utils.DCUtil.getCellsOfViolations;
 import static edu.fudan.utils.DCUtil.getErrorLinesContainingChanges;
 import static edu.fudan.utils.DCUtil.loadChanges;
 import static edu.fudan.utils.DCUtil.loadDirtyDataExcludedLines;
-import static edu.fudan.utils.DataUtil.generateNewCopy;
+import static edu.fudan.utils.DCUtil.printDCViolationsMap;
+import static edu.fudan.utils.FileUtil.generateNewCopy;
+import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -50,7 +53,6 @@ import edu.fudan.algorithms.UGuideDiscovery;
 import edu.fudan.algorithms.uguide.CellQuestion;
 import edu.fudan.algorithms.uguide.CellQuestionResult;
 import edu.fudan.algorithms.uguide.CellQuestionV2;
-import edu.fudan.algorithms.uguide.DirtyData;
 import edu.fudan.algorithms.uguide.TCell;
 import edu.fudan.algorithms.uguide.TChange;
 import edu.fudan.transformat.DCFormatUtil;
@@ -89,7 +91,7 @@ public class UGuideDiscoveryTest {
       "preprocessed_data\\preprocessed_hospital_dirty_excluded.csv";
   public static String sampledDataPath = baseDir + File.separator +
       "preprocessed_data\\preprocessed_hospital_dirty_sample.csv";
-  public static String fullGTDCsPath = baseDir + File.separator +
+  public static String universalDCsPath = baseDir + File.separator +
       "evidence_set\\dcs_fcdc_hospital.out";
   public static String dcsPathForDCMiner = baseDir + File.separator +
       "result_rules\\dcminer_5_hospital.csv";
@@ -118,7 +120,7 @@ public class UGuideDiscoveryTest {
         dirtyDataPath,
         excludedLinesPath,
         sampledDataPath,
-        fullGTDCsPath,
+        universalDCsPath,
         dcsPathForDCMiner,
         evidencesPathForFCDC,
         topKDCsPath,
@@ -131,15 +133,19 @@ public class UGuideDiscoveryTest {
     ud.guidedDiscovery();
   }
 
+  /**
+   * Discover dc using fdcd(2023)
+   */
   @Test
-  public void testGenGroundTruthDCsUsingFDCD() {
-    // 用2023年最新的FDCD算法生成干净规则集合
-    DiscoveryEntry.doDiscovery(cleanDataPath, fullGTDCsPath);
+  public void testDiscoveryDCsUsingFDCD() {
+    DiscoveryEntry.doDiscovery(cleanDataPath, universalDCsPath);
   }
 
+  /**
+   * Discover dc using dcFinder(2019)
+   */
   @Test
-  public void testDiscoveryDCsUsingDCFinder()
-      throws InputGenerationException, InputIterationException, FileNotFoundException {
+  public void testDiscoveryDCsUsingDCFinder() {
     // 1.当evidenceFile不为null，则生成证据集（作为DCMiner训练模型的输入），此时errorThreshold不重要
 //    DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(sampledDataPath,
 //        defaultErrorThreshold, evidencesPathForFCDC);
@@ -147,40 +153,49 @@ public class UGuideDiscoveryTest {
     // 2.当evidenceFile为null，则生成规则集合
     DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(sampledDataPath,
         defaultErrorThreshold, null);
-    log.info("Result size: " + dcs.size());
+    log.info("DCs: {}", dcs.size());
   }
 
+  /**
+   * Discover dc using basicGenerator, which save all dcs to file and gen top-k dcs from that file
+   */
   @Test
-  public void testGenGroundTruthDCsUsingDCFinder() {
-    // 用2019年的DCFinder算法生成干净规则集合，同时返回top-k规则集合
-    // TODO: 进一步优化封装
-    BasicDCGenerator generator = new BasicDCGenerator(cleanDataPath,
-        fullGTDCsPath, headerPath);
+  public void testDiscoveryDCsUsingBasicGenerator() {
+    BasicDCGenerator generator = new BasicDCGenerator(cleanDataPath, universalDCsPath, headerPath);
     generator.setExcludeDCs(new HashSet<>());
     generator.setErrorThreshold(0.0);
     Set<DenialConstraint> dcs = generator.generateDCsForUser();
     log.info("DCs size={}", dcs.size());
   }
 
+  /**
+   * Discover approximate dc using basicGenerator
+   */
   @Test
-  public void testGenADCsUsingDCFinder() {
-    // 用2019年的DCFinder算法生成近似规则集合，同时返回top-k规则集合
-    BasicDCGenerator generator = new BasicDCGenerator(dirtyDataPath,
-        fullGTDCsPath, headerPath);
+  public void testDiscoveryADCsUsingBasicGenerator() {
+    BasicDCGenerator generator = new BasicDCGenerator(dirtyDataPath, universalDCsPath, headerPath);
     generator.setExcludeDCs(new HashSet<>());
-    generator.setErrorThreshold(defaultErrorThreshold);
+    generator.setErrorThreshold(0.001);
     Set<DenialConstraint> dcs = generator.generateDCsForUser();
     log.info("DCs size={}", dcs.size());
   }
 
+  /**
+   * Generate top-k dcs from file which contains all dcs
+   *
+   * @throws IOException
+   */
   @Test
   public void testGenTopKDCs() throws IOException {
-    List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(5, fullGTDCsPath, headerPath, null);
+    List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(5, universalDCsPath, headerPath, null);
     DCUtil.persistTopKDCs(topKDCs, topKDCsPath);
   }
 
+  /**
+   * Test implication of mock dc
+   */
   @Test
-  public void testImplyMock() {
+  public void testImplicationOfMockDC() {
     // 长规则能被短规则推断出来
     ColumnOperand<?> o1 = mock(ColumnOperand.class);
     ColumnOperand<?> o2 = mock(ColumnOperand.class);
@@ -196,8 +211,11 @@ public class UGuideDiscoveryTest {
     assertTrue(equals);
   }
 
+  /**
+   * Test implication of dc loaded from file
+   */
   @Test
-  public void testImply() {
+  public void testImplicationOfDCLoadedFromFile() {
     List<DenialConstraint> dcs1 = DCLoader.load(headerPath, topKDCsPath);
     List<DenialConstraint> gtDCs1 = DCLoader.load(headerPath, groundTruthDCsPath);
 
@@ -211,108 +229,100 @@ public class UGuideDiscoveryTest {
 
   }
 
+  /**
+   * Test detect DCViolation using hydra, and print some logs
+   */
   @Test
-  public void testDCsViolationsSizeCompare()
-      throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
+  public void testDetectDCViolationUsingHydra() {
+    HydraDetector detector = new HydraDetector(dirtyDataPath, universalDCsPath, headerPath);
+    detectUsingHydraDetector(detector);
+  }
+
+  /**
+   * Test violations size compare
+   */
+  @Test
+  public void testDCsViolationsSizeCompare() {
     // TODO: Violation size: tureDcs,candiDCs,gtDCs并无大小关系，因为冲突之间可能有元组对的重合，一对元组可能涉及多个冲突
-    DCViolationSet vioSet1 = new HydraDetector(dirtyDataPath, candidateDCsPath).detect();
-    DCViolationSet vioSet2 = new HydraDetector(dirtyDataPath, trueDCsPath).detect();
-    DCViolationSet vioSet3 = new HydraDetector(dirtyDataPath, groundTruthDCsPath).detect();
+    DCViolationSet vioSet1 =
+        new HydraDetector(dirtyDataPath, candidateDCsPath, headerPath).detect();
+    DCViolationSet vioSet2 =
+        new HydraDetector(dirtyDataPath, trueDCsPath, headerPath).detect();
+    DCViolationSet vioSet3 =
+        new HydraDetector(dirtyDataPath, groundTruthDCsPath, headerPath).detect();
     log.info("candi={}, candiTure={}, gt={}", vioSet1.size(), vioSet2.size(), vioSet3.size());
   }
 
+  /**
+   * Test DCViolation's associated dcs size
+   */
   @Test
-  public void testFalseDCsDetect()
-      throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
-    // TODO: Violation size: tureDcs,candiDCs,gtDCs并无大小关系，因为冲突之间可能有元组对的重合，一对元组可能涉及多个冲突
-    String path = groundTruthDCsPath;
-//    String path = groundTruthDCsInjectErrorPath;
-    DCViolationSet vios1 = new HydraDetector(cleanDataPath, path).detect();
-    DCViolationSet vios2 = new HydraDetector(dirtyDataPath, path).detect();
-    log.info("vios1={}, vios2={}", vios1.size(), vios2.size());
-    Map<DenialConstraint, Integer> dcViosMap = Maps.newHashMap();
-    if (vios1.size() != 0) {
-      Set<DCViolation> viosSet = vios1.getViosSet();
-      for (DCViolation vio : viosSet) {
-        List<DenialConstraint> dcs = vio.getDenialConstraintList();
-        for (DenialConstraint dc : dcs) {
-          // 统计每个dc关联多少个冲突
-          if (dcViosMap.containsKey(dc)) {
-            Integer i = dcViosMap.get(dc);
-            dcViosMap.put(dc, i + 1);
-          } else {
-            dcViosMap.put(dc, 1);
-          }
-        }
-      }
-    }
-    // TODO: 奇怪有时候会在干净数据集上发现冲突
-    for (DenialConstraint dc : dcViosMap.keySet()) {
-      log.debug("{}->{}", DCFormatUtil.convertDC2String(dc), dcViosMap.get(dc));
-    }
-  }
-
-  @Test
-  public void testAllViolationHasOnlyOneDC()
-      throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
+  public void testAllViolationHasOnlyOneDC() {
     // 测试一个冲突在什么情况下才会关联多个DC？hydra的判断标准是什么？
     // 目前测一个vio就只对应一个DC
-    HydraDetector detector = new HydraDetector(dirtyDataPath, groundTruthDCsPath);
+    HydraDetector detector = new HydraDetector(dirtyDataPath, groundTruthDCsPath, headerPath);
     DCViolationSet vioSet = detector.detect();
     log.info("VioSet = {}", vioSet.size());
     for (DCViolation vio : vioSet.getViosSet()) {
-      List<DenialConstraint> dcs = vio.getDenialConstraintList();
+      List<DenialConstraint> dcs = vio.getDenialConstraintsNoData();
       assertEquals(1, dcs.size());
     }
   }
 
+  /**
+   * Test print dc and it's violations
+   */
   @Test
-  public void testPrintDCViosMap()
-      throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
-    printDCViosCountMap(sampledDataPath, groundTruthDCsPath);
+  public void testPrintDCViolationsMap() {
+    HydraDetector detector = new HydraDetector(sampledDataPath, groundTruthDCsPath, headerPath);
+    DCViolationSet violationSet = detector.detect();
+    log.info("ViolationSet={}", violationSet.size());
+    printDCViolationsMap(violationSet);
   }
 
+  /**
+   * Test all errors can be found by dcs
+   */
   @Test
-  public void testDCsErrorsEquality()
-      throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
+  public void testDCsErrorsEquality() {
     // TODO: Errors can all be found?
     // 对于BART注入错误，元组id(TupleOID)从1开始
     // 对于Hydra检测冲突，行号line(LinePair)从0开始
-    String changesPath = this.changesPath;
     List<TChange> changes = loadChanges(changesPath);
-    Set<TCell> cellsOfChanges = getCellIdentifiersOfChanges(changes);
-    log.info("Cells of Changes: {}, {}", cellsOfChanges.size(), cellsOfChanges.stream().findAny());
-    // Detect vios of DC
-    DCViolationSet vioSetOfGroundTruthDCs = new HydraDetector(dirtyDataPath,
-        groundTruthDCsPath).detect();
-    DCViolationSet vioSetOfTrueDCs = new HydraDetector(dirtyDataPath, trueDCsPath).detect();
-    Input di = new DirtyData(dirtyDataPath, excludedLinesPath, headerPath).getInput();
-    Set<TCell> cellsFromGTVios = getCellIdentyfiersFromVios(vioSetOfGroundTruthDCs.getViosSet(),
-        di);
-    Set<TCell> cellsFromTrueVios = getCellIdentyfiersFromVios(vioSetOfTrueDCs.getViosSet(), di);
-    log.info("Cells of GTDCs: {}, {}", cellsFromGTVios.size(),
-        cellsFromGTVios.stream().findAny());
-    log.info("Cells of TrueDCs: {}, {}", cellsFromTrueVios.size(),
-        cellsFromTrueVios.stream().findAny());
-    // All error cells are found in gtDCs
-    assertTrue(cellsFromGTVios.containsAll(cellsOfChanges));
-    // All error cells are found in trueDCs
-    assertTrue(cellsFromTrueVios.containsAll(cellsOfChanges));
+    Set<TCell> cellsOfChanges = getCellsOfChanges(changes);
+    log.info("CellsOfChanges: {}, {}", cellsOfChanges.size(), cellsOfChanges.stream().findAny());
 
-    for (TCell c : cellsFromGTVios) {
-      if (cellsOfChanges.contains(c)) {
-        log.info("Example true error cell in cellsFromGTVios: {}", c.toString());
-        break;
-      }
-    }
-    for (TCell c : cellsFromTrueVios) {
-      if (cellsOfChanges.contains(c)) {
-        log.info("Example true error cell in cellsFromTrueVios: {}", c.toString());
-        break;
-      }
-    }
+    // 检测冲突
+    DCViolationSet vioSetOfGroundTruthDCs =
+        new HydraDetector(dirtyDataPath, groundTruthDCsPath, headerPath).detect();
+    DCViolationSet vioSetOfTrueDCs =
+        new HydraDetector(dirtyDataPath, trueDCsPath, headerPath).detect();
+    Input di = generateNewCopy(dirtyDataPath);
+
+    // 转换成Cell
+    Set<TCell> cellsGroundTruth =
+        getCellsOfViolations(vioSetOfGroundTruthDCs.getViosSet(), di);
+    Set<TCell> cellsTrue =
+        getCellsOfViolations(vioSetOfTrueDCs.getViosSet(), di);
+    log.info("CellsGroundTruth: {}, {}", cellsGroundTruth.size(),
+        cellsGroundTruth.stream().findAny());
+    log.info("CellsTrue: {}, {}", cellsTrue.size(),
+        cellsTrue.stream().findAny());
+
+    // 所有错误都能被发现
+    assertTrue(cellsGroundTruth.containsAll(cellsOfChanges));
+    assertTrue(cellsTrue.containsAll(cellsOfChanges));
+
+    // 打印Cell样例
+    cellsGroundTruth.stream().findAny().ifPresent(tCell ->
+        log.info("Example1: {}", tCell));
+    cellsTrue.stream().findAny().ifPresent(tCell ->
+        log.info("Example2: {}", tCell));
   }
 
+  /**
+   * Test compare excluded dirty lines with true error lines
+   */
   @Test
   public void testExcludedDirtyLinesAreTrueErrorLines() throws IOException {
     // TODO: All errorLines are in excluded dirtyLines, or vise versa?
@@ -336,15 +346,18 @@ public class UGuideDiscoveryTest {
         excludesInChangedLines.size());
   }
 
+  /**
+   * Test error lines in sample
+   */
   @Test
   public void testErrorLinesInSample()
       throws InputGenerationException, IOException, InputIterationException {
-    //Changes
+    // Load changes and error lines
     List<TChange> changes = loadChanges(changesPath);
     Set<Integer> errorLinesContainingChanges = getErrorLinesContainingChanges(changes);
     log.info("Changes={}, errorLinesContainingChanges={}", changes.size(),
         errorLinesContainingChanges.size());
-    // SampleResult
+    // Sample and get error lines
     log.info("Sampling...");
     SampleResult sampleResult = new TupleSampler()
         .sample(new File(dirtyDataPath), topKOfCluster, maxInCluster,
@@ -353,6 +366,7 @@ public class UGuideDiscoveryTest {
     log.info("Write {} lines(with header line) to file: {}", linesWithHeader.size(),
         sampledDataPath);
     FileUtil.writeListLinesToFile(linesWithHeader, new File(sampledDataPath));
+    // 比较
     Set<Integer> errorLinesInSample = sampleResult.getLineIndices().stream()
         .filter(i -> errorLinesContainingChanges.contains(i)).collect(
             Collectors.toSet());
@@ -361,20 +375,29 @@ public class UGuideDiscoveryTest {
     log.info("ErrorLinesInSample: {}", errorLinesInSample);  // [2336, 2481, 2456, 2506]
   }
 
+  /**
+   * Test DCMiner train
+   */
   @Test
-  public void testDCMiner() throws IOException, InterruptedException {
+  public void testTrainDCMiner() throws IOException, InterruptedException {
     String[] args4Train = (sharedArgs + " " + trainArgs).split(" ");
     PythonCaller.trainModel(args4Train);
   }
 
+  /**
+   * Test DCMiner predict
+   */
   @Test
   public void testDCMinerPredict() throws IOException, InterruptedException {
     String[] args4Predict = (sharedArgs + " " + predictArgs).split(" ");
     PythonCaller.predict(args4Predict);
   }
 
+  /**
+   * Test discover dc using RLDCGenerator
+   */
   @Test
-  public void testRLDCGenerator() {
+  public void testDiscoverDCUsingRLDCGenerator() {
     List<DenialConstraint> excludeDCs = DCLoader.load(headerPath, visitedDCsPath, new HashSet<>());
     log.debug("Visited DCs size={}", excludeDCs.size());
     RLDCGenerator generator = new RLDCGenerator(sampledDataPath, evidencesPathForFCDC,
@@ -388,6 +411,9 @@ public class UGuideDiscoveryTest {
     }
   }
 
+  /**
+   * Test dc minimize
+   */
   @Test
   public void testMinimizeDCs() {
     // 测试准备注入错误的20条DCs已经是最小化的、没有重复的。
@@ -405,15 +431,14 @@ public class UGuideDiscoveryTest {
 
   // Question strategy
   @Test
-  public void testTuplePairDCsMapping()
-      throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
+  public void testTuplePairDCsMapping() {
     // 测试一个LinePair可能关联多个DC
-    HydraDetector detector = new HydraDetector(dirtyDataPath, groundTruthDCsPath);
+    HydraDetector detector = new HydraDetector(dirtyDataPath, groundTruthDCsPath, headerPath);
     DCViolationSet vioSet = detector.detect();
     Map<LinePair, Set<DenialConstraint>> linePairDCsMap = Maps.newHashMap();
     for (DCViolation vio : vioSet.getViosSet()) {
       LinePair linePair = vio.getLinePair();
-      List<DenialConstraint> dcList = vio.getDenialConstraintList();
+      List<DenialConstraint> dcList = vio.getDenialConstraintsNoData();
       if (linePairDCsMap.containsKey(linePair)) {
         Set<DenialConstraint> set = linePairDCsMap.get(linePair);
         set.addAll(dcList);
@@ -432,18 +457,14 @@ public class UGuideDiscoveryTest {
   }
 
   @Test
-  public void testCellQuestion()
-      throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
+  public void testCellQuestion() {
     // TODO: 目前发现一个BART的大bug，注入错误后，输出的dirty版本数据单引号变成两个单引号'->''
     // CellQ算法
-    String dcsPath = this.fullGTDCsPath;
-    String dataPath = this.dirtyDataPath;
-    String headerPath = this.headerPath;
-    String changesPath = this.changesPath;
-    Set<DCViolation> vios = new HydraDetector(dataPath, dcsPath).detect().getViosSet();
-    Input di = generateNewCopy(dataPath);
-    Set<TCell> cellsOfChanges = getCellIdentifiersOfChanges(loadChanges(changesPath));
-    List<DenialConstraint> dcs = DCLoader.load(headerPath, dcsPath);
+    Set<DCViolation> vios =
+        new HydraDetector(dirtyDataPath, topKDCsPath, headerPath).detect().getViosSet();
+    Input di = generateNewCopy(dirtyDataPath);
+    Set<TCell> cellsOfChanges = getCellsOfChanges(loadChanges(changesPath));
+    List<DenialConstraint> dcs = DCLoader.load(headerPath, topKDCsPath);
     log.debug("DCs={}", dcs.size());
     log.debug("Violations={}", vios.size());
     log.debug("CellsOfChanges={}", cellsOfChanges.size());
@@ -458,17 +479,17 @@ public class UGuideDiscoveryTest {
 
   // Tuple strategy
   @Test
-  public void testTupleQuestion()
-      throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
+  public void testTupleQuestion() {
     // TODO: 测试优先选择关联冲突多的元组，以及优先选择关联冲突规则多的元组，以及在脏数据集还是采样数据集上效果更好？
-    Set<DCViolation> vios = new HydraDetector(dirtyDataPath, fullGTDCsPath).detect().getViosSet();
+    Set<DCViolation> vios =
+        new HydraDetector(dirtyDataPath, universalDCsPath, headerPath).detect().getViosSet();
     Set<Integer> errorLines = getErrorLinesContainingChanges(loadChanges(changesPath));
     Map<Integer, Set<DCViolation>> lineViosCountMap = Maps.newHashMap();
     Map<Integer, Set<DenialConstraint>> lineDCsCountMap = Maps.newHashMap();
     Set<Integer> lines = Sets.newHashSet();
     for (DCViolation vio : vios) {
       LinePair linePair = vio.getLinePair();
-      List<DenialConstraint> dcList = vio.getDenialConstraintList();
+      List<DenialConstraint> dcList = vio.getDenialConstraintsNoData();
       int line1 = linePair.getLine1();
       int line2 = linePair.getLine2();
       addToCountMap(lineViosCountMap, line1, vio);
@@ -517,8 +538,7 @@ public class UGuideDiscoveryTest {
 
   // DC strategy
   @Test
-  public void testDCsQuestion()
-      throws DCMinderToolsException, InputGenerationException, InputIterationException, IOException {
+  public void testDCsQuestion() throws IOException {
     // TODO:考虑什么DC最有可能是真DC
     //  同时考虑DC如何给出上下文辅助用户判断正误，因为直接判断比较难，同时这个上下文可以用来训练相关性打分矩阵
     // 1.简洁性 + 覆盖率 = interesting
@@ -527,7 +547,7 @@ public class UGuideDiscoveryTest {
     // 冲突数量不能判断规则真假，冲突多少只取决于反例的个数
     int minLenOfDC = 2;
 //    double succinctFactor = 0.8;
-    List<DenialConstraint> testDCs = DCLoader.load(headerPath, fullGTDCsPath);
+    List<DenialConstraint> testDCs = DCLoader.load(headerPath, universalDCsPath);
     Set<DenialConstraint> trueDCs = Sets.newHashSet();
     List<DenialConstraint> gtDCs = DCLoader.load(headerPath, groundTruthDCsPath);
     NTreeSearch gtTree = new NTreeSearch();
@@ -545,10 +565,11 @@ public class UGuideDiscoveryTest {
       log.debug("{}", DCFormatUtil.convertDC2String(dc));
     }
     // 计算冲突个数
-    Set<DCViolation> vios = new HydraDetector(dirtyDataPath, fullGTDCsPath).detect().getViosSet();
+    Set<DCViolation> vios = new HydraDetector(dirtyDataPath, universalDCsPath, headerPath).detect()
+        .getViosSet();
     Map<DenialConstraint, Set<DCViolation>> dcViosMap = Maps.newHashMap();
     for (DCViolation vio : vios) {
-      List<DenialConstraint> dcList = vio.getDenialConstraintList();
+      List<DenialConstraint> dcList = vio.getDenialConstraintsNoData();
       for (DenialConstraint dc : dcList) {
         if (dcViosMap.containsKey(dc)) {
           Set<DCViolation> viosOfDC = dcViosMap.get(dc);
@@ -620,6 +641,48 @@ public class UGuideDiscoveryTest {
     // TODO:如果待发现规则长，g1有生成太通用规则的风险，如果待发现规则短，g1有生成太特殊规则的风险
   }
 
+  /**
+   * 测试修复脏数据
+   */
+  @Test
+  public void testRepairingDirty()
+      throws IOException, InputGenerationException, InputIterationException {
+    // 修复前检测
+    List<DenialConstraint> dcsWithoutData = DCLoader.load(headerPath, universalDCsPath);
+    HydraDetector detector = new HydraDetector(dirtyDataPath, new HashSet<>(dcsWithoutData));
+    detectUsingHydraDetector(detector);
+
+    // 修复脏数据指定的行（例如所有有错误的行）
+    String dataPath = dirtyDataPath;
+    File dataFile = new File(dataPath);
+    List<TChange> changes = loadChanges(changesPath);
+    Map<Integer, Map<Integer, String>> lineChangesMap = genLineChangesMap(dataPath, changes);
+    Set<Integer> errorLinesOfChanges = getErrorLinesContainingChanges(changes);
+//    Set<Integer> errorLinesOfChanges = Sets.newHashSet(6467);
+
+    // 修复
+    List<List<String>> repairedLinesWithHeader = getRepairedLinesWithHeader(errorLinesOfChanges,
+        lineChangesMap, dataFile);
+
+    // 保存
+    log.debug("Write to file: {}", dataPath);
+    FileUtil.writeListLinesToFile(repairedLinesWithHeader, dataFile);
+
+    // 修复后检测
+    detectUsingHydraDetector(detector);
+  }
+
+  /**
+   * 测试将规则转换成字符串时，谓词顺序永远保持一致
+   */
+  @Test
+  public void testDC2String() {
+    List<DenialConstraint> dcs = DCLoader.load(headerPath, universalDCsPath);
+    for (DenialConstraint dc : dcs) {
+      log.debug("{}", DCFormatUtil.convertDC2String(dc));
+    }
+  }
+
   private static void sortDCsByScore(
       ArrayList<Entry<DenialConstraint, Set<DCViolation>>> sortedEntries,
       Map<DenialConstraint, Double> dcScoreUniformMap) {
@@ -673,15 +736,39 @@ public class UGuideDiscoveryTest {
     return per;
   }
 
-  private static void printDCViosCountMap(String dataPath, String dcPath)
-      throws IOException, InputGenerationException, InputIterationException, DCMinderToolsException {
-    HydraDetector detector = new HydraDetector(dataPath, dcPath);
-    DCViolationSet vioSet = detector.detect();
-    log.info("Vios size={}", vioSet.size());
-    Map<DenialConstraint, Integer> dcViosSizeMap = getDCVioSizeMap(vioSet);
-    log.info("DCStr~VioSize map:");
-    for (Entry<DenialConstraint, Integer> entry : dcViosSizeMap.entrySet()) {
-      log.info(DCFormatUtil.convertDC2String(entry.getKey()) + "~" + entry.getValue());
+  private static void detectUsingHydraDetector(HydraDetector detector) {
+    DCViolationSet violationSet = detector.detect();
+    log.info("ViolationSet={}", violationSet.size());
+
+    printDCViolationsMap(violationSet);
+
+    List<TChange> changes = loadChanges(changesPath);
+    Set<TCell> cellsOfChanges = getCellsOfChanges(changes);
+
+    // 每个DC只打印一个冲突样例
+    Set<String> visitedDCs = Sets.newHashSet();
+    Input di = generateNewCopy(dirtyDataPath);
+    for (DCViolation v : violationSet.getViosSet()) {
+//      List<DenialConstraint> dcs = v.getConstraints();
+      List<DenialConstraint> dcs = v.getDenialConstraintsNoData();
+      if (dcs.size() != 1) {
+        throw new RuntimeException("Illegal dcs size");
+      }
+      DenialConstraint dc = dcs.get(0);
+      String dcStr = DCFormatUtil.convertDC2String(dc);
+      if (!visitedDCs.contains(dcStr)) {
+        // 打印一个冲突中所有的Cell
+        LinePair linePair = v.getLinePair();
+        visitedDCs.add(dcStr);
+        log.debug("{}", dcStr);
+        log.debug("LinePair = {}", linePair);
+        Set<TCell> cells = getCellsOfViolation(di, dc, linePair);
+        for (TCell cell : cells) {
+          boolean contains = cellsOfChanges.contains(cell);
+          log.debug("cell={}, contains={}", cell, contains);
+        }
+      }
     }
   }
+
 }

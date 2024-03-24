@@ -1,16 +1,15 @@
 package edu.fudan.algorithms;
 
-import com.google.common.collect.Lists;
+import static edu.fudan.utils.FileUtil.getLinesWithHeader;
+
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.input.Input;
 import de.hpi.naumann.dc.paritions.LinePair;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
-import de.metanome.algorithm_integration.input.RelationalInput;
 import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,7 +41,8 @@ public class TupleSampler {
 
     long startSample = System.currentTimeMillis();
     ColumnAwareWeightedClusterSampler sampler = new ColumnAwareWeightedClusterSampler();
-    Set<Integer> sampled = sampler.sampling(input, k, m, skippedColumns, excludedLines, falseDCLinePairMap);
+    Set<Integer> sampled = sampler.sampling(input, k, m, skippedColumns, excludedLines,
+        falseDCLinePairMap);
     long timeSample = System.currentTimeMillis() - startSample;
     log.debug("Sample time = {} ms", timeSample);
     log.info("Sampled size = {}", sampled.size());
@@ -50,26 +50,6 @@ public class TupleSampler {
 //    log.debug("Get lines according to sampled line indices...");
     List<List<String>> lines = getLinesWithHeader(actualGenerator, sampled, requireHeader);
     return new SampleResult(sampled, lines);
-  }
-
-  private static List<List<String>> getLinesWithHeader(DefaultFileInputGenerator actualGenerator,
-      Set<Integer> sampled, boolean requireHeader)
-      throws InputGenerationException, InputIterationException {
-    ArrayList<List<String>> lines = Lists.newArrayList();
-    RelationalInput ri = actualGenerator.generateNewCopy();
-    if (requireHeader) {
-      List<String> columnNames = ri.columnNames();
-      lines.add(columnNames);
-    }
-    int i = 0;
-    while (ri.hasNext()) {
-      List<String> next = ri.next();
-      if (sampled.contains(i)) {
-        lines.add(next);
-      }
-      i++;
-    }
-    return lines;
   }
 
   @Getter

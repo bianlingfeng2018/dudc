@@ -18,10 +18,10 @@ public class DefaultConf {
   public static int topKOfCluster = 5;
   public static int maxInCluster = 3;
   // ADC
-  public static double defaultErrorThreshold = 0.0001;
+  public static double defaultErrorThreshold = 0.001;
 //  public static double defaultErrorThreshold = 0;
-  public static boolean dynamicG1 = false;
-  public static boolean optimizeWithCounter = false;
+  public static boolean dynamicG1 = true;
+  public static boolean optimizeWithCounter = true;
   // CellQ TupleQ DCsQ
   public static Integer[] questionsConf = new Integer[]{1, 1, 1};
   public static boolean debugDCVioMap = false;

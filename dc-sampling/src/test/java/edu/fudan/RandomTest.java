@@ -1,6 +1,6 @@
 package edu.fudan;
 
-import edu.fudan.algorithms.WeightedCluster;
+import edu.fudan.algorithms.MyOrderedCluster;
 import gnu.trove.iterator.TIntIterator;
 import org.junit.Test;
 
@@ -8,7 +8,7 @@ public class RandomTest {
 
   @Test
   public void testRandomElements() {
-    WeightedCluster cluster = new WeightedCluster();
+    MyOrderedCluster cluster = new MyOrderedCluster();
     cluster.add(1);
     cluster.add(2);
     cluster.add(3);

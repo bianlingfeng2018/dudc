@@ -1,6 +1,6 @@
 package edu.fudan;
 
-import static edu.fudan.UGuideDiscoveryTest.fullGTDCsPath;
+import static edu.fudan.UGuideDiscoveryTest.universalDCsPath;
 import static edu.fudan.UGuideDiscoveryTest.headerPath;
 import static edu.fudan.utils.CorrelationUtil.getDCScoreUniformMap;
 import static edu.fudan.utils.CorrelationUtil.readColumnCorrScoreMap;
@@ -39,7 +39,7 @@ public class CorrelationTest {
   @Test
   public void testCalculateCorrScore() throws IOException {
     // 读取规则
-    List<DenialConstraint> testDCs = DCLoader.load(headerPath, fullGTDCsPath);
+    List<DenialConstraint> testDCs = DCLoader.load(headerPath, universalDCsPath);
     // 读取打分矩阵
     Map<String, Double> columnsCorrScoreMap = readColumnCorrScoreMap(correlationByUserPath);
     // 计算综合分数

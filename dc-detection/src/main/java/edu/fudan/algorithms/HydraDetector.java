@@ -1,7 +1,6 @@
 package edu.fudan.algorithms;
 
-import static edu.fudan.conf.DefaultConf.minimumSharedValue;
-import static edu.fudan.conf.DefaultConf.noCrossColumn;
+import static edu.fudan.utils.FileUtil.generateNewCopy;
 
 import ch.javasoft.bitset.IBitSet;
 import com.google.common.collect.HashMultiset;
@@ -25,12 +24,6 @@ import de.hpi.naumann.dc.predicates.Predicate;
 import de.hpi.naumann.dc.predicates.PredicateBuilder;
 import de.hpi.naumann.dc.predicates.PredicatePair;
 import de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
-import de.metanome.algorithm_integration.input.InputGenerationException;
-import de.metanome.algorithm_integration.input.InputIterationException;
-import de.metanome.backend.input.file.DefaultFileInputGenerator;
-import edu.fudan.DCMinderToolsException;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -48,10 +41,15 @@ import org.slf4j.LoggerFactory;
 
 public class HydraDetector {
 
-  private Input input;
-  private PredicateBuilder predicates;
+  private String dataPath;
+  private Set<DenialConstraint> dcsNoData;
+  private Boolean noCrossColumn = Boolean.TRUE;
+  private double minimumSharedValue = 0.30d;
+  /**
+   * 采样次数
+   * TODO: 当数据集很小时，如果报错，可以将 sampleRounds 设为 1
+   */
   protected int sampleRounds = 20;
-  private DenialConstraintSet set;
 
   private static BiFunction<AtomicLongMap<PartitionRefiner>,
       Function<PartitionRefiner, Integer>, Comparator<PartitionRefiner>> resultSorter = (
@@ -71,36 +69,21 @@ public class HydraDetector {
     return Double.valueOf(1.0d * selectivityCount.get(pair) / paircountDC.count(pair));
   };
 
-  public HydraDetector(String dataPath, String dcsFile)
-      throws IOException, InputGenerationException, InputIterationException, DCMinderToolsException {
-    Input input = new Input(new DefaultFileInputGenerator(new File(dataPath)).generateNewCopy());
-    PredicateBuilder predicates = new PredicateBuilder(input, noCrossColumn, minimumSharedValue);
-    this.set = DCAdapter.getHydraDCs(input, dcsFile);
-    this.input = input;
-    this.predicates = predicates;
+  public HydraDetector(String dataPath, String dcsPath, String headerPath) {
+    this.dataPath = dataPath;
+    this.dcsNoData = new HashSet<>(DCLoader.load(headerPath, dcsPath));
   }
 
-  public HydraDetector(String dataPath, Set<DenialConstraint> dcs)
-      throws IOException, InputGenerationException, InputIterationException, DCMinderToolsException {
-    Input input = new Input(new DefaultFileInputGenerator(new File(dataPath)).generateNewCopy());
-    PredicateBuilder predicates = new PredicateBuilder(input, noCrossColumn, minimumSharedValue);
-    this.set = DCAdapter.getHydraDCs(input, dcs);
-    this.input = input;
-    this.predicates = predicates;
-  }
-
-  public HydraDetector(String dataPath, Set<DenialConstraint> dcs, int sampleRounds)
-      throws IOException, InputGenerationException, InputIterationException, DCMinderToolsException {
-    // TODO: 如果在某个很小的数据集上检测冲突报错，可能因为可供采样的数据集太小，可以尝试将sampleRounds设为1
-    Input input = new Input(new DefaultFileInputGenerator(new File(dataPath)).generateNewCopy());
-    PredicateBuilder predicates = new PredicateBuilder(input, noCrossColumn, minimumSharedValue);
-    this.set = DCAdapter.getHydraDCs(input, dcs);
-    this.input = input;
-    this.predicates = predicates;
-    this.sampleRounds = sampleRounds;
+  public HydraDetector(String dataPath, Set<DenialConstraint> dcsNoData) {
+    this.dataPath = dataPath;
+    this.dcsNoData = dcsNoData;
   }
 
   public DCViolationSet detect() {
+    Input input = generateNewCopy(this.dataPath);
+    PredicateBuilder predicates = new PredicateBuilder(input, this.noCrossColumn, this.minimumSharedValue);
+    DenialConstraintSet set = HydraDCAdaptor.buildHydraDCs(this.dcsNoData, input);
+
     IEvidenceSet sampleEvidence =
         new SystematicLinearEvidenceSetBuilder(predicates, sampleRounds).buildEvidenceSet(input);
     log.debug("Checking " + set.size() + " DCs.");
@@ -149,17 +132,20 @@ public class HydraDetector {
       Consumer<ClusterPair> consumer = (clusterPair) -> {
         List<DenialConstraint> currentDCs = predicateDCMap.get(inter.currentBits);
         if (currentDCs != null) {
-          List<DenialConstraint> unifiedDCs = DCAdapter.getUnifiedDCs(currentDCs);
+          if (currentDCs.size() != 1) {
+            throw new RuntimeException("Illegal dcs size");
+          }
+          List<DenialConstraint> dcsNoData = HydraDCAdaptor.buildDCsNoData(currentDCs);
 
           // EtmPoint point = etmMonitor.createPoint("EVIDENCES");
           builder.addEvidences(clusterPair, resultEv);
           // point.collect();
 
-          // Add violations
+          // 构建冲突集合
           for (Iterator<LinePair> it = clusterPair.getLinePairIterator(); it.hasNext(); ) {
             LinePair linePair = it.next();
             if (linePair.getLine1() != linePair.getLine2()) {
-              DCViolation vio = new DCViolation(unifiedDCs, linePair);
+              DCViolation vio = new DCViolation(dcsNoData, currentDCs, linePair);
               violationSet.add(vio);
             }
           }

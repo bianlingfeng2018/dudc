@@ -13,19 +13,28 @@ import lombok.Getter;
 @Getter
 public class DCViolation {
 
-  private List<DenialConstraint> denialConstraintList;
+  /**
+   * MyDC with no data
+   */
+  private List<DenialConstraint> denialConstraintsNoData;
+  /**
+   * Hydra DC with parsed column data
+   */
+  private List<DenialConstraint> constraints;
 
   private LinePair linePair;
 
-  public DCViolation(List<DenialConstraint> denialConstraintList, LinePair linePair) {
-    this.denialConstraintList = denialConstraintList;
+  public DCViolation(List<DenialConstraint> denialConstraintsNoData,
+      List<DenialConstraint> constraints, LinePair linePair) {
+    this.denialConstraintsNoData = denialConstraintsNoData;
+    this.constraints = constraints;
     this.linePair = linePair;
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("[dcs=");
-    for (DenialConstraint dc : denialConstraintList) {
+    for (DenialConstraint dc : denialConstraintsNoData) {
       String dcStr = DCFormatUtil.convertDC2String(dc);
       sb.append(dcStr)
           .append(",");
@@ -42,7 +51,7 @@ public class DCViolation {
   @Override
   public int hashCode() {
     int result = Objects.hashCode(linePair);
-    for (DenialConstraint dc : denialConstraintList) {
+    for (DenialConstraint dc : denialConstraintsNoData) {
       result = 31 * result + Objects.hashCode(dc);
     }
     return result;
@@ -60,11 +69,11 @@ public class DCViolation {
     if (!linePair.equals(tarObj.getLinePair())) {
       return false;
     }
-    List<DenialConstraint> tarObjDcs = tarObj.getDenialConstraintList();
-    for (int i = 0; i < denialConstraintList.size(); i++) {
-      DenialConstraint dc = denialConstraintList.get(i);
-      DenialConstraint tarObjDc = tarObjDcs.get(i);
-      if (!dc.equals(tarObjDc)) {
+    List<DenialConstraint> tarObjDCVOs = tarObj.getDenialConstraintsNoData();
+    for (int i = 0; i < denialConstraintsNoData.size(); i++) {
+      DenialConstraint dc = denialConstraintsNoData.get(i);
+      DenialConstraint tarObjDC = tarObjDCVOs.get(i);
+      if (!dc.equals(tarObjDC)) {
         return false;
       }
     }

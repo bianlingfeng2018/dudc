@@ -12,7 +12,7 @@ public class CellQuestionResult {
 
   private Set<TCell> selectedCells;
   private Set<DCViolation> selectedViolations;
-  private Set<DenialConstraint> trueDCs;
+  private Set<DenialConstraint> possibleTrueDCs;
   private Set<DenialConstraint> falseDCs;
   private Set<DCViolation> trueVios;
   private Set<DCViolation> falseVios;
@@ -21,10 +21,10 @@ public class CellQuestionResult {
   @Override
   public String toString() {
     return String.format(
-        "SelectedCells=%s, selectedViolations=%s, trueDCs=%s, falseDCs=%s, trueVios=%s, falseVios=%s, excludedLines=%s",
+        "SelectedCells=%s, selectedViolations=%s, possibleTrueDCs=%s, falseDCs=%s, trueVios=%s, falseVios=%s, excludedLines=%s",
         selectedCells.size(),
         selectedViolations.size(),
-        trueDCs.size(),
+        possibleTrueDCs.size(),
         falseDCs.size(),
         trueVios.size(),
         falseVios.size(),

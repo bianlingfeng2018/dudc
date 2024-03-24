@@ -3,6 +3,7 @@ package edu.fudan.algorithms;
 import static edu.fudan.conf.DefaultConf.topK;
 import static edu.fudan.utils.DCUtil.convertDCFinderDC2Str;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.metanome.algorithm_integration.input.InputGenerationException;
@@ -13,6 +14,7 @@ import edu.fudan.utils.DCUtil;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -55,19 +57,31 @@ public class BasicDCGenerator implements DCGenerator {
     try {
       DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(this.inputDataPath,
           this.errorThreshold);
-      log.info("Result size: " + dcs.size());
+      List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint> dcList = Lists.newArrayList();
+      for (de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint dc : dcs) {
+        dcList.add(dc);
+      }
+      dcList.sort(
+          new Comparator<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint>() {
+            @Override
+            public int compare(
+                de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint o1,
+                de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint o2) {
+              return Integer.compare(o1.getPredicateCount(), o2.getPredicateCount());
+            }
+          });
+      log.info("Result size: " + dcList.size());
 
       log.debug("Saving DCs into: " + this.dcsPathForFCDC);
       BufferedWriter writer = new BufferedWriter(new FileWriter(this.dcsPathForFCDC));
-      for (de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint dc : dcs) {
+      for (de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint dc : dcList) {
         // ----- 适配输出 -----
         String dcStr = convertDCFinderDC2Str(dc);
         writer.write(dcStr);
         writer.newLine();
       }
       writer.close();
-    } catch (InputIterationException | InputGenerationException | DCMinderToolsException |
-             IOException e) {
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
     // 取前k个规则

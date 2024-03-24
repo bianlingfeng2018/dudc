@@ -9,6 +9,7 @@ import de.hpi.naumann.dc.input.ParsedColumn;
 import de.hpi.naumann.dc.predicates.Predicate;
 import de.hpi.naumann.dc.predicates.operands.ColumnOperand;
 import de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
+import de.metanome.algorithm_integration.Operator;
 import edu.fudan.DCMinderToolsException;
 import java.util.Arrays;
 import java.util.List;
@@ -37,7 +38,7 @@ public class DCFormatUtil {
       Map<String, Class> colTypeMap = Maps.newHashMap();
       String[] headerSplit = header.split(",");
       for (String s : headerSplit) {
-        String[] ss = extractColNameAndType(s);
+        String[] ss = extractColumnNameType(s);
         String colName = ss[0];
         String colType = ss[1];
         colNames.add(colName);
@@ -60,7 +61,7 @@ public class DCFormatUtil {
             !isLegalIndex4DCObject(rOperandIndex)) {
           throw new DCMinderToolsException(String.format("Illegal predicate: %s", predicate));
         }
-        ps.add(new Predicate(OperationStr.opString2ObjectMap.get(op),
+        ps.add(new Predicate(DCFormatUtil.convertString2Operator(op),
             new ColumnOperand(new ParsedColumn(defaultTable, lCol, colTypeMap.get(lCol), colNames.indexOf(lCol)),
                 lOperandIndex),
             new ColumnOperand(new ParsedColumn(defaultTable, rCol, colTypeMap.get(rCol), colNames.indexOf(rCol)),
@@ -83,7 +84,7 @@ public class DCFormatUtil {
         int operand2Index = operand2.getIndex() + 1;
         String col1Name = operand1.getColumn().getName();
         String col2Name = operand2.getColumn().getName();
-        String op = OperationStr.opObject2StringMap.get(p.getOperator());
+        String op = DCFormatUtil.convertOperator2String(p.getOperator());
         if (!isLegalIndex4DCString(operand1Index) ||
             !isLegalIndex4DCString(operand2Index)) {
           throw new DCMinderToolsException("Illegal column index for DC string");
@@ -109,7 +110,15 @@ public class DCFormatUtil {
     }
   }
 
-  public static String[] extractColNameAndType(String columnWithBracket) {
+  public static Operator convertString2Operator(String op) {
+    return OperatorConst.str2objMap.get(op);
+  }
+
+  public static String convertOperator2String(Operator op) {
+    return OperatorConst.obj2strMap.get(op);
+  }
+
+  public static String[] extractColumnNameType(String columnWithBracket) {
     int leftBracket = columnWithBracket.indexOf("(");
     int rightBracket = columnWithBracket.indexOf(")");
     String colName = columnWithBracket.substring(0, leftBracket);
@@ -166,18 +175,18 @@ public class DCFormatUtil {
       throws DCMinderToolsException {
     String result = null;
     // 先判断= 再判断 != >= <=
-    if (predicate.contains(OperationStr.unequal)) {
-      result = OperationStr.unequal;
-    } else if (predicate.contains(OperationStr.greaterEqual)) {
-      result = OperationStr.greaterEqual;
-    } else if (predicate.contains(OperationStr.lessEqual)) {
-      result = OperationStr.lessEqual;
-    } else if (predicate.contains(OperationStr.greater)) {
-      result = OperationStr.greater;
-    } else if (predicate.contains(OperationStr.less)) {
-      result = OperationStr.less;
-    } else if (predicate.contains(OperationStr.equal)) {
-      result = OperationStr.equal;
+    if (predicate.contains(OperatorConst.unequal)) {
+      result = OperatorConst.unequal;
+    } else if (predicate.contains(OperatorConst.greaterEqual)) {
+      result = OperatorConst.greaterEqual;
+    } else if (predicate.contains(OperatorConst.lessEqual)) {
+      result = OperatorConst.lessEqual;
+    } else if (predicate.contains(OperatorConst.greater)) {
+      result = OperatorConst.greater;
+    } else if (predicate.contains(OperatorConst.less)) {
+      result = OperatorConst.less;
+    } else if (predicate.contains(OperatorConst.equal)) {
+      result = OperatorConst.equal;
     } else {
       throw new DCMinderToolsException("Unknown operation");
     }
@@ -189,7 +198,7 @@ public class DCFormatUtil {
   }
 
   public static boolean isLegalOperation(String operation) {
-    return Arrays.asList(OperationStr.legalOperations).contains(operation);
+    return Arrays.asList(OperatorConst.legalOperations).contains(operation);
   }
 
   public static boolean isLegalIndex4DCString(int columnIndex) {

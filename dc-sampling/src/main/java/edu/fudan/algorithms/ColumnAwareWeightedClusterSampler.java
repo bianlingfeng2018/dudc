@@ -4,7 +4,6 @@ import static edu.fudan.conf.DefaultConf.optimizeWithCounter;
 
 import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
-import de.hpi.naumann.dc.evidenceset.build.sampling.OrderedCluster;
 import de.hpi.naumann.dc.input.Input;
 import de.hpi.naumann.dc.input.ParsedColumn;
 import de.hpi.naumann.dc.paritions.LinePair;
@@ -68,26 +67,26 @@ public class ColumnAwareWeightedClusterSampler {
       }
 //      log.debug("Sampling column " + c.getName());
       // 构建valueMap
-      Map<Object, WeightedCluster> valueMap = new HashMap<>();
+      Map<Object, MyOrderedCluster> valueMap = new HashMap<>();
       for (int i = 0; i < input.getLineCount(); ++i) {
         if (excludedLines != null && excludedLines.contains(i)) {
           // 排除行（已经被用户判断是脏数据）
           continue;
         }
-        WeightedCluster cluster = valueMap.computeIfAbsent(c.getValue(i),
-            (k) -> new WeightedCluster());
+        MyOrderedCluster cluster = valueMap.computeIfAbsent(c.getValue(i),
+            (k) -> new MyOrderedCluster());
         // 自动更新size，即簇大小
         cluster.add(i);
       }
 
-      List<WeightedCluster> clusters = getClusterList(valueMap, randomCluster);
+      List<MyOrderedCluster> clusters = getClusterList(valueMap, randomCluster);
 
       // TODO: 如何考虑有错误混入size最大的cluster中这种情况？
-      List<WeightedCluster> selected = clusters.subList(0,
+      List<MyOrderedCluster> selected = clusters.subList(0,
           Math.min(topKOfCluster, clusters.size()));
 
       // TODO: Cluster内部采用随机策略比较好吧？避免一直得到同一个结果
-      for (OrderedCluster cluster : selected) {
+      for (MyOrderedCluster cluster : selected) {
         // cluster内部随机化
         cluster.randomize();
         TIntIterator it = cluster.iterator();
@@ -102,9 +101,9 @@ public class ColumnAwareWeightedClusterSampler {
     return lines;
   }
 
-  private static List<WeightedCluster> getClusterList(
-      Map<Object, WeightedCluster> valueMap, boolean randomCluster) {
-    List<WeightedCluster> clusters;
+  private static List<MyOrderedCluster> getClusterList(
+      Map<Object, MyOrderedCluster> valueMap, boolean randomCluster) {
+    List<MyOrderedCluster> clusters;
     if (randomCluster) {
       clusters = new ArrayList<>(valueMap.values());
       // 打乱顺序

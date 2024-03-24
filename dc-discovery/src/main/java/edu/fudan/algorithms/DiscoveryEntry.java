@@ -6,6 +6,7 @@ import static edu.fudan.conf.DefaultConf.noCrossColumn;
 import br.edu.utfpr.pena.fdcd.mockers.FDCDMocker;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
+import de.metanome.algorithm_integration.input.RelationalInput;
 import de.metanome.algorithms.dcfinder.DCFinder;
 import de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraintSet;
 import de.metanome.algorithms.dcfinder.input.Input;
@@ -29,16 +30,29 @@ public class DiscoveryEntry {
   }
 
   public static DenialConstraintSet discoveryDCsDCFinder(String inputDataPath,
-      double errorThreshold)
-      throws InputIterationException, InputGenerationException, FileNotFoundException {
+      double errorThreshold) {
     return discoveryDCsDCFinder(inputDataPath, errorThreshold, null);
   }
 
   public static DenialConstraintSet discoveryDCsDCFinder(String inputDataPath,
-      double errorThreshold, String evidenceFile)
-      throws InputIterationException, InputGenerationException, FileNotFoundException {
-    Input input = new Input(
-        new DefaultFileInputGenerator(new File(inputDataPath)).generateNewCopy());
+      double errorThreshold, String evidenceFile) {
+    RelationalInput ri = null;
+    Input input;
+    try {
+      ri = new DefaultFileInputGenerator(new File(inputDataPath)).generateNewCopy();
+      input = new Input(ri);
+    } catch (InputGenerationException | FileNotFoundException | InputIterationException e) {
+      throw new RuntimeException(e);
+    } finally {
+      try {
+        if (ri != null) {
+          ri.close();
+        }
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+
     PredicateBuilder predicatesSpace = new PredicateBuilder(input, noCrossColumn,
         minimumSharedValue);
     log.info("Size of the predicate space:" + predicatesSpace.getPredicates().size());
