@@ -5,7 +5,6 @@ import static edu.fudan.conf.DefaultConf.defaultTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
-import de.hpi.naumann.dc.input.ParsedColumn;
 import de.hpi.naumann.dc.predicates.Predicate;
 import de.hpi.naumann.dc.predicates.operands.ColumnOperand;
 import de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
@@ -33,7 +32,7 @@ public class DCFormatUtil {
       if (exp == null) {
         throw new DCMinderToolsException(String.format("Illegal dc expression: %s'", dcStr));
       }
-      // Prepare
+      // 准备colTypeMap
       List<String> colNames = Lists.newArrayList();
       Map<String, Class> colTypeMap = Maps.newHashMap();
       String[] headerSplit = header.split(",");
@@ -62,10 +61,18 @@ public class DCFormatUtil {
           throw new DCMinderToolsException(String.format("Illegal predicate: %s", predicate));
         }
         ps.add(new Predicate(DCFormatUtil.convertString2Operator(op),
-            new ColumnOperand(new ParsedColumn(defaultTable, lCol, colTypeMap.get(lCol), colNames.indexOf(lCol)),
-                lOperandIndex),
-            new ColumnOperand(new ParsedColumn(defaultTable, rCol, colTypeMap.get(rCol), colNames.indexOf(rCol)),
-                rOperandIndex)));
+                new ColumnOperand(
+                    ConsistParsedColumnProvider.getParsedColumnInstance(defaultTable, lCol,
+                        colTypeMap.get(lCol), colNames.indexOf(lCol)),
+                    lOperandIndex
+                ),
+                new ColumnOperand(
+                    ConsistParsedColumnProvider.getParsedColumnInstance(defaultTable, rCol,
+                        colTypeMap.get(rCol), colNames.indexOf(rCol)),
+                    rOperandIndex
+                )
+            )
+        );
       }
       return new DenialConstraint(ps);
     } catch (DCMinderToolsException | ClassNotFoundException e) {

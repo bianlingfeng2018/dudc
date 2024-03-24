@@ -70,10 +70,8 @@ public class DCUtil {
    *
    * @param topKDCs
    * @param topKDCsPath
-   * @throws IOException
    */
-  public static void persistTopKDCs(List<DenialConstraint> topKDCs, String topKDCsPath)
-      throws IOException {
+  public static void persistTopKDCs(List<DenialConstraint> topKDCs, String topKDCsPath) {
     List<String> result = new ArrayList<>();
     for (DenialConstraint dc : topKDCs) {
       String s = DCFormatUtil.convertDC2String(dc);
@@ -151,18 +149,18 @@ public class DCUtil {
   }
 
   public static Set<TCell> getCellsOfViolations(Set<DCViolation> vioSet, Input di) {
-    Set<TCell> cellIdentifiers = Sets.newHashSet();
+    Set<TCell> cells = Sets.newHashSet();
     for (DCViolation vio : vioSet) {
       LinePair linePair = vio.getLinePair();
-      List<DenialConstraint> constraints = vio.getConstraints();
-      if (constraints.size() != 1) {
+      List<DenialConstraint> dcNoData = vio.getDenialConstraintsNoData();
+      if (dcNoData.size() != 1) {
         throw new RuntimeException("Illegal dcs size");
       }
-      DenialConstraint hydraDC = constraints.get(0);
-      Set<TCell> cellsOfViolation = getCellsOfViolation(di, hydraDC, linePair);
-      cellIdentifiers.addAll(cellsOfViolation);
+      DenialConstraint dc = dcNoData.get(0);
+      Set<TCell> cellsOfViolation = getCellsOfViolation(di, dc, linePair);
+      cells.addAll(cellsOfViolation);
     }
-    return cellIdentifiers;
+    return cells;
   }
 
   /**

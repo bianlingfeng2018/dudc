@@ -12,6 +12,7 @@ import de.hpi.naumann.dc.input.ParsedColumn;
 import de.hpi.naumann.dc.predicates.Predicate;
 import de.hpi.naumann.dc.predicates.operands.ColumnOperand;
 import de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
+import edu.fudan.transformat.ConsistParsedColumnProvider;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,7 +28,7 @@ class HydraDCAdaptor {
    * @param dcsWithData
    * @return
    */
-  public static List<DenialConstraint> buildDCsNoData(List<DenialConstraint> dcsWithData) {
+  static List<DenialConstraint> buildDCsNoData(List<DenialConstraint> dcsWithData) {
     List<DenialConstraint> dcsNoData = Lists.newArrayList();
     for (DenialConstraint dc : dcsWithData) {
       DenialConstraint copy = buildDCNoData(dc);
@@ -43,7 +44,7 @@ class HydraDCAdaptor {
    * @param dcsNoData
    * @return
    */
-  public static DenialConstraintSet buildHydraDCs(Set<DenialConstraint> dcsNoData, Input input) {
+  static DenialConstraintSet buildHydraDCs(Set<DenialConstraint> dcsNoData, Input input) {
     DenialConstraintSet dcs = new DenialConstraintSet();
     for (DenialConstraint dc : dcsNoData) {
       dcs.add(buildHydraDC(dc, input));
@@ -103,7 +104,12 @@ class HydraDCAdaptor {
   private static ParsedColumn<?> buildParsedColumnNoData(ParsedColumn<?> parsedColumn) {
     // Hydra的列名默认是City(String)这种形式
     String columnName = extractColumnNameType(parsedColumn.getName())[0];
-    ParsedColumn<?> newPs = new ParsedColumn<>(defaultTable,
+//    ParsedColumn<?> newPs = new ParsedColumn<>(defaultTable,
+//        columnName,
+//        parsedColumn.getType(),
+//        parsedColumn.getIndex());
+    ParsedColumn<?> newPs = ConsistParsedColumnProvider.getParsedColumnInstance(
+        defaultTable,
         columnName,
         parsedColumn.getType(),
         parsedColumn.getIndex());

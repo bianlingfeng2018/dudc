@@ -56,7 +56,7 @@ public class CellQuestionV1 implements CellQuestion {
     }
     for (DCViolation vio : selectedVios) {
       // TODO: Input和LinePair结合找出相关Cells，给用户判断是否为真冲突
-      List<DenialConstraint> dcs = vio.getDenialConstraintList();
+      List<DenialConstraint> dcs = vio.getDenialConstraintsNoData();
       for (DenialConstraint dc : dcs) {
         if (evaluation.isTrueViolation(dc, vio.getLinePair())) {
           trueVios.add(vio);

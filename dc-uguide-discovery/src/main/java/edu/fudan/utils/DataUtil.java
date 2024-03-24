@@ -1,17 +1,9 @@
 package edu.fudan.utils;
 
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
-import de.hpi.naumann.dc.input.Input;
-import de.metanome.algorithm_integration.input.InputGenerationException;
-import de.metanome.algorithm_integration.input.InputIterationException;
-import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import edu.fudan.algorithms.DCViolation;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -19,49 +11,17 @@ import java.util.Set;
  */
 public class DataUtil {
 
-  public static Input generateNewCopy(String dataPath) {
-    Input input = null;
-    try {
-      input = new Input(new DefaultFileInputGenerator(new File(dataPath)).generateNewCopy());
-    } catch (FileNotFoundException | InputGenerationException | InputIterationException e) {
-      throw new RuntimeException(e);
-    }
-    return input;
-  }
-
   public static Set<DenialConstraint> getDCsSetFromViolations(Set<DCViolation> vioSet) {
-    Set<DenialConstraint> dcs = Sets.newHashSet();
+    Set<DenialConstraint> result = Sets.newHashSet();
     for (DCViolation vio : vioSet) {
-      dcs.addAll(vio.getDenialConstraintList());
+      List<DenialConstraint> dcs = vio.getDenialConstraintsNoData();
+      if (dcs.size() != 1) {
+        throw new RuntimeException("Illegal dcs size");
+      }
+      DenialConstraint dc = dcs.get(0);
+      result.add(dc);
     }
-    return dcs;
-  }
-
-
-  public static Map<DenialConstraint, Set<DCViolation>> getDCViosMapFromVios(
-      Set<DCViolation> viosSet) {
-    Map<DenialConstraint, Set<DCViolation>> dcViosMap = Maps.newHashMap();
-    for (DCViolation vio : viosSet) {
-      add2Map(vio, dcViosMap);
-    }
-    return dcViosMap;
-  }
-
-  private static void add2Map(DCViolation violation,
-      Map<DenialConstraint, Set<DCViolation>> dcViosMap) {
-    List<DenialConstraint> dcs = violation.getDenialConstraintList();
-    for (DenialConstraint dc : dcs) {
-      addOrCreate(dc, violation, dcViosMap);
-    }
-  }
-
-  private static void addOrCreate(DenialConstraint dc, DCViolation violation,
-      Map<DenialConstraint, Set<DCViolation>> dcViosMap) {
-    if (dcViosMap.containsKey(dc)) {
-      dcViosMap.get(dc).add(violation);
-    } else {
-      dcViosMap.put(dc, Sets.newHashSet(violation));
-    }
+    return result;
   }
 
 }

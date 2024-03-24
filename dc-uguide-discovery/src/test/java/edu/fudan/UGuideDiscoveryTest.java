@@ -438,12 +438,16 @@ public class UGuideDiscoveryTest {
     Map<LinePair, Set<DenialConstraint>> linePairDCsMap = Maps.newHashMap();
     for (DCViolation vio : vioSet.getViosSet()) {
       LinePair linePair = vio.getLinePair();
-      List<DenialConstraint> dcList = vio.getDenialConstraintsNoData();
+      List<DenialConstraint> dcs = vio.getDenialConstraintsNoData();
+      if (dcs.size() != 1) {
+        throw new RuntimeException("Illegal dcs size");
+      }
+      DenialConstraint dc = dcs.get(0);
       if (linePairDCsMap.containsKey(linePair)) {
         Set<DenialConstraint> set = linePairDCsMap.get(linePair);
-        set.addAll(dcList);
+        set.add(dc);
       } else {
-        linePairDCsMap.put(linePair, new HashSet<>(dcList));
+        linePairDCsMap.put(linePair, Sets.newHashSet(dc));
       }
     }
     int size1 = vioSet.size();  // 冲突个数
@@ -746,7 +750,7 @@ public class UGuideDiscoveryTest {
     Set<TCell> cellsOfChanges = getCellsOfChanges(changes);
 
     // 每个DC只打印一个冲突样例
-    Set<String> visitedDCs = Sets.newHashSet();
+    Set<DenialConstraint> visitedDCs = Sets.newHashSet();
     Input di = generateNewCopy(dirtyDataPath);
     for (DCViolation v : violationSet.getViosSet()) {
 //      List<DenialConstraint> dcs = v.getConstraints();
@@ -756,12 +760,13 @@ public class UGuideDiscoveryTest {
       }
       DenialConstraint dc = dcs.get(0);
       String dcStr = DCFormatUtil.convertDC2String(dc);
-      if (!visitedDCs.contains(dcStr)) {
+      if (!visitedDCs.contains(dc)) {
         // 打印一个冲突中所有的Cell
         LinePair linePair = v.getLinePair();
-        visitedDCs.add(dcStr);
+        visitedDCs.add(dc);
         log.debug("{}", dcStr);
         log.debug("LinePair = {}", linePair);
+//        Set<TCell> cells = getCellsOfViolation(dc, linePair);
         Set<TCell> cells = getCellsOfViolation(di, dc, linePair);
         for (TCell cell : cells) {
           boolean contains = cellsOfChanges.contains(cell);
