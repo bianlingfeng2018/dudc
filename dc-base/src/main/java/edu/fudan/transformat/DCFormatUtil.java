@@ -30,7 +30,7 @@ public class DCFormatUtil {
       }
       String exp = extractExpression(dcStr);
       if (exp == null) {
-        throw new DCMinderToolsException(String.format("Illegal dc expression: %s'", dcStr));
+        throw new DCMinderToolsException(String.format("Illegal dc expression: %s", dcStr));
       }
       // 准备colTypeMap
       List<String> colNames = Lists.newArrayList();

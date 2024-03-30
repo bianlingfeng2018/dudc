@@ -182,11 +182,9 @@ public class UGuideDiscoveryTest {
 
   /**
    * Generate top-k dcs from file which contains all dcs
-   *
-   * @throws IOException
    */
   @Test
-  public void testGenTopKDCs() throws IOException {
+  public void testGenTopKDCs() {
     List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(5, universalDCsPath, headerPath, null);
     DCUtil.persistTopKDCs(topKDCs, topKDCsPath);
   }
