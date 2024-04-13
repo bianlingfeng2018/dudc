@@ -26,6 +26,8 @@ public class IncrementRepairTest {
 
   @Test
   public void testDiscoveryDCsUsingBasicGenerator() {
+//    String dataPath = "D:\\MyFile\\IdeaProjects\\incr\\source\\preprocessed_stock_origin.csv";  // BART用的干净数据
+//    String dataPath = "D:\\paper\\denial_constraint_incremental_repair\\experiment\\2024\\software\\source\\Tax_small.csv";  // Tax的干净数据
     BasicDCGenerator generator = new BasicDCGenerator(dataPath, dcTransPath, headerPath);
     generator.setExcludeDCs(new HashSet<>());
     generator.setErrorThreshold(0.0);
@@ -35,8 +37,9 @@ public class IncrementRepairTest {
 
   @Test
   public void testDetectDCViolationUsingHydra() {
-//    String dataPath = "D:\\MyFile\\gitee\\dc_miner\\data\\preprocessed_data\\hospital_target_dirty_for_holo.csv";
-    String dataPath = "D:\\MyFile\\gitee\\dc_miner\\data\\preprocessed_data\\stock_target_dirty_for_holo.csv";
+//    String dataPath = "D:\\MyFile\\gitee\\dc_miner\\data\\preprocessed_data\\stock_target_dirty_for_holo.csv";  // 原始干净+数据注入了错误的数据 验证hydra和incr的冲突数量一样
+    String dataPath = "D:\\MyFile\\IdeaProjects\\incr\\source\\preprocessed_stock_origin.csv";  // 原始+增量的干净数据
+    String dcTransPath = "D:\\MyFile\\gitee\\dc_miner\\data\\result_rules\\dcs_stock.out";  // 选择的规则
     log.debug("datasetPath={}", dataPath);
     log.debug("headerPath={}", headerPath);
     log.debug("dcPath={}", dcTransPath);
