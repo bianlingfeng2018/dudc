@@ -20,6 +20,14 @@ not(t1.MeasureName=t2.MeasureName&t1.ProviderNumber=t2.ProviderNumber)
 not(t1.MeasureName!=t2.MeasureName&t1.StateAvg=t2.StateAvg)
 not(t1.MeasureCode=t2.MeasureCode&t1.MeasureName!=t2.MeasureName)
 
+not(t1.City!=t2.City&t1.ZIPCode=t2.ZIPCode)
+not(t1.State!=t2.State&t1.ZIPCode=t2.ZIPCode)
+not(t1.ZIPCode!=t2.ZIPCode&t1.PhoneNumber=t2.PhoneNumber)
+not(t1.MeasureCode=t2.MeasureCode&t1.MeasureName!=t2.MeasureName)
+not(t1.MeasureCode!=t2.MeasureCode&t1.MeasureName=t2.MeasureName)
+not(t1.ProviderNumber=t2.ProviderNumber&t1.PhoneNumber!=t2.PhoneNumber)
+not(t1.ProviderNumber=t2.ProviderNumber&t1.HospitalName!=t2.HospitalName)
+
 # long dc
 not(t1.EmergencyService!=t2.EmergencyService&t1.HospitalType!=t2.HospitalType&t1.PhoneNumber=t2.PhoneNumber)
 not(t1.EmergencyService!=t2.EmergencyService&t1.HospitalName=t2.HospitalName&t1.ZIPCode=t2.ZIPCode)
