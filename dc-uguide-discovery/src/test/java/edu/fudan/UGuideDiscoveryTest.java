@@ -1,9 +1,10 @@
 package edu.fudan;
 
 import static edu.fudan.CorrelationTest.correlationByUserPath;
+import static edu.fudan.algorithms.BasicDCGenerator.getSortedDCs;
+import static edu.fudan.algorithms.BasicDCGenerator.persistDCFinderDCs;
 import static edu.fudan.algorithms.uguide.Strategy.addToCountMap;
 import static edu.fudan.algorithms.uguide.Strategy.getSortedLines;
-import static edu.fudan.conf.DefaultConf.defaultErrorThreshold;
 import static edu.fudan.conf.DefaultConf.maxCellQuestionBudget;
 import static edu.fudan.conf.DefaultConf.maxInCluster;
 import static edu.fudan.conf.DefaultConf.predictArgs;
@@ -59,7 +60,6 @@ import edu.fudan.transformat.DCFormatUtil;
 import edu.fudan.utils.DCUtil;
 import edu.fudan.utils.FileUtil;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -78,39 +78,42 @@ import org.junit.Test;
 @Slf4j
 public class UGuideDiscoveryTest {
 
+  private static int dsIndex = 0;
+  private static String[] dsNames = {"hospital", "stock", "tax"};
+  private static String dsName = dsNames[dsIndex];
   public static String baseDir = "D:\\MyFile\\gitee\\dc_miner\\data";
   public static String headerPath = baseDir + File.separator +
-      "preprocessed_data\\preprocessed_hospital_header.csv";
+      "preprocessed_data\\preprocessed_" + dsName + "_header.csv";
   public static String cleanDataPath = baseDir + File.separator +
-      "preprocessed_data\\preprocessed_hospital.csv";
+      "preprocessed_data\\preprocessed_" + dsName + ".csv";
   public static String dirtyDataPath = baseDir + File.separator +
-      "preprocessed_data\\preprocessed_hospital_dirty.csv";
+      "preprocessed_data\\preprocessed_" + dsName + "_dirty.csv";
   public static String changesPath = baseDir + File.separator +
-      "preprocessed_data\\preprocessed_hospital_changes.csv";
+      "preprocessed_data\\preprocessed_" + dsName + "_changes.csv";
   public static String excludedLinesPath = baseDir + File.separator +
-      "preprocessed_data\\preprocessed_hospital_dirty_excluded.csv";
+      "preprocessed_data\\preprocessed_" + dsName + "_dirty_excluded.csv";
   public static String sampledDataPath = baseDir + File.separator +
-      "preprocessed_data\\preprocessed_hospital_dirty_sample.csv";
+      "preprocessed_data\\preprocessed_" + dsName + "_dirty_sample.csv";
   public static String universalDCsPath = baseDir + File.separator +
-      "evidence_set\\dcs_fcdc_hospital.out";
+      "evidence_set\\dcs_fcdc_" + dsName + ".out";
   public static String dcsPathForDCMiner = baseDir + File.separator +
-      "result_rules\\dcminer_5_hospital.csv";
+      "result_rules\\dcminer_5_" + dsName + ".csv";
   public static String evidencesPathForFCDC = baseDir + File.separator +
-      "evidence_set\\evidence_set_fcdc_hospital.csv";
+      "evidence_set\\evidence_set_fcdc_" + dsName + ".csv";
   public static String topKDCsPath = baseDir + File.separator +
-      "result_rules\\dcs_hospital.out";
+      "result_rules\\dcs_" + dsName + ".out";
   public static String groundTruthDCsPath = baseDir + File.separator +
-      "result_rules\\dcs_hospital_ground.out";
+      "result_rules\\dcs_" + dsName + "_ground.out";
   public static String groundTruthDCsInjectErrorPath = baseDir + File.separator +
-      "result_rules\\dcs_hospital_ground_inject_error.out";
+      "result_rules\\dcs_" + dsName + "_ground_inject_error.out";
   public static String candidateDCsPath = baseDir + File.separator +
-      "result_rules\\dcs_hospital_candidate.out";
+      "result_rules\\dcs_" + dsName + "_candidate.out";
   public static String trueDCsPath = baseDir + File.separator +
-      "result_rules\\dcs_hospital_candidate_true.out";
+      "result_rules\\dcs_" + dsName + "_candidate_true.out";
   public static String visitedDCsPath = baseDir + File.separator +
-      "evidence_set\\excluded_rules_hospital.csv";
+      "evidence_set\\excluded_rules_" + dsName + ".csv";
   public static String csvResultPath = baseDir + File.separator +
-      "evaluation\\eval_error_detect_hospital.csv";
+      "evaluation\\eval_error_detect_" + dsName + ".csv";
 
   @Test
   public void testOneRoundUGuide()
@@ -145,15 +148,47 @@ public class UGuideDiscoveryTest {
    * Discover dc using dcFinder(2019)
    */
   @Test
-  public void testDiscoveryDCsUsingDCFinder() {
-    // 1.当evidenceFile不为null，则生成证据集（作为DCMiner训练模型的输入），此时errorThreshold不重要
-//    DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(sampledDataPath,
-//        defaultErrorThreshold, evidencesPathForFCDC);
-
-    // 2.当evidenceFile为null，则生成规则集合
-    DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(sampledDataPath,
-        defaultErrorThreshold, null);
+  public void testDiscoveryDCsUsingDCFinderNoEvidence() throws IOException {
+    // 1.当evidenceFile为null，则生成规则集合
+    DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(cleanDataPath,
+        0.0, null);
     log.info("DCs: {}", dcs.size());
+  }
+
+  /**
+   * Discover dc using dcFinder(2019)
+   */
+  @Test
+  public void testDiscoveryDCsUsingDCFinder() throws IOException {
+    // 2.当evidenceFile不为null，则生成证据集（作为DCMiner训练模型的输入）
+    log.info("cleanDataPath={}", cleanDataPath);
+    log.info("evidencesPathForFCDC={}", evidencesPathForFCDC);
+    DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(cleanDataPath,
+        0.0, evidencesPathForFCDC);
+    List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint> dcList =
+        getSortedDCs(dcs);
+    log.info("dcList={}", dcList.size());
+    log.info("Persist to universalDCsPath={}", universalDCsPath);
+    persistDCFinderDCs(dcList, universalDCsPath);
+  }
+
+  /**
+   * Discover approximate dcs using dcFinder(2019)
+   *
+   * @throws IOException
+   */
+  @Test
+  public void testDiscoveryADCsUsingDCFinder() throws IOException {
+    // g1:0.0001 0.001 0.01
+    log.info("dirtyDataPath={}", dirtyDataPath);
+    log.info("evidencesPathForFCDC={}", evidencesPathForFCDC);
+    DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(dirtyDataPath,
+        0.001, evidencesPathForFCDC);
+    List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint> dcList =
+        getSortedDCs(dcs);
+    log.info("dcList={}", dcList.size());
+    log.info("Persist to universalDCsPath={}", universalDCsPath);
+    persistDCFinderDCs(dcList, universalDCsPath);
   }
 
   /**

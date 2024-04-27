@@ -6,10 +6,7 @@ import static edu.fudan.utils.DCUtil.convertDCFinderDC2Str;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
-import de.metanome.algorithm_integration.input.InputGenerationException;
-import de.metanome.algorithm_integration.input.InputIterationException;
 import de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraintSet;
-import edu.fudan.DCMinderToolsException;
 import edu.fudan.utils.DCUtil;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -57,30 +54,12 @@ public class BasicDCGenerator implements DCGenerator {
     try {
       DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(this.inputDataPath,
           this.errorThreshold);
-      List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint> dcList = Lists.newArrayList();
-      for (de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint dc : dcs) {
-        dcList.add(dc);
-      }
-      dcList.sort(
-          new Comparator<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint>() {
-            @Override
-            public int compare(
-                de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint o1,
-                de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint o2) {
-              return Integer.compare(o1.getPredicateCount(), o2.getPredicateCount());
-            }
-          });
+      List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint> dcList =
+          getSortedDCs(dcs);
       log.info("Result size: " + dcList.size());
 
       log.debug("Saving DCs into: " + this.dcsPathForFCDC);
-      BufferedWriter writer = new BufferedWriter(new FileWriter(this.dcsPathForFCDC));
-      for (de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint dc : dcList) {
-        // ----- 适配输出 -----
-        String dcStr = convertDCFinderDC2Str(dc);
-        writer.write(dcStr);
-        writer.newLine();
-      }
-      writer.close();
+      persistDCFinderDCs(dcList, this.dcsPathForFCDC);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -88,6 +67,37 @@ public class BasicDCGenerator implements DCGenerator {
     List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(topK, this.dcsPathForFCDC,
         this.headerPath, this.excludeDCs);
     return new HashSet<>(topKDCs);
+  }
+
+  public static void persistDCFinderDCs(
+      List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint> dcList,
+      String dcsPathForFCDC) throws IOException {
+    BufferedWriter writer = new BufferedWriter(new FileWriter(dcsPathForFCDC));
+    for (de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint dc : dcList) {
+      // ----- 适配输出 -----
+      String dcStr = convertDCFinderDC2Str(dc);
+      writer.write(dcStr);
+      writer.newLine();
+    }
+    writer.close();
+  }
+
+  public static List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint>
+  getSortedDCs(DenialConstraintSet dcs) {
+    List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint> dcList = Lists.newArrayList();
+    for (de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint dc : dcs) {
+      dcList.add(dc);
+    }
+    dcList.sort(
+        new Comparator<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint>() {
+          @Override
+          public int compare(
+              de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint o1,
+              de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint o2) {
+            return Integer.compare(o1.getPredicateCount(), o2.getPredicateCount());
+          }
+        });
+    return dcList;
   }
 
 }

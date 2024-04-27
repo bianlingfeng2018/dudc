@@ -52,7 +52,7 @@ public class DCFinder {
         eviList.add(evidenceWithCount);
       }
       FileUtil.writeStringLinesToFile(eviList, new File(evidenceFile));
-      return null;
+//      return null;
     }
 
 		DenialConstraintSet dcs = new MinimalCoverSearch(predicates.getPredicates(),
