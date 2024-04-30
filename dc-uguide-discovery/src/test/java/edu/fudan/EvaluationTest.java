@@ -1,10 +1,8 @@
 package edu.fudan;
 
-import static edu.fudan.UGuideDiscoveryTest.candidateDCsPath;
 import static edu.fudan.UGuideDiscoveryTest.dirtyDataPath;
 import static edu.fudan.UGuideDiscoveryTest.groundTruthDCsPath;
 import static edu.fudan.UGuideDiscoveryTest.headerPath;
-import static edu.fudan.UGuideDiscoveryTest.topKDCsPath;
 import static edu.fudan.UGuideDiscoveryTest.trueDCsPath;
 
 import ch.javasoft.bitset.search.NTreeSearch;
@@ -48,23 +46,50 @@ public class EvaluationTest {
 
     log.info("vGT={}, vTarget={}", vGT.size(), vTarget.size());
 
+    // GtDC->关联的不重复的LinePairs
     Map<String, Set<LinePair>> lpMap4GT = Maps.newHashMap();
+    // GtDC->关联的TargetDCs的不重复的LinePairs
     Map<String, Set<LinePair>> lpMap4Target = Maps.newHashMap();
-    // key规则 -> V1所有冲突，V2真冲突
+    // GtDC->第一个元素为所有真冲突V1，第二个元素为发现的不重复的真冲突V2，V2/V1为recall
     Map<String, Integer[]> dcGTEvalMap = Maps.newHashMap();
-    // key规则 -> V1所有冲突，V2真冲突
+    // TargetDC->第一个元素为发现的冲突V1，第二个元素为发现的真冲突V2，V2/V1为precision
     Map<String, Integer[]> dcTargetEvalMap = Maps.newHashMap();
 
     // 初始化
     for (DenialConstraint gtDC : gtDCs) {
       String sGT = DCFormatUtil.convertDC2String(gtDC);
       dcGTEvalMap.put(sGT, new Integer[]{0, 0});  // V1 V2
-      lpMap4GT.put(sGT, Sets.newHashSet());  // 为了验证每个GTDC产生的冲突的linePair都唯一
-      lpMap4Target.put(sGT, Sets.newHashSet());  // 为了对每个GTDC相应的TargetDC产生的冲突的linePair进行去重
+      lpMap4GT.put(sGT, Sets.newHashSet());  // 为了验证每个GtDC产生的冲突的linePair都唯一
+      lpMap4Target.put(sGT, Sets.newHashSet());  // 为了对每个GtDC相应的TargetDCs产生的冲突的linePair进行去重
     }
     for (DenialConstraint targetDC : discoveredDCs) {
       String sTarget = DCFormatUtil.convertDC2String(targetDC);
       dcTargetEvalMap.put(sTarget, new Integer[]{0, 0});  // V1 V2
+    }
+    // 建立包含关系索引
+    Map<String, Set<String>> targetImpliedMap = Maps.newHashMap();
+    Map<String, Set<String>> targetImplyingMap = Maps.newHashMap();
+    for (DenialConstraint gtDC : gtDCs) {
+      for (DenialConstraint targetDC : discoveredDCs) {
+        String sTarget = DCFormatUtil.convertDC2String(targetDC);
+        String sGT = DCFormatUtil.convertDC2String(gtDC);
+        // TargetDC更短，记录它可以推出的GtDCs
+        if (implied(gtDC, targetDC)) {
+          if (targetImplyingMap.containsKey(sTarget)) {
+            targetImplyingMap.get(sTarget).add(sGT);
+          } else {
+            targetImplyingMap.put(sTarget, Sets.newHashSet(sGT));
+          }
+        }
+        // TargetDC更长，记录可以推出它的GtDCs
+        if (implied(targetDC, gtDC)) {
+          if (targetImpliedMap.containsKey(sTarget)) {
+            targetImpliedMap.get(sTarget).add(sGT);
+          } else {
+            targetImpliedMap.put(sTarget, Sets.newHashSet(sGT));
+          }
+        }
+      }
     }
 
     // GT
@@ -93,51 +118,100 @@ public class EvaluationTest {
       // 所有冲突
       // Update V1 in Target
       integersTarget[0] = integersTarget[0] + 1;
-      DenialConstraint impliedGTDC = null;
-      for (DenialConstraint gtDC : gtDCs) {
-        boolean b = implied(dc, gtDC);
-        if (b) {
-          // 找到一个符合的gtDC
-          impliedGTDC = gtDC;
-          break;
-        }
-      }
-      if (impliedGTDC != null) {
+      if (targetImpliedMap.containsKey(sTarget)) {
         // 真冲突
-        // Update V2 in Target
-        integersTarget[1] = integersTarget[1] + 1;
-        String sGT = DCFormatUtil.convertDC2String(impliedGTDC);
-        Set<LinePair> linePairs = lpMap4Target.get(sGT);
-        if (!linePairs.contains(lpTarget)) {
-          // 不重复的真冲突
-          // Update V2 in GT
-          Integer[] integersGT = dcGTEvalMap.get(sGT);
-          integersGT[1] = integersGT[1] + 1;
-
-          linePairs.add(lpTarget);
+        String sGT = targetImpliedMap.get(sTarget).stream().findAny().get();
+        tryUpdateV2(lpMap4Target, lpTarget, dcGTEvalMap, integersTarget, sGT);
+      } else {
+        if (targetImplyingMap.containsKey(sTarget)) {
+          // 进一步判断当前元组是否是真冲突，此时，TargetDC相对于GtDC更general，若GtDC关联的元组包含当前元组，则当前元组为真冲突
+          // 注意可能有多个GtDC与当前TargetDC满足这种蕴含关系，但当前元组只能给其中一个GtDC算一次真冲突
+          String sGT = targetImplyingMap.get(sTarget).stream().findAny().get();
+          Set<LinePair> linePairs = lpMap4GT.get(sGT);
+          if (linePairs.contains(lpTarget)) {
+            // 真冲突
+            tryUpdateV2(lpMap4Target, lpTarget, dcGTEvalMap, integersTarget, sGT);
+          }
         }
       }
     }
 
-    // Calculate precision and recall
-    int allTrueViolations = 0;
-    int allDTVs = 0;
-    int allNoDuplicateDTVs = 0;
-    int allDVs = 0;
+    // 确认数量关系正确
+    int allV2InGT = 0;
+    int allV2InTarget = 0;
+    for (DenialConstraint gtDC : gtDCs) {
+      String sGT = DCFormatUtil.convertDC2String(gtDC);
+      Integer[] integersGT = dcGTEvalMap.get(sGT);
+      // 所有真冲突数量（默认不重复） 大于等于 发现的
+      boolean b1 = integersGT[0] >= integersGT[1];
+
+      int lpSizeGT = lpMap4GT.get(sGT).size();
+      int lpSizeTarget = lpMap4Target.get(sGT).size();
+      // 所有真冲突数量（默认不重复） 大于等于 发现的不重复的
+      boolean b3 = lpSizeGT >= lpSizeTarget;
+      // 所有真冲突数量（默认不重复） 等于 对应LinePairs大小
+      boolean b4 = lpSizeGT == integersGT[0];
+      // 所有发现的不重复的真冲突数量 等于 对应LinePairs大小
+      boolean b5 = lpSizeTarget == integersGT[1];
+
+      if (!b1 || !b3 || !b4 || !b5) {
+        throw new RuntimeException("Size relation error, b1-3-4-5");
+      }
+      allV2InGT = allV2InGT + integersGT[1];
+    }
+    for (DenialConstraint targetDC : discoveredDCs) {
+      String sTarget = DCFormatUtil.convertDC2String(targetDC);
+      Integer[] integersTarget = dcTargetEvalMap.get(sTarget);
+      // 所有发现的冲突数量 大于等于 确定为真的
+      boolean b2 = integersTarget[0] >= integersTarget[1];
+
+      if (!b2) {
+        throw new RuntimeException("Size relation error, b2");
+      }
+      allV2InTarget = allV2InTarget + integersTarget[1];
+    }
+    // 所有发现的真冲突数量大于等于去重后的大小
+    boolean b6 = allV2InTarget >= allV2InGT;
+    if (!b6) {
+      throw new RuntimeException("Size error, b6");
+    }
+
+    // 计算precision recall
+    int allDisVs = 0;
+    int allDisTrueVs = 0;
+    int allDisTrueNoDupVs = 0;
+    int allGtVs = 0;
     for (String targetS : dcTargetEvalMap.keySet()) {
       Integer[] integersTarget = dcTargetEvalMap.get(targetS);
-      allDVs += integersTarget[0];  // V1 发现的所有冲突
-      allDTVs += integersTarget[1];  // V2 发现的真冲突
+      allDisVs += integersTarget[0];  // V1
+      allDisTrueVs += integersTarget[1];  // V2
     }
     for (String gtS : dcGTEvalMap.keySet()) {
       Integer[] integersGT = dcGTEvalMap.get(gtS);
-      allTrueViolations += integersGT[0];  // V1 所有真冲突
-      allNoDuplicateDTVs += integersGT[1];  // V2 无重复的发现的真冲突
+      allGtVs += integersGT[0];  // V1
+      allDisTrueNoDupVs += integersGT[1];  // V2
     }
-    double precision = allDTVs / (double) allDVs;
-    double recall = allNoDuplicateDTVs / (double) allTrueViolations;
+    double precision = allDisTrueVs / (double) allDisVs;
+    double recall = allDisTrueNoDupVs / (double) allGtVs;
 
     log.info("Precision={}, recall={}", precision, recall);
+  }
+
+  private static void tryUpdateV2(Map<String, Set<LinePair>> lpMap4Target,
+      LinePair lpTarget, Map<String, Integer[]> dcGTEvalMap, Integer[] integersTarget,
+      String sGT) {
+    // 真冲突
+    // Update V2 in Target
+    integersTarget[1] = integersTarget[1] + 1;
+    Set<LinePair> linePairs = lpMap4Target.get(sGT);
+    if (!linePairs.contains(lpTarget)) {
+      // 不重复的真冲突
+      // Update V2 in GT
+      Integer[] integersGT = dcGTEvalMap.get(sGT);
+      integersGT[1] = integersGT[1] + 1;
+
+      linePairs.add(lpTarget);
+    }
   }
 
   private boolean implied(DenialConstraint targetDC, DenialConstraint gtDC) {
