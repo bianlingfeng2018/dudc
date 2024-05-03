@@ -193,8 +193,9 @@ public class EvaluationTest {
     }
     double precision = allDisTrueVs / (double) allDisVs;
     double recall = allDisTrueNoDupVs / (double) allGtVs;
+    double f1 = (2 * precision * recall) / (precision + recall);
 
-    log.info("Precision={}, recall={}", precision, recall);
+    log.info("Precision={}, recall={}, f1={}", precision, recall, f1);
   }
 
   private static void tryUpdateV2(Map<String, Set<LinePair>> lpMap4Target,

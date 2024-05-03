@@ -263,6 +263,18 @@ public class UGuideDiscoveryTest {
   }
 
   /**
+   * Detect on clean dataset to verify dcs correctness. We expect no violations on clean dataset.
+   */
+  @Test
+  public void testVerifyDCsByDetectionUsingHydra() {
+    HydraDetector detector = new HydraDetector(cleanDataPath, universalDCsPath, headerPath);
+    DCViolationSet violationSet = detector.detect();
+    log.info("violationSet={}", violationSet.size());
+
+    printDCViolationsMap(violationSet);
+  }
+
+  /**
    * Test detect DCViolation using hydra, and print some logs
    */
   @Test
