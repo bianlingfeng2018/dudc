@@ -4,7 +4,9 @@ import static edu.fudan.algorithms.uguide.Strategy.getRandomElements;
 import static edu.fudan.algorithms.uguide.Strategy.getSortedLines;
 
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
+import de.hpi.naumann.dc.paritions.LinePair;
 import edu.fudan.algorithms.DCLoader;
+import edu.fudan.algorithms.DCViolation;
 import edu.fudan.algorithms.uguide.TCell;
 import edu.fudan.transformat.DCFormatUtil;
 import java.util.ArrayList;
@@ -21,6 +23,10 @@ import org.junit.Test;
  */
 @Slf4j
 public class ObjectConsistTest {
+
+  private String headerPath = "D:\\MyFile\\IdeaProjects\\dc_miner_tools\\data\\header.txt";
+  private String dcsPath1 = "D:\\MyFile\\IdeaProjects\\dc_miner_tools\\data\\dc_1.txt";
+  private String dcsPath2 = "D:\\MyFile\\IdeaProjects\\dc_miner_tools\\data\\dc_2.txt";
 
   /**
    * Test TCell contains
@@ -58,11 +64,11 @@ public class ObjectConsistTest {
     }
   }
 
+  /**
+   * Test DC contains. What DCs are equivalent?
+   */
   @Test
   public void testDCContains() {
-    String headerPath = "D:\\MyFile\\IdeaProjects\\dc_miner_tools\\data\\header_hospital.txt";
-    String dcsPath1 = "D:\\MyFile\\IdeaProjects\\dc_miner_tools\\data\\dc_hospital_1.txt";
-    String dcsPath2 = "D:\\MyFile\\IdeaProjects\\dc_miner_tools\\data\\dc_hospital_2.txt";
     List<DenialConstraint> allDCs = DCLoader.load(headerPath, dcsPath1);
     List<DenialConstraint> testDCs = DCLoader.load(headerPath, dcsPath2);
     DenialConstraint dc1 = testDCs.get(0);
@@ -72,6 +78,39 @@ public class ObjectConsistTest {
     log.debug("Contains DC1 = {}", allDCs.contains(dc1));
     log.debug("Contains DC2 = {}", allDCs.contains(dc2));
     log.debug("DC1 Equals DC2 = {}", dc1.equals(dc2));
+  }
+
+  /**
+   * Test TViolation contains. What DCViolations are equivalent? Note that a DCViolation only
+   * contains 1 associated DC.
+   */
+  @Test
+  public void testTViolationContains() {
+    List<DenialConstraint> testDCs = DCLoader.load(headerPath, dcsPath2);
+    LinePair lp1 = new LinePair(0, 1);
+    LinePair lp2 = new LinePair(0, 1);
+//    not(t2.C>t1.D)
+//    not(t1.C>t2.D^t1.E<t2.F)
+//    not(t2.C>t1.D^t2.E<t1.F)
+//    not(t2.C>t1.D)
+//    false, false
+
+//    not(t1.C>t2.D^t1.E<t2.F)
+//    not(t2.C>t1.D)
+//    not(t2.C>t1.D^t2.E<t1.F)
+//    not(t2.C>t1.D)
+//    true, true
+    List<DenialConstraint> dcs1 = testDCs.subList(0, 2);
+    List<DenialConstraint> dcs2 = testDCs.subList(2, 4);
+    for (DenialConstraint dc : dcs1) {
+      log.debug("{}", DCFormatUtil.convertDC2String(dc));
+    }
+    for (DenialConstraint dc : dcs2) {
+      log.debug("{}", DCFormatUtil.convertDC2String(dc));
+    }
+    DCViolation v1 = new DCViolation(dcs1, null, lp1);
+    DCViolation v2 = new DCViolation(dcs2, null, lp2);
+    log.debug("{}, {}", v1.hashCode() == v2.hashCode(), v1.equals(v2));
   }
 
   /**
