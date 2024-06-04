@@ -1,8 +1,8 @@
-package edu.fudan;
-
-/**
- * @author Lingfeng
- */
-public class Main {
-
-}
+//package edu.fudan;
+//
+///**
+// * @author Lingfeng
+// */
+//public class Main {
+//
+//}

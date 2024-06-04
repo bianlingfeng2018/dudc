@@ -3,7 +3,6 @@ package edu.fudan.algorithms;
 import static edu.fudan.conf.DefaultConf.minimumSharedValue;
 import static edu.fudan.conf.DefaultConf.noCrossColumn;
 
-import br.edu.utfpr.pena.fdcd.mockers.FDCDMocker;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
 import de.metanome.algorithm_integration.input.RelationalInput;
@@ -15,7 +14,6 @@ import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import java.io.File;
 import java.io.FileNotFoundException;
 import lombok.extern.slf4j.Slf4j;
-import picocli.CommandLine;
 
 /**
  * @author Lingfeng
@@ -23,11 +21,11 @@ import picocli.CommandLine;
 @Slf4j
 public class DiscoveryEntry {
 
-  public static void doDiscovery(String dataPath, String dcsOutputPath) {
-    String[] args = new String[]{dataPath, "-o", dcsOutputPath};
-    int exitCode = new CommandLine(new FDCDMocker()).execute(args);
-    log.debug("Discovery DCs exit code: {}", exitCode);
-  }
+//  public static void doDiscovery(String dataPath, String dcsOutputPath) {
+//    String[] args = new String[]{dataPath, "-o", dcsOutputPath};
+//    int exitCode = new CommandLine(new FDCDMocker()).execute(args);
+//    log.debug("Discovery DCs exit code: {}", exitCode);
+//  }
 
   public static DenialConstraintSet discoveryDCsDCFinder(String inputDataPath,
       double errorThreshold) {

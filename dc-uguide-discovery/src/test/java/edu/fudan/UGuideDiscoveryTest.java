@@ -139,10 +139,10 @@ public class UGuideDiscoveryTest {
   /**
    * Discover dc using fdcd(2023)
    */
-  @Test
-  public void testDiscoveryDCsUsingFDCD() {
-    DiscoveryEntry.doDiscovery(cleanDataPath, universalDCsPath);
-  }
+//  @Test
+//  public void testDiscoveryDCsUsingFDCD() {
+//    DiscoveryEntry.doDiscovery(cleanDataPath, universalDCsPath);
+//  }
 
   /**
    * Discover dc using dcFinder(2019)
