@@ -1,32 +1,5 @@
 package edu.fudan;
 
-import static edu.fudan.CorrelationTest.correlationByUserPath;
-import static edu.fudan.algorithms.BasicDCGenerator.getSortedDCs;
-import static edu.fudan.algorithms.BasicDCGenerator.persistDCFinderDCs;
-import static edu.fudan.algorithms.uguide.Strategy.addToCountMap;
-import static edu.fudan.algorithms.uguide.Strategy.getSortedLines;
-import static edu.fudan.conf.DefaultConf.maxCellQuestionBudget;
-import static edu.fudan.conf.DefaultConf.maxInCluster;
-import static edu.fudan.conf.DefaultConf.predictArgs;
-import static edu.fudan.conf.DefaultConf.sharedArgs;
-import static edu.fudan.conf.DefaultConf.topKOfCluster;
-import static edu.fudan.conf.DefaultConf.trainArgs;
-import static edu.fudan.utils.CorrelationUtil.getDCScoreUniformMap;
-import static edu.fudan.utils.CorrelationUtil.readColumnCorrScoreMap;
-import static edu.fudan.utils.DCUtil.genLineChangesMap;
-import static edu.fudan.utils.DCUtil.getCellsOfChanges;
-import static edu.fudan.utils.DCUtil.getCellsOfViolation;
-import static edu.fudan.utils.DCUtil.getCellsOfViolations;
-import static edu.fudan.utils.DCUtil.getErrorLinesContainingChanges;
-import static edu.fudan.utils.DCUtil.loadChanges;
-import static edu.fudan.utils.DCUtil.loadDirtyDataExcludedLines;
-import static edu.fudan.utils.DCUtil.printDCViolationsMap;
-import static edu.fudan.utils.FileUtil.generateNewCopy;
-import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-
 import ch.javasoft.bitset.search.NTreeSearch;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -40,37 +13,37 @@ import de.metanome.algorithm_integration.Operator;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
 import de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraintSet;
-import edu.fudan.algorithms.BasicDCGenerator;
-import edu.fudan.algorithms.DCLoader;
-import edu.fudan.algorithms.DCViolation;
-import edu.fudan.algorithms.DCViolationSet;
-import edu.fudan.algorithms.DiscoveryEntry;
-import edu.fudan.algorithms.HydraDetector;
-import edu.fudan.algorithms.PythonCaller;
-import edu.fudan.algorithms.RLDCGenerator;
-import edu.fudan.algorithms.TupleSampler;
-import edu.fudan.algorithms.TupleSampler.SampleResult;
-import edu.fudan.algorithms.UGuideDiscovery;
-import edu.fudan.algorithms.uguide.CellQuestion;
-import edu.fudan.algorithms.uguide.CellQuestionResult;
-import edu.fudan.algorithms.uguide.CellQuestionV2;
-import edu.fudan.algorithms.uguide.TCell;
-import edu.fudan.algorithms.uguide.TChange;
+import edu.fudan.algorithms.*;
+import edu.fudan.algorithms.uguide.*;
 import edu.fudan.transformat.DCFormatUtil;
 import edu.fudan.utils.DCUtil;
 import edu.fudan.utils.FileUtil;
+import edu.fudan.utils.UGDParams;
+import edu.fudan.utils.UGDRunner;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
+
+import static edu.fudan.algorithms.BasicDCGenerator.getSortedDCs;
+import static edu.fudan.algorithms.BasicDCGenerator.persistDCFinderDCs;
+import static edu.fudan.algorithms.uguide.Strategy.addToCountMap;
+import static edu.fudan.algorithms.uguide.Strategy.getSortedLines;
+import static edu.fudan.conf.DefaultConf.*;
+import static edu.fudan.utils.CorrelationUtil.getDCScoreUniformMap;
+import static edu.fudan.utils.CorrelationUtil.readColumnCorrScoreMap;
+import static edu.fudan.utils.DCUtil.*;
+import static edu.fudan.utils.FileUtil.generateNewCopy;
+import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
+import static edu.fudan.utils.GlobalConf.baseDir;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 /**
  * @author Lingfeng
@@ -78,42 +51,44 @@ import org.junit.Test;
 @Slf4j
 public class UGuideDiscoveryTest {
 
+  private static String correlationByUserPath = "D:\\MyFile\\gitee\\dc_miner\\data\\preprocessed_data\\correlation_matrix\\model_ltr_eval_hospital.csv";
+
   private static int dsIndex = 0;
-  private static String[] dsNames = {"hospital", "stock", "tax"};
-  private static String dsName = dsNames[dsIndex];
-  public static String baseDir = "D:\\MyFile\\gitee\\dc_miner\\data";
-  public static String headerPath = baseDir + File.separator +
-      "preprocessed_data\\preprocessed_" + dsName + "_header.csv";
-  public static String cleanDataPath = baseDir + File.separator +
-      "preprocessed_data\\preprocessed_" + dsName + ".csv";
-  public static String dirtyDataPath = baseDir + File.separator +
-      "preprocessed_data\\preprocessed_" + dsName + "_dirty.csv";
-  public static String changesPath = baseDir + File.separator +
-      "preprocessed_data\\preprocessed_" + dsName + "_changes.csv";
-  public static String excludedLinesPath = baseDir + File.separator +
-      "preprocessed_data\\preprocessed_" + dsName + "_dirty_excluded.csv";
-  public static String sampledDataPath = baseDir + File.separator +
-      "preprocessed_data\\preprocessed_" + dsName + "_dirty_sample.csv";
-  public static String universalDCsPath = baseDir + File.separator +
-      "evidence_set\\dcs_fcdc_" + dsName + ".out";
-  public static String dcsPathForDCMiner = baseDir + File.separator +
-      "result_rules\\dcminer_5_" + dsName + ".csv";
-  public static String evidencesPathForFCDC = baseDir + File.separator +
-      "evidence_set\\evidence_set_fcdc_" + dsName + ".csv";
-  public static String topKDCsPath = baseDir + File.separator +
-      "result_rules\\dcs_" + dsName + ".out";
-  public static String groundTruthDCsPath = baseDir + File.separator +
-      "result_rules\\dcs_" + dsName + "_ground.out";
-  public static String groundTruthDCsInjectErrorPath = baseDir + File.separator +
-      "result_rules\\dcs_" + dsName + "_ground_inject_error.out";
-  public static String candidateDCsPath = baseDir + File.separator +
-      "result_rules\\dcs_" + dsName + "_candidate.out";
-  public static String trueDCsPath = baseDir + File.separator +
-      "result_rules\\dcs_" + dsName + "_candidate_true.out";
-  public static String visitedDCsPath = baseDir + File.separator +
-      "evidence_set\\excluded_rules_" + dsName + ".csv";
-  public static String csvResultPath = baseDir + File.separator +
-      "evaluation\\eval_error_detect_" + dsName + ".csv";
+  private static String headerPath;
+  private static String cleanDataPath;
+  private static String dirtyDataPath;
+  private static String changesPath;
+  private static String excludedLinesPath;
+  private static String sampledDataPath;
+  private static String fullDCsPath;
+  private static String dcsPathForDCMiner;
+  private static String evidencesPath;
+  private static String topKDCsPath;
+  private static String groundTruthDCsPath;
+  private static String candidateDCsPath;
+  private static String candidateTrueDCsPath;
+  private static String excludedDCsPath;
+  private static String csvResultPath;
+
+  @Before
+  public void setUp() throws Exception {
+    UGDParams params = UGDRunner.buildParams(dsIndex);
+    headerPath = params.headerPath;
+    cleanDataPath = params.cleanDataPath;
+    dirtyDataPath = params.dirtyDataPath;
+    changesPath = params.changesPath;
+    excludedLinesPath = params.excludedLinesPath;
+    sampledDataPath = params.sampledDataPath;
+    fullDCsPath = params.fullDCsPath;
+    dcsPathForDCMiner = params.dcsPathForDCMiner;
+    evidencesPath = params.evidencesPath;
+    topKDCsPath = params.topKDCsPath;
+    groundTruthDCsPath = params.groundTruthDCsPath;
+    candidateDCsPath = params.candidateDCsPath;
+    candidateTrueDCsPath = params.candidateTrueDCsPath;
+    excludedDCsPath = params.excludedDCsPath;
+    csvResultPath = params.csvResultPath;
+  }
 
   @Test
   public void testOneRoundUGuide()
@@ -123,14 +98,14 @@ public class UGuideDiscoveryTest {
         dirtyDataPath,
         excludedLinesPath,
         sampledDataPath,
-        universalDCsPath,
+        fullDCsPath,
         dcsPathForDCMiner,
-        evidencesPathForFCDC,
+        evidencesPath,
         topKDCsPath,
         groundTruthDCsPath,
         candidateDCsPath,
-        trueDCsPath,
-        visitedDCsPath,
+        candidateTrueDCsPath,
+        excludedDCsPath,
         headerPath,
         csvResultPath);
     ud.guidedDiscovery();
@@ -162,14 +137,14 @@ public class UGuideDiscoveryTest {
   public void testDiscoveryDCsUsingDCFinder() throws IOException {
     // 2.当evidenceFile不为null，则生成证据集（作为DCMiner训练模型的输入）
     log.info("cleanDataPath={}", cleanDataPath);
-    log.info("evidencesPathForFCDC={}", evidencesPathForFCDC);
+    log.info("evidencesPathForFCDC={}", evidencesPath);
     DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(cleanDataPath,
-        0.0, evidencesPathForFCDC);
+        0.0, evidencesPath);
     List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint> dcList =
         getSortedDCs(dcs);
     log.info("dcList={}", dcList.size());
-    log.info("Persist to universalDCsPath={}", universalDCsPath);
-    persistDCFinderDCs(dcList, universalDCsPath);
+    log.info("Persist to universalDCsPath={}", fullDCsPath);
+    persistDCFinderDCs(dcList, fullDCsPath);
   }
 
   /**
@@ -181,14 +156,14 @@ public class UGuideDiscoveryTest {
   public void testDiscoveryADCsUsingDCFinder() throws IOException {
     // g1:0.0001 0.001 0.01
     log.info("dirtyDataPath={}", dirtyDataPath);
-    log.info("evidencesPathForFCDC={}", evidencesPathForFCDC);
+    log.info("evidencesPathForFCDC={}", evidencesPath);
     DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(dirtyDataPath,
-        0.001, evidencesPathForFCDC);
+        0.001, evidencesPath);
     List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint> dcList =
         getSortedDCs(dcs);
     log.info("dcList={}", dcList.size());
-    log.info("Persist to universalDCsPath={}", universalDCsPath);
-    persistDCFinderDCs(dcList, universalDCsPath);
+    log.info("Persist to universalDCsPath={}", fullDCsPath);
+    persistDCFinderDCs(dcList, fullDCsPath);
   }
 
   /**
@@ -196,7 +171,7 @@ public class UGuideDiscoveryTest {
    */
   @Test
   public void testDiscoveryDCsUsingBasicGenerator() {
-    BasicDCGenerator generator = new BasicDCGenerator(cleanDataPath, universalDCsPath, headerPath);
+    BasicDCGenerator generator = new BasicDCGenerator(cleanDataPath, fullDCsPath, headerPath);
     generator.setExcludeDCs(new HashSet<>());
     generator.setErrorThreshold(0.0);
     Set<DenialConstraint> dcs = generator.generateDCsForUser();
@@ -208,7 +183,7 @@ public class UGuideDiscoveryTest {
    */
   @Test
   public void testDiscoveryADCsUsingBasicGenerator() {
-    BasicDCGenerator generator = new BasicDCGenerator(dirtyDataPath, universalDCsPath, headerPath);
+    BasicDCGenerator generator = new BasicDCGenerator(dirtyDataPath, fullDCsPath, headerPath);
     generator.setExcludeDCs(new HashSet<>());
     generator.setErrorThreshold(0.001);
     Set<DenialConstraint> dcs = generator.generateDCsForUser();
@@ -220,7 +195,7 @@ public class UGuideDiscoveryTest {
    */
   @Test
   public void testGenTopKDCs() {
-    List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(5, universalDCsPath, headerPath, null);
+    List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(5, fullDCsPath, headerPath, null);
     DCUtil.persistTopKDCs(topKDCs, topKDCsPath);
   }
 
@@ -267,7 +242,7 @@ public class UGuideDiscoveryTest {
    */
   @Test
   public void testVerifyDCsByDetectionUsingHydra() {
-    HydraDetector detector = new HydraDetector(cleanDataPath, universalDCsPath, headerPath);
+    HydraDetector detector = new HydraDetector(cleanDataPath, fullDCsPath, headerPath);
     DCViolationSet violationSet = detector.detect();
     log.info("violationSet={}", violationSet.size());
 
@@ -279,7 +254,7 @@ public class UGuideDiscoveryTest {
    */
   @Test
   public void testDetectDCViolationUsingHydra() {
-    HydraDetector detector = new HydraDetector(dirtyDataPath, trueDCsPath, headerPath);
+    HydraDetector detector = new HydraDetector(dirtyDataPath, candidateTrueDCsPath, headerPath);
     detectUsingHydraDetector(detector);
   }
 
@@ -292,7 +267,7 @@ public class UGuideDiscoveryTest {
     DCViolationSet vioSet1 =
         new HydraDetector(dirtyDataPath, candidateDCsPath, headerPath).detect();
     DCViolationSet vioSet2 =
-        new HydraDetector(dirtyDataPath, trueDCsPath, headerPath).detect();
+        new HydraDetector(dirtyDataPath, candidateTrueDCsPath, headerPath).detect();
     DCViolationSet vioSet3 =
         new HydraDetector(dirtyDataPath, groundTruthDCsPath, headerPath).detect();
     log.info("candi={}, candiTure={}, gt={}", vioSet1.size(), vioSet2.size(), vioSet3.size());
@@ -341,7 +316,7 @@ public class UGuideDiscoveryTest {
     DCViolationSet vioSetOfGroundTruthDCs =
         new HydraDetector(dirtyDataPath, groundTruthDCsPath, headerPath).detect();
     DCViolationSet vioSetOfTrueDCs =
-        new HydraDetector(dirtyDataPath, trueDCsPath, headerPath).detect();
+        new HydraDetector(dirtyDataPath, candidateTrueDCsPath, headerPath).detect();
     Input di = generateNewCopy(dirtyDataPath);
 
     // 转换成Cell
@@ -392,35 +367,6 @@ public class UGuideDiscoveryTest {
   }
 
   /**
-   * Test error lines in sample
-   */
-  @Test
-  public void testErrorLinesInSample()
-      throws InputGenerationException, IOException, InputIterationException {
-    // Load changes and error lines
-    List<TChange> changes = loadChanges(changesPath);
-    Set<Integer> errorLinesContainingChanges = getErrorLinesContainingChanges(changes);
-    log.info("Changes={}, errorLinesContainingChanges={}", changes.size(),
-        errorLinesContainingChanges.size());
-    // Sample and get error lines
-    log.info("Sampling...");
-    SampleResult sampleResult = new TupleSampler()
-        .sample(new File(dirtyDataPath), topKOfCluster, maxInCluster,
-            null, true, null, null);
-    List<List<String>> linesWithHeader = sampleResult.getLinesWithHeader();
-    log.info("Write {} lines(with header line) to file: {}", linesWithHeader.size(),
-        sampledDataPath);
-    FileUtil.writeListLinesToFile(linesWithHeader, new File(sampledDataPath));
-    // 比较
-    Set<Integer> errorLinesInSample = sampleResult.getLineIndices().stream()
-        .filter(i -> errorLinesContainingChanges.contains(i)).collect(
-            Collectors.toSet());
-    log.info("ErrorLinesInSample/SampledLineIndices: {}/{}",
-        errorLinesInSample.size(), sampleResult.getLineIndices().size());
-    log.info("ErrorLinesInSample: {}", errorLinesInSample);  // [2336, 2481, 2456, 2506]
-  }
-
-  /**
    * Test DCMiner train
    */
   @Test
@@ -443,9 +389,9 @@ public class UGuideDiscoveryTest {
    */
   @Test
   public void testDiscoverDCUsingRLDCGenerator() {
-    List<DenialConstraint> excludeDCs = DCLoader.load(headerPath, visitedDCsPath, new HashSet<>());
+    List<DenialConstraint> excludeDCs = DCLoader.load(headerPath, excludedDCsPath, new HashSet<>());
     log.debug("Visited DCs size={}", excludeDCs.size());
-    RLDCGenerator generator = new RLDCGenerator(sampledDataPath, evidencesPathForFCDC,
+    RLDCGenerator generator = new RLDCGenerator(sampledDataPath, evidencesPath,
         dcsPathForDCMiner, headerPath);
     generator.setExcludeDCs(new HashSet<>(excludeDCs));
 //    generator.setErrorThreshold(0.001);
@@ -531,7 +477,7 @@ public class UGuideDiscoveryTest {
   public void testTupleQuestion() {
     // TODO: 测试优先选择关联冲突多的元组，以及优先选择关联冲突规则多的元组，以及在脏数据集还是采样数据集上效果更好？
     Set<DCViolation> vios =
-        new HydraDetector(dirtyDataPath, universalDCsPath, headerPath).detect().getViosSet();
+        new HydraDetector(dirtyDataPath, fullDCsPath, headerPath).detect().getViosSet();
     Set<Integer> errorLines = getErrorLinesContainingChanges(loadChanges(changesPath));
     Map<Integer, Set<DCViolation>> lineViosCountMap = Maps.newHashMap();
     Map<Integer, Set<DenialConstraint>> lineDCsCountMap = Maps.newHashMap();
@@ -596,7 +542,7 @@ public class UGuideDiscoveryTest {
     // 冲突数量不能判断规则真假，冲突多少只取决于反例的个数
     int minLenOfDC = 2;
 //    double succinctFactor = 0.8;
-    List<DenialConstraint> testDCs = DCLoader.load(headerPath, universalDCsPath);
+    List<DenialConstraint> testDCs = DCLoader.load(headerPath, fullDCsPath);
     Set<DenialConstraint> trueDCs = Sets.newHashSet();
     List<DenialConstraint> gtDCs = DCLoader.load(headerPath, groundTruthDCsPath);
     NTreeSearch gtTree = new NTreeSearch();
@@ -614,7 +560,7 @@ public class UGuideDiscoveryTest {
       log.debug("{}", DCFormatUtil.convertDC2String(dc));
     }
     // 计算冲突个数
-    Set<DCViolation> vios = new HydraDetector(dirtyDataPath, universalDCsPath, headerPath).detect()
+    Set<DCViolation> vios = new HydraDetector(dirtyDataPath, fullDCsPath, headerPath).detect()
         .getViosSet();
     Map<DenialConstraint, Set<DCViolation>> dcViosMap = Maps.newHashMap();
     for (DCViolation vio : vios) {
@@ -697,7 +643,7 @@ public class UGuideDiscoveryTest {
   public void testRepairingDirty()
       throws IOException, InputGenerationException, InputIterationException {
     // 修复前检测
-    List<DenialConstraint> dcsWithoutData = DCLoader.load(headerPath, universalDCsPath);
+    List<DenialConstraint> dcsWithoutData = DCLoader.load(headerPath, fullDCsPath);
     HydraDetector detector = new HydraDetector(dirtyDataPath, new HashSet<>(dcsWithoutData));
     detectUsingHydraDetector(detector);
 
@@ -726,7 +672,7 @@ public class UGuideDiscoveryTest {
    */
   @Test
   public void testDC2String() {
-    List<DenialConstraint> dcs = DCLoader.load(headerPath, universalDCsPath);
+    List<DenialConstraint> dcs = DCLoader.load(headerPath, fullDCsPath);
     for (DenialConstraint dc : dcs) {
       log.debug("{}", DCFormatUtil.convertDC2String(dc));
     }

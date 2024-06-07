@@ -4,7 +4,7 @@ import static edu.fudan.conf.DefaultConf.defaultErrorThreshold;
 import static edu.fudan.conf.DefaultConf.maxCellQuestionBudget;
 import static edu.fudan.conf.DefaultConf.maxDCQuestionBudget;
 import static edu.fudan.conf.DefaultConf.maxDiscoveryRound;
-import static edu.fudan.conf.DefaultConf.maxInCluster;
+import static edu.fudan.conf.DefaultConf.numInCluster;
 import static edu.fudan.conf.DefaultConf.maxTupleQuestionBudget;
 import static edu.fudan.conf.DefaultConf.questionsConf;
 import static edu.fudan.conf.DefaultConf.topK;
@@ -13,7 +13,6 @@ import static edu.fudan.conf.DefaultConf.topKOfCluster;
 import edu.fudan.algorithms.uguide.Evaluation.EvalResult;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 public class CSVWriter {
@@ -26,7 +25,7 @@ public class CSVWriter {
       String confStr = String.format(
           "topK=%s\nmaxDiscoveryRound=%s\nmaxCellQuestionBudget=%s\nmaxTupleQuestionBudget=%s\nmaxDCQuestionBudget=%s\ntopKOfCluster=%s\nmaxInCluster=%s\ndefaultErrorThreshold=%s\nquestionsConf=[%s;%s;%s]\n",
           topK, maxDiscoveryRound, maxCellQuestionBudget, maxTupleQuestionBudget,
-          maxDCQuestionBudget, topKOfCluster, maxInCluster, defaultErrorThreshold,
+          maxDCQuestionBudget, topKOfCluster, numInCluster, defaultErrorThreshold,
           questionsConf[0], questionsConf[1], questionsConf[2]);
       String header = "Round,TrueVios,CandiVios,GTVios,TrueDCs,CandiDCs,GTDCs,CellsOfTrueVios,CellsOfTrueViosAndChanges,CellsOfChanges,CellQuestions,TupleQuestions,DCQuestions,excludedLines,excludedLinesOfCellQ,excludedLinesOfTupleQ,excludedLinesOfDCsQ,errorLinesInSample,errorLinesInSampleAndExcluded\n";
       writer.append(confStr);

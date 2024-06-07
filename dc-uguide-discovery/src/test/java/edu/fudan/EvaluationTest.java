@@ -1,10 +1,5 @@
 package edu.fudan;
 
-import static edu.fudan.UGuideDiscoveryTest.dirtyDataPath;
-import static edu.fudan.UGuideDiscoveryTest.groundTruthDCsPath;
-import static edu.fudan.UGuideDiscoveryTest.headerPath;
-import static edu.fudan.UGuideDiscoveryTest.trueDCsPath;
-
 import ch.javasoft.bitset.search.NTreeSearch;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -15,12 +10,16 @@ import edu.fudan.algorithms.DCLoader;
 import edu.fudan.algorithms.DCViolation;
 import edu.fudan.algorithms.HydraDetector;
 import edu.fudan.transformat.DCFormatUtil;
+import edu.fudan.utils.UGDParams;
+import edu.fudan.utils.UGDRunner;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
 
 /**
  * Evaluate the precision, recall and f-measure of the algorithm
@@ -29,13 +28,49 @@ import org.junit.Test;
  */
 @Slf4j
 public class EvaluationTest {
+  private static int dsIndex = 0;
+  private static String headerPath;
+  private static String cleanDataPath;
+  private static String dirtyDataPath;
+  private static String changesPath;
+  private static String excludedLinesPath;
+  private static String sampledDataPath;
+  private static String fullDCsPath;
+  private static String dcsPathForDCMiner;
+  private static String evidencesPath;
+  private static String topKDCsPath;
+  private static String groundTruthDCsPath;
+  private static String candidateDCsPath;
+  private static String candidateTrueDCsPath;
+  private static String excludedDCsPath;
+  private static String csvResultPath;
+
+  @Before
+  public void setUp() throws Exception {
+    UGDParams params = UGDRunner.buildParams(dsIndex);
+    headerPath = params.headerPath;
+    cleanDataPath = params.cleanDataPath;
+    dirtyDataPath = params.dirtyDataPath;
+    changesPath = params.changesPath;
+    excludedLinesPath = params.excludedLinesPath;
+    sampledDataPath = params.sampledDataPath;
+    fullDCsPath = params.fullDCsPath;
+    dcsPathForDCMiner = params.dcsPathForDCMiner;
+    evidencesPath = params.evidencesPath;
+    topKDCsPath = params.topKDCsPath;
+    groundTruthDCsPath = params.groundTruthDCsPath;
+    candidateDCsPath = params.candidateDCsPath;
+    candidateTrueDCsPath = params.candidateTrueDCsPath;
+    excludedDCsPath = params.excludedDCsPath;
+    csvResultPath = params.csvResultPath;
+  }
 
   /**
    * Evaluation of the discovered DCs wrt. ground truth DCs
    */
   @Test
   public void testEvaluationDiscoveredDCsAgainstGroundTruthDCs() {
-    List<DenialConstraint> discoveredDCs = DCLoader.load(headerPath, trueDCsPath);
+    List<DenialConstraint> discoveredDCs = DCLoader.load(headerPath, candidateTrueDCsPath);
     List<DenialConstraint> gtDCs = DCLoader.load(headerPath, groundTruthDCsPath);
     Set<DCViolation> vGT =
         new HydraDetector(dirtyDataPath, new HashSet<>(gtDCs)).detect()

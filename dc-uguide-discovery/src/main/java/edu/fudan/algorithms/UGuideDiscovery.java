@@ -1,17 +1,5 @@
 package edu.fudan.algorithms;
 
-import static edu.fudan.conf.DefaultConf.dcGeneratorConf;
-import static edu.fudan.conf.DefaultConf.maxCellQuestionBudget;
-import static edu.fudan.conf.DefaultConf.maxDCQuestionBudget;
-import static edu.fudan.conf.DefaultConf.maxDiscoveryRound;
-import static edu.fudan.conf.DefaultConf.maxInCluster;
-import static edu.fudan.conf.DefaultConf.maxTupleQuestionBudget;
-import static edu.fudan.conf.DefaultConf.questionsConf;
-import static edu.fudan.conf.DefaultConf.topK;
-import static edu.fudan.conf.DefaultConf.topKOfCluster;
-import static edu.fudan.utils.FileUtil.generateNewCopy;
-import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
-
 import com.google.common.collect.Lists;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.input.Input;
@@ -19,32 +7,24 @@ import de.hpi.naumann.dc.paritions.LinePair;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
 import edu.fudan.algorithms.TupleSampler.SampleResult;
-import edu.fudan.algorithms.uguide.CandidateDCs;
-import edu.fudan.algorithms.uguide.CellQuestion;
-import edu.fudan.algorithms.uguide.CellQuestionResult;
-import edu.fudan.algorithms.uguide.CellQuestionV2;
-import edu.fudan.algorithms.uguide.CleanDS;
-import edu.fudan.algorithms.uguide.DirtyDS;
-import edu.fudan.algorithms.uguide.Evaluation;
+import edu.fudan.algorithms.uguide.*;
 import edu.fudan.algorithms.uguide.Evaluation.EvalResult;
-import edu.fudan.algorithms.uguide.SampleDS;
-import edu.fudan.algorithms.uguide.TCell;
 import edu.fudan.transformat.DCFormatUtil;
 import edu.fudan.utils.CSVWriter;
 import edu.fudan.utils.DCUtil;
 import edu.fudan.utils.FileUtil;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
+
+import static edu.fudan.conf.DefaultConf.*;
+import static edu.fudan.utils.FileUtil.generateNewCopy;
+import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
 
 /**
  * @author Lingfeng
@@ -345,8 +325,9 @@ public class UGuideDiscovery {
     log.info("====== 2.Sample from dirty data ======");
 
     SampleResult sampleResult = new TupleSampler()
-        .sample(new File(dirtyDS.getDataPath()), topKOfCluster, maxInCluster,
-            null, true, excludedLines, falseDCLinePairMap);
+        .sample(new File(dirtyDS.getDataPath()), topKOfCluster, numInCluster,
+            null, true, excludedLines, falseDCLinePairMap,
+            addCounterExampleS, randomClusterS);
     String samplePath = sampleDS.getDataPath();
     log.debug("Write to file: {}", samplePath);
     FileUtil.writeListLinesToFile(sampleResult.getLinesWithHeader(), new File(samplePath));

@@ -5,9 +5,11 @@ import de.metanome.algorithm_integration.input.InputIterationException;
 import edu.fudan.algorithms.TupleSampler;
 import edu.fudan.algorithms.TupleSampler.SampleResult;
 import edu.fudan.utils.FileUtil;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
@@ -34,7 +36,7 @@ public class SamplerTest {
 //    HashSet<Integer> skippedColumns = new HashSet<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15));
     HashSet<Integer> skippedColumns = new HashSet<>();
     SampleResult sampled = new TupleSampler().sample(dataF, topKOfCluster, maxInCluster, skippedColumns, true, null,
-        null);
+        null, false, false);
     // Write to file
     log.debug("Write to file: {}", sampledDataFile);
     FileUtil.writeListLinesToFile(sampled.getLinesWithHeader(), sampledF);

@@ -39,3 +39,4 @@ build/
 ### my ###
 **/logs/
 /libs/
+/dc-uguide-discovery/data/

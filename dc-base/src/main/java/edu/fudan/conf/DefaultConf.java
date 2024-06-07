@@ -15,13 +15,34 @@ public class DefaultConf {
   public static int maxTupleQuestionBudget = 100;
   public static int maxDCQuestionBudget = 5;
   // Sample
+  /**
+   * Min top-k clusters. 2 ensure > and < exist.
+   */
+  public static int minTopK = 2;
+  /**
+   * Min number in cluster. 2 ensure = exists.
+   */
+  public static int minNum = 2;
+  /**
+   * Top-k clusters. Default is 5.
+   */
   public static int topKOfCluster = 5;
-  public static int maxInCluster = 3;
+  /**
+   * Number in cluster. Default is 3.
+   */
+  public static int numInCluster = 3;
+  /**
+   * If we use add-counter-example-sample, add at least 1 counter-example tuple pair (w.r.t the false DC and not in the excluded tuples) to sampled result.
+   */
+  public static boolean addCounterExampleS = true;
+  /**
+   * If we use random-cluster-sample, random sample clusters.
+   */
+  public static boolean randomClusterS = false;
   // ADC
   public static double defaultErrorThreshold = 0.001;
-//  public static double defaultErrorThreshold = 0;
+  //  public static double defaultErrorThreshold = 0;
   public static boolean dynamicG1 = true;
-  public static boolean optimizeWithCounter = true;
   // CellQ TupleQ DCsQ
   public static Integer[] questionsConf = new Integer[]{1, 1, 1};
   public static boolean debugDCVioMap = false;
