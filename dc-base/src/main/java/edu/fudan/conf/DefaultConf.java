@@ -7,6 +7,9 @@ public class DefaultConf {
 
   public static Boolean noCrossColumn = Boolean.TRUE;
   public static double minimumSharedValue = 0.30d;
+  /**
+   * Top-k DCs discovered. Set k = Integer.MAX_VALUE if we want all discovered DCs.
+   */
   public static int topK = 5;
   public static String defaultTable = "xxx";
   // Loop

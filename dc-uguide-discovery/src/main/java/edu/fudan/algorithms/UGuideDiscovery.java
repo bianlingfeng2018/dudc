@@ -300,8 +300,9 @@ public class UGuideDiscovery {
   private void discoveryDCs() {
     log.info("====== 3.Discovery DCs from sample ======");
     log.info("DCGeneratorConf: {}", dcGeneratorConf);
-    DCGenerator generator = getGenerator(dcGeneratorConf);
-    Set<DenialConstraint> dcs = generator.generateDCsForUser();
+    int topK = 5;
+    DCGenerator generator = getGenerator(dcGeneratorConf, topK);
+    Set<DenialConstraint> dcs = generator.generateDCs();
 
     if (dcs.size() != topK) {
 //      throw new RuntimeException(String.format("Discovery DCs size is not %s: %s",
@@ -354,17 +355,15 @@ public class UGuideDiscovery {
     evaluation.updateChangesByExcludedLines();
   }
 
-  private DCGenerator getGenerator(String dcGenerator) {
+  private DCGenerator getGenerator(String dcGenerator, int topK) {
     if (dcGenerator.equals("Basic")) {
       BasicDCGenerator generator = new BasicDCGenerator(sampleDS.getDataPath(),
-          candidateDCs.getDcsPathForFCDC(), sampleDS.getHeaderPath());
-      generator.setExcludeDCs(evaluation.getVisitedDCs());
-      // 设定近似阈值
-      generator.setErrorThreshold(evaluation.getErrorThreshold());
+          candidateDCs.getFullDCsPath(), sampleDS.getHeaderPath(),
+          evaluation.getVisitedDCs(), evaluation.getErrorThreshold(), topK);
       return generator;
     } else if (dcGenerator.equals("DCMiner")) {
       RLDCGenerator generator = new RLDCGenerator(sampleDS.getDataPath(),
-          candidateDCs.getEvidencesPathForFCDC(),
+          candidateDCs.getEvidencesPath(),
           candidateDCs.getDcsPathForDCMiner(),
           sampleDS.getHeaderPath());
       generator.setExcludeDCs(evaluation.getVisitedDCs());

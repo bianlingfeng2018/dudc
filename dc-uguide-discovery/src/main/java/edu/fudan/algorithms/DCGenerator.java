@@ -9,9 +9,9 @@ import java.util.Set;
 interface DCGenerator {
 
   /**
-   * Generate DCs to be refined by asking user questions.
+   * Generate DCs to ask user DC questions.
    * @return Generated DCs
    */
-  Set<DenialConstraint> generateDCsForUser();
+  Set<DenialConstraint> generateDCs();
 
 }

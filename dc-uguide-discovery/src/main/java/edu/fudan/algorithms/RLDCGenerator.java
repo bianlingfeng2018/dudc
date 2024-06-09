@@ -17,7 +17,7 @@ import lombok.Setter;
 public class RLDCGenerator implements DCGenerator {
 
   private final String inputDataPath;
-  private final String evidencesPathForFCDC;
+  private final String evidencesPath;
   private final String dcsPathForDCMiner;
   private final String headerPath;
   @Setter
@@ -25,21 +25,21 @@ public class RLDCGenerator implements DCGenerator {
   @Setter
   private double errorThreshold = 0.0;
 
-  public RLDCGenerator(String inputDataPath, String evidencesPathForFCDC, String dcsPathForDCMiner,
+  public RLDCGenerator(String inputDataPath, String evidencesPath, String dcsPathForDCMiner,
       String headerPath) {
     this.inputDataPath = inputDataPath;
-    this.evidencesPathForFCDC = evidencesPathForFCDC;
+    this.evidencesPath = evidencesPath;
     this.dcsPathForDCMiner = dcsPathForDCMiner;
     this.headerPath = headerPath;
   }
 
   @Override
-  public Set<DenialConstraint> generateDCsForUser() {
+  public Set<DenialConstraint> generateDCs() {
     try {
       // TODO: java调用python，训练模型并预测得到top-k规则
       // 先用DCFinder生成证据集，这里errorThreshold并不起什么作用
       DiscoveryEntry.discoveryDCsDCFinder(inputDataPath, -1,
-          evidencesPathForFCDC);
+          evidencesPath);
       // 再用DCMiner训练+预测
       String[] args4Train = (sharedArgs + " " + trainArgs).split(" ");
       String[] args4Predict = (sharedArgs + " " + predictArgs).split(" ");

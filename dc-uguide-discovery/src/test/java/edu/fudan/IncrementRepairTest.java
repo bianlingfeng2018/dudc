@@ -28,10 +28,9 @@ public class IncrementRepairTest {
   public void testDiscoveryDCsUsingBasicGenerator() {
 //    String dataPath = "D:\\MyFile\\IdeaProjects\\incr\\source\\preprocessed_stock_origin.csv";  // BART用的干净数据
 //    String dataPath = "D:\\paper\\denial_constraint_incremental_repair\\experiment\\2024\\software\\source\\Tax_small.csv";  // Tax的干净数据
-    BasicDCGenerator generator = new BasicDCGenerator(dataPath, dcTransPath, headerPath);
-    generator.setExcludeDCs(new HashSet<>());
-    generator.setErrorThreshold(0.0);
-    Set<DenialConstraint> dcs = generator.generateDCsForUser();
+    int topK = 5;
+    BasicDCGenerator generator = new BasicDCGenerator(dataPath, dcTransPath, headerPath, new HashSet<>(), 0.0, topK);
+    Set<DenialConstraint> dcs = generator.generateDCs();
     log.info("DCs size={}", dcs.size());
   }
 

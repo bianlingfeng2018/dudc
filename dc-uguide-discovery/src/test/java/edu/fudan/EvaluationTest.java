@@ -28,22 +28,22 @@ import java.util.Set;
  */
 @Slf4j
 public class EvaluationTest {
-  private static int dsIndex = 0;
-  private static String headerPath;
-  private static String cleanDataPath;
-  private static String dirtyDataPath;
-  private static String changesPath;
-  private static String excludedLinesPath;
-  private static String sampledDataPath;
-  private static String fullDCsPath;
-  private static String dcsPathForDCMiner;
-  private static String evidencesPath;
-  private static String topKDCsPath;
-  private static String groundTruthDCsPath;
-  private static String candidateDCsPath;
-  private static String candidateTrueDCsPath;
-  private static String excludedDCsPath;
-  private static String csvResultPath;
+  private int dsIndex = 0;
+  private String headerPath;
+  private String cleanDataPath;
+  private String dirtyDataPath;
+  private String changesPath;
+  private String excludedLinesPath;
+  private String sampledDataPath;
+  private String fullDCsPath;
+  private String dcsPathForDCMiner;
+  private String evidencesPath;
+  private String topKDCsPath;
+  private String groundTruthDCsPath;
+  private String candidateDCsPath;
+  private String candidateTrueDCsPath;
+  private String excludedDCsPath;
+  private String csvResultPath;
 
   @Before
   public void setUp() throws Exception {

@@ -8,15 +8,15 @@ import lombok.Getter;
 @Getter
 public class CandidateDCs {
 
-  private final String dcsPathForFCDC;
+  private final String fullDCsPath;
   private final String dcsPathForDCMiner;
-  private final String evidencesPathForFCDC;
+  private final String evidencesPath;
   private final String topKDCsPath;
 
-  public CandidateDCs(String dcsPathForFCDC, String dcsPathForDCMiner, String evidencesPathForFCDC, String topKDCsPath) {
-    this.dcsPathForFCDC = dcsPathForFCDC;
+  public CandidateDCs(String fullDCsPath, String dcsPathForDCMiner, String evidencesPath, String topKDCsPath) {
+    this.fullDCsPath = fullDCsPath;
     this.dcsPathForDCMiner = dcsPathForDCMiner;
-    this.evidencesPathForFCDC = evidencesPathForFCDC;
+    this.evidencesPath = evidencesPath;
     this.topKDCsPath = topKDCsPath;
   }
 }

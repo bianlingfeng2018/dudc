@@ -51,24 +51,24 @@ import static org.mockito.Mockito.mock;
 @Slf4j
 public class UGuideDiscoveryTest {
 
-  private static String correlationByUserPath = "D:\\MyFile\\gitee\\dc_miner\\data\\preprocessed_data\\correlation_matrix\\model_ltr_eval_hospital.csv";
+  private String correlationByUserPath = "D:\\MyFile\\gitee\\dc_miner\\data\\preprocessed_data\\correlation_matrix\\model_ltr_eval_hospital.csv";
 
-  private static int dsIndex = 0;
-  private static String headerPath;
-  private static String cleanDataPath;
-  private static String dirtyDataPath;
-  private static String changesPath;
-  private static String excludedLinesPath;
-  private static String sampledDataPath;
-  private static String fullDCsPath;
-  private static String dcsPathForDCMiner;
-  private static String evidencesPath;
-  private static String topKDCsPath;
-  private static String groundTruthDCsPath;
-  private static String candidateDCsPath;
-  private static String candidateTrueDCsPath;
-  private static String excludedDCsPath;
-  private static String csvResultPath;
+  private int dsIndex = 0;
+  private String headerPath;
+  private String cleanDataPath;
+  private String dirtyDataPath;
+  private String changesPath;
+  private String excludedLinesPath;
+  private String sampledDataPath;
+  private String fullDCsPath;
+  private String dcsPathForDCMiner;
+  private String evidencesPath;
+  private String topKDCsPath;
+  private String groundTruthDCsPath;
+  private String candidateDCsPath;
+  private String candidateTrueDCsPath;
+  private String excludedDCsPath;
+  private String csvResultPath;
 
   @Before
   public void setUp() throws Exception {
@@ -167,30 +167,6 @@ public class UGuideDiscoveryTest {
   }
 
   /**
-   * Discover dc using basicGenerator, which save all dcs to file and gen top-k dcs from that file
-   */
-  @Test
-  public void testDiscoveryDCsUsingBasicGenerator() {
-    BasicDCGenerator generator = new BasicDCGenerator(cleanDataPath, fullDCsPath, headerPath);
-    generator.setExcludeDCs(new HashSet<>());
-    generator.setErrorThreshold(0.0);
-    Set<DenialConstraint> dcs = generator.generateDCsForUser();
-    log.info("DCs size={}", dcs.size());
-  }
-
-  /**
-   * Discover approximate dc using basicGenerator
-   */
-  @Test
-  public void testDiscoveryADCsUsingBasicGenerator() {
-    BasicDCGenerator generator = new BasicDCGenerator(dirtyDataPath, fullDCsPath, headerPath);
-    generator.setExcludeDCs(new HashSet<>());
-    generator.setErrorThreshold(0.001);
-    Set<DenialConstraint> dcs = generator.generateDCsForUser();
-    log.info("DCs size={}", dcs.size());
-  }
-
-  /**
    * Generate top-k dcs from file which contains all dcs
    */
   @Test
@@ -255,7 +231,7 @@ public class UGuideDiscoveryTest {
   @Test
   public void testDetectDCViolationUsingHydra() {
     HydraDetector detector = new HydraDetector(dirtyDataPath, candidateTrueDCsPath, headerPath);
-    detectUsingHydraDetector(detector);
+    detectUsingHydraDetector(detector, changesPath, dirtyDataPath);
   }
 
   /**
@@ -395,7 +371,7 @@ public class UGuideDiscoveryTest {
         dcsPathForDCMiner, headerPath);
     generator.setExcludeDCs(new HashSet<>(excludeDCs));
 //    generator.setErrorThreshold(0.001);
-    Set<DenialConstraint> dcs = generator.generateDCsForUser();
+    Set<DenialConstraint> dcs = generator.generateDCs();
     log.info("DCMiner DCs size={}", dcs.size());
     for (DenialConstraint dc : dcs) {
       log.debug(DCFormatUtil.convertDC2String(dc));
@@ -645,7 +621,7 @@ public class UGuideDiscoveryTest {
     // 修复前检测
     List<DenialConstraint> dcsWithoutData = DCLoader.load(headerPath, fullDCsPath);
     HydraDetector detector = new HydraDetector(dirtyDataPath, new HashSet<>(dcsWithoutData));
-    detectUsingHydraDetector(detector);
+    detectUsingHydraDetector(detector, changesPath, dirtyDataPath);
 
     // 修复脏数据指定的行（例如所有有错误的行）
     String dataPath = dirtyDataPath;
@@ -664,7 +640,7 @@ public class UGuideDiscoveryTest {
     FileUtil.writeListLinesToFile(repairedLinesWithHeader, dataFile);
 
     // 修复后检测
-    detectUsingHydraDetector(detector);
+    detectUsingHydraDetector(detector, changesPath, dirtyDataPath);
   }
 
   /**
@@ -731,7 +707,8 @@ public class UGuideDiscoveryTest {
     return per;
   }
 
-  private static void detectUsingHydraDetector(HydraDetector detector) {
+  private static void detectUsingHydraDetector(HydraDetector detector, String changesPath,
+      String dirtyDataPath) {
     DCViolationSet violationSet = detector.detect();
     log.info("ViolationSet={}", violationSet.size());
 

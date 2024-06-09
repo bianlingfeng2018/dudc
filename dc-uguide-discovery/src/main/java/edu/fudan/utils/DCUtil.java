@@ -1,6 +1,5 @@
 package edu.fudan.utils;
 
-import static edu.fudan.conf.DefaultConf.topK;
 import static edu.fudan.transformat.DCFormatUtil.extractColumnNameType;
 import static edu.fudan.transformat.DCFormatUtil.isLegalIndex4DCString;
 
@@ -57,11 +56,12 @@ public class DCUtil {
       String headerPath, Set<DenialConstraint> excludedDCs) {
     List<DenialConstraint> dcList = DCLoader.load(headerPath, inputDCsPath, excludedDCs);
     int excludeSize = excludedDCs == null ? 0 : excludedDCs.size();
-    log.debug("Read dcs size = {}, excluded(visited) dcs size = {}", dcList.size(), excludeSize);
     dcList.sort((o1, o2) -> {
       return Integer.compare(o1.getPredicateCount(), o2.getPredicateCount());
     });
     List<DenialConstraint> topKDCs = dcList.subList(0, Math.min(topK, dcList.size()));
+    log.debug("Read dcs size = {}, excluded(visited) dcs size = {}, return topK dcs size = {}",
+        dcList.size(), excludeSize, topKDCs.size());
     return topKDCs;
   }
 
@@ -77,7 +77,7 @@ public class DCUtil {
       String s = DCFormatUtil.convertDC2String(dc);
       result.add(s);
     }
-    log.debug("Write top-{} DCs to file: {}", topK, topKDCsPath);
+    log.debug("Write top-{} DCs to file: {}", result.size(), topKDCsPath);
     FileUtil.writeStringLinesToFile(result, new File(topKDCsPath));
   }
 
@@ -204,7 +204,8 @@ public class DCUtil {
    * @param linePair
    * @return
    */
-  public static Set<TCell> getCellsOfViolation(Input di, DenialConstraint dcNoData, LinePair linePair) {
+  public static Set<TCell> getCellsOfViolation(Input di, DenialConstraint dcNoData,
+      LinePair linePair) {
     Set<TCell> cellsOfViolation = Sets.newHashSet();
     int line1 = linePair.getLine1();
     int line2 = linePair.getLine2();
