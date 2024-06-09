@@ -41,33 +41,15 @@ import org.slf4j.LoggerFactory;
 
 public class HydraDetector {
 
-  private String dataPath;
-  private Set<DenialConstraint> dcsNoData;
-  private Boolean noCrossColumn = Boolean.TRUE;
-  private double minimumSharedValue = 0.30d;
+  private final String dataPath;
+  private final Set<DenialConstraint> dcsNoData;
+  private final Boolean noCrossColumn = Boolean.TRUE;
+  private final double minimumSharedValue = 0.30d;
   /**
    * 采样次数
    * TODO: 当数据集很小时，如果报错，可以将 sampleRounds 设为 1
    */
   protected int sampleRounds = 20;
-
-  private static BiFunction<AtomicLongMap<PartitionRefiner>,
-      Function<PartitionRefiner, Integer>, Comparator<PartitionRefiner>> resultSorter = (
-      selectivityCount, counts) -> (r2, r1) -> {
-
-    long s1 = selectivityCount.get(r1);
-    long s2 = selectivityCount.get(r2);
-
-    return Double.compare(1.0d * counts.apply(r1).intValue() / s1,
-        1.0d * counts.apply(r2).intValue() / s2);
-
-  };
-
-  private static BiFunction<Multiset<PredicatePair>,
-      AtomicLongMap<PartitionRefiner>, Function<PredicatePair, Double>> pairWeight = (
-      paircountDC, selectivityCount) -> (pair) -> {
-    return Double.valueOf(1.0d * selectivityCount.get(pair) / paircountDC.count(pair));
-  };
 
   public HydraDetector(String dataPath, String dcsPath, String headerPath) {
     this.dataPath = dataPath;
@@ -86,7 +68,7 @@ public class HydraDetector {
 
     IEvidenceSet sampleEvidence =
         new SystematicLinearEvidenceSetBuilder(predicates, sampleRounds).buildEvidenceSet(input);
-    log.debug("Checking " + set.size() + " DCs.");
+    log.debug("Checking {} DCs.", set.size());
     log.debug("Input size {}", input.getLineCount());
 
 //    log.debug("Building selectivity estimation");
@@ -164,6 +146,23 @@ public class HydraDetector {
     return violationSet;
   }
 
+  private static BiFunction<AtomicLongMap<PartitionRefiner>,
+      Function<PartitionRefiner, Integer>, Comparator<PartitionRefiner>> resultSorter = (
+      selectivityCount, counts) -> (r2, r1) -> {
+
+    long s1 = selectivityCount.get(r1);
+    long s2 = selectivityCount.get(r2);
+
+    return Double.compare(1.0d * counts.apply(r1).intValue() / s1,
+        1.0d * counts.apply(r2).intValue() / s2);
+
+  };
+
+  private static BiFunction<Multiset<PredicatePair>,
+      AtomicLongMap<PartitionRefiner>, Function<PredicatePair, Double>> pairWeight = (
+      paircountDC, selectivityCount) -> (pair) -> {
+    return Double.valueOf(1.0d * selectivityCount.get(pair) / paircountDC.count(pair));
+  };
 
   private int[] getRefinerPriorities(AtomicLongMap<PartitionRefiner> selectivityCount,
       IndexProvider<PartitionRefiner> indexProvider,

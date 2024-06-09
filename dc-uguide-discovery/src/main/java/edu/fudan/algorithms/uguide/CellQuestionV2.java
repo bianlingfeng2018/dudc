@@ -131,10 +131,12 @@ public class CellQuestionV2 implements CellQuestion {
       }
       // TODO: 作为对比算法，我们发现，由于dirtyCell太少了，所有即便每次选取关联的DC平均置信度最低的cell的，也大概率选的是cleanCell
       //  此时对置信度其实并无贡献，只有发现dirtyCell了，才对置信度有贡献。
-      // 选择cell
-      TCell selCell = randomChoose ? randomChooseCell(cellsList) :  // 随机选择cell
-          chooseCell(cellsList, cellDCsMap, dcWeightMap, pendingCells, falseDCs, chosenFromCellList,
-              chosenFromPendingList);  // 根据置信度选择cell
+      // 选择cell:
+      // 1.随机选择cell
+      // 2.根据置信度选择cell
+      TCell selCell = randomChoose ? randomChooseCell(cellsList)
+          : chooseCell(cellsList, cellDCsMap, dcWeightMap, pendingCells, falseDCs,
+              chosenFromCellList, chosenFromPendingList);
       selectedCells.add(selCell);
 //      log.debug("SelectedCell = {}", selectedCell.toString());
 
@@ -143,6 +145,7 @@ public class CellQuestionV2 implements CellQuestion {
       Set<DCViolation> viosOfSelectedCell = cellViosMap.get(selCell);
       Set<TCell> allCellsOfVios = getAllCellsOfVios(viosOfSelectedCell, vioCellsMap);
       // 判断选择的cell
+      // Simulate checking if a cell is erroneous!!!
       if (cellsOfChanges.contains(selCell)) {
         // 真错误
         dirtyCells.add(selCell);

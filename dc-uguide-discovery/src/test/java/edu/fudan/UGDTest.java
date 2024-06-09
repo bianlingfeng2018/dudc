@@ -1,5 +1,16 @@
 package edu.fudan;
 
+import static edu.fudan.conf.DefaultConf.canBreakEarly;
+import static edu.fudan.conf.DefaultConf.delta;
+import static edu.fudan.conf.DefaultConf.excludeLinePercent;
+import static edu.fudan.conf.DefaultConf.numInCluster;
+import static edu.fudan.conf.DefaultConf.topKOfCluster;
+import static edu.fudan.utils.DCUtil.getCellsOfChanges;
+import static edu.fudan.utils.DCUtil.getErrorLinesContainingChanges;
+import static edu.fudan.utils.DCUtil.loadChanges;
+import static edu.fudan.utils.DCUtil.printDCVioMap;
+import static edu.fudan.utils.FileUtil.generateNewCopy;
+
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.input.Input;
 import de.metanome.algorithm_integration.input.InputGenerationException;
@@ -15,34 +26,20 @@ import edu.fudan.algorithms.uguide.CellQuestionResult;
 import edu.fudan.algorithms.uguide.CellQuestionV2;
 import edu.fudan.algorithms.uguide.TCell;
 import edu.fudan.algorithms.uguide.TChange;
-import edu.fudan.transformat.DCFormatUtil;
 import edu.fudan.utils.DCUtil;
 import edu.fudan.utils.FileUtil;
 import edu.fudan.utils.UGDParams;
 import edu.fudan.utils.UGDRunner;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static edu.fudan.conf.DefaultConf.maxCellQuestionBudget;
-import static edu.fudan.conf.DefaultConf.numInCluster;
-import static edu.fudan.conf.DefaultConf.randomCellQ;
-import static edu.fudan.conf.DefaultConf.topKOfCluster;
-import static edu.fudan.utils.DCUtil.getCellsOfChanges;
-import static edu.fudan.utils.DCUtil.getErrorLinesContainingChanges;
-import static edu.fudan.utils.DCUtil.loadChanges;
-import static edu.fudan.utils.DCUtil.printDCVioMap;
-import static edu.fudan.utils.FileUtil.generateNewCopy;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.Before;
+import org.junit.Test;
 
 @Slf4j
 public class UGDTest {
@@ -114,12 +111,11 @@ public class UGDTest {
    */
   @Test
   public void testDetectViolations() {
-    HydraDetector detector = new HydraDetector(params.dirtyDataPath, params.topKDCsPath,
-        params.headerPath);
-    DCViolationSet violationSet = detector.detect();
-    log.debug("DCViolationSet={}", violationSet.size());
+    DCViolationSet vios = new HydraDetector(params.dirtyDataPath, params.topKDCsPath,
+        params.headerPath).detect();
+    log.debug("Vios size={}", vios.size());
 
-    printDCVioMap(violationSet);
+    printDCVioMap(vios);
   }
 
 
@@ -128,24 +124,23 @@ public class UGDTest {
    */
   @Test
   public void testCellQuestion() {
-    // TODO: 目前发现一个BART的大bug，注入错误后，输出的dirty版本数据单引号变成两个单引号'->''
-    int budget = 1000;
+    // TODO: 目前发现一个BART的BUG:
+    //  注入错误后，输出的xxx_dirty.csv中单引号(')变成两个单引号('')，如果出现这种情况，需要手动替换一下。
     boolean randomChoose = true;
-    double delta = 0.1;
-    boolean canBreakEarly = false;
-    double excludeLinePercent = 0.1;
+    int budget = 1000;
     Set<DCViolation> vios = new HydraDetector(params.dirtyDataPath, params.topKDCsPath,
         params.headerPath).detect().getViosSet();
     Input di = generateNewCopy(params.dirtyDataPath);
     Set<TCell> cellsOfChanges = getCellsOfChanges(loadChanges(params.changesPath));
     List<DenialConstraint> dcs = DCLoader.load(params.headerPath, params.topKDCsPath);
     log.debug("DCs={}, Violations={}, CellsOfChanges={}, CellQBudgets={}", dcs.size(), vios.size(),
-        cellsOfChanges.size(), maxCellQuestionBudget);
+        cellsOfChanges.size(), budget);
+
     CellQuestion selector = new CellQuestionV2(di, cellsOfChanges, new HashSet<>(dcs), vios, budget,
         delta, canBreakEarly, randomChoose, excludeLinePercent);
     selector.simulate();
-    CellQuestionResult result = selector.getResult();
 
+    CellQuestionResult result = selector.getResult();
     log.debug(result.toString());
   }
 }

@@ -1,5 +1,22 @@
 package edu.fudan.algorithms;
 
+import static edu.fudan.conf.DefaultConf.addCounterExampleS;
+import static edu.fudan.conf.DefaultConf.canBreakEarly;
+import static edu.fudan.conf.DefaultConf.dcGeneratorConf;
+import static edu.fudan.conf.DefaultConf.delta;
+import static edu.fudan.conf.DefaultConf.excludeLinePercent;
+import static edu.fudan.conf.DefaultConf.maxCellQuestionBudget;
+import static edu.fudan.conf.DefaultConf.maxDCQuestionBudget;
+import static edu.fudan.conf.DefaultConf.maxDiscoveryRound;
+import static edu.fudan.conf.DefaultConf.maxTupleQuestionBudget;
+import static edu.fudan.conf.DefaultConf.numInCluster;
+import static edu.fudan.conf.DefaultConf.questionsConf;
+import static edu.fudan.conf.DefaultConf.randomCellQ;
+import static edu.fudan.conf.DefaultConf.randomClusterS;
+import static edu.fudan.conf.DefaultConf.topKOfCluster;
+import static edu.fudan.utils.FileUtil.generateNewCopy;
+import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
+
 import com.google.common.collect.Lists;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.input.Input;
@@ -7,24 +24,32 @@ import de.hpi.naumann.dc.paritions.LinePair;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
 import edu.fudan.algorithms.TupleSampler.SampleResult;
-import edu.fudan.algorithms.uguide.*;
+import edu.fudan.algorithms.uguide.CandidateDCs;
+import edu.fudan.algorithms.uguide.CellQuestion;
+import edu.fudan.algorithms.uguide.CellQuestionResult;
+import edu.fudan.algorithms.uguide.CellQuestionV2;
+import edu.fudan.algorithms.uguide.CleanDS;
+import edu.fudan.algorithms.uguide.DirtyDS;
+import edu.fudan.algorithms.uguide.Evaluation;
 import edu.fudan.algorithms.uguide.Evaluation.EvalResult;
+import edu.fudan.algorithms.uguide.SampleDS;
+import edu.fudan.algorithms.uguide.TCell;
 import edu.fudan.transformat.DCFormatUtil;
 import edu.fudan.utils.CSVWriter;
 import edu.fudan.utils.DCUtil;
 import edu.fudan.utils.FileUtil;
-import lombok.extern.slf4j.Slf4j;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static edu.fudan.conf.DefaultConf.*;
-import static edu.fudan.utils.FileUtil.generateNewCopy;
-import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Lingfeng
@@ -203,11 +228,6 @@ public class UGuideDiscovery {
 
   private void askCellQuestion() {
     log.info("====== 5.1 Ask CELL question ======");
-    int budget = maxCellQuestionBudget;
-    boolean randomChoose = randomCellQ;
-    double delta = 0.1;
-    boolean canBreakEarly = false;
-    double excludeLinePercent = 0.1;
     // 选择Violation作为问题，判断是否是真冲突(已弃用)
 //    CellQuestion selector = new CellQuestionV1(evaluation);
     // 选择Cell作为问题，判断是否是干净Cell
@@ -215,8 +235,8 @@ public class UGuideDiscovery {
     Set<TCell> cellsOfChanges = evaluation.getCellsOfChanges();
     Set<DenialConstraint> currDCs = evaluation.getCurrDCs();
     Set<DCViolation> currVios = evaluation.getCurrVios();
-    CellQuestion selector = new CellQuestionV2(input, cellsOfChanges, currDCs, currVios, budget,
-        delta, canBreakEarly, randomChoose, excludeLinePercent);
+    CellQuestion selector = new CellQuestionV2(input, cellsOfChanges, currDCs, currVios,
+        maxCellQuestionBudget, delta, canBreakEarly, randomCellQ, excludeLinePercent);
 
     selector.simulate();
     CellQuestionResult result = selector.getResult();

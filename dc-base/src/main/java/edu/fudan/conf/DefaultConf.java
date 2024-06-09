@@ -41,12 +41,18 @@ public class DefaultConf {
   public static double defaultErrorThreshold = 0.001;
   public static boolean dynamicG1 = true;
   // Questions(CellQ TupleQ DCsQ)
+  // CellQ
   public static int maxDiscoveryRound = 50;
   public static int maxCellQuestionBudget = 100;
   public static boolean randomCellQ = false;
+  public static double delta = 0.1;
+  public static boolean canBreakEarly = false;
+  public static double excludeLinePercent = 0.1;
+  // TupleQ
   public static int maxTupleQuestionBudget = 100;
+  // DCsQ
   public static int maxDCQuestionBudget = 5;
-
+  // Other
   public static Integer[] questionsConf = new Integer[]{1, 1, 1};
   public static boolean debugDCVioMap = false;
   // DCMiner
