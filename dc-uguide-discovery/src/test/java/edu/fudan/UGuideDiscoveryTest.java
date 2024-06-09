@@ -93,21 +93,10 @@ public class UGuideDiscoveryTest {
   @Test
   public void testOneRoundUGuide()
       throws InputGenerationException, InputIterationException, IOException, DCMinderToolsException {
-    UGuideDiscovery ud = new UGuideDiscovery(cleanDataPath,
-        changesPath,
-        dirtyDataPath,
-        excludedLinesPath,
-        sampledDataPath,
-        fullDCsPath,
-        dcsPathForDCMiner,
-        evidencesPath,
-        topKDCsPath,
-        groundTruthDCsPath,
-        candidateDCsPath,
-        candidateTrueDCsPath,
-        excludedDCsPath,
-        headerPath,
-        csvResultPath);
+    UGuideDiscovery ud = new UGuideDiscovery(cleanDataPath, changesPath, dirtyDataPath,
+        excludedLinesPath, sampledDataPath, fullDCsPath, dcsPathForDCMiner, evidencesPath,
+        topKDCsPath, groundTruthDCsPath, candidateDCsPath, candidateTrueDCsPath, excludedDCsPath,
+        headerPath, csvResultPath);
     ud.guidedDiscovery();
   }
 
@@ -125,8 +114,7 @@ public class UGuideDiscoveryTest {
   @Test
   public void testDiscoveryDCsUsingDCFinderNoEvidence() throws IOException {
     // 1.当evidenceFile为null，则生成规则集合
-    DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(cleanDataPath,
-        0.0, null);
+    DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(cleanDataPath, 0.0, null);
     log.info("DCs: {}", dcs.size());
   }
 
@@ -138,10 +126,10 @@ public class UGuideDiscoveryTest {
     // 2.当evidenceFile不为null，则生成证据集（作为DCMiner训练模型的输入）
     log.info("cleanDataPath={}", cleanDataPath);
     log.info("evidencesPathForFCDC={}", evidencesPath);
-    DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(cleanDataPath,
-        0.0, evidencesPath);
-    List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint> dcList =
-        getSortedDCs(dcs);
+    DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(cleanDataPath, 0.0,
+        evidencesPath);
+    List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint> dcList = getSortedDCs(
+        dcs);
     log.info("dcList={}", dcList.size());
     log.info("Persist to universalDCsPath={}", fullDCsPath);
     persistDCFinderDCs(dcList, fullDCsPath);
@@ -157,10 +145,10 @@ public class UGuideDiscoveryTest {
     // g1:0.0001 0.001 0.01
     log.info("dirtyDataPath={}", dirtyDataPath);
     log.info("evidencesPathForFCDC={}", evidencesPath);
-    DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(dirtyDataPath,
-        0.001, evidencesPath);
-    List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint> dcList =
-        getSortedDCs(dcs);
+    DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(dirtyDataPath, 0.001,
+        evidencesPath);
+    List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint> dcList = getSortedDCs(
+        dcs);
     log.info("dcList={}", dcList.size());
     log.info("Persist to universalDCsPath={}", fullDCsPath);
     persistDCFinderDCs(dcList, fullDCsPath);
@@ -184,10 +172,9 @@ public class UGuideDiscoveryTest {
     ColumnOperand<?> o1 = mock(ColumnOperand.class);
     ColumnOperand<?> o2 = mock(ColumnOperand.class);
 
-    DenialConstraint dc1 = new DenialConstraint(
-        new Predicate(Operator.GREATER, o1, o2), new Predicate(Operator.LESS, o1, o2));
-    DenialConstraint dc2 = new DenialConstraint(
-        new Predicate(Operator.GREATER, o1, o2));
+    DenialConstraint dc1 = new DenialConstraint(new Predicate(Operator.GREATER, o1, o2),
+        new Predicate(Operator.LESS, o1, o2));
+    DenialConstraint dc2 = new DenialConstraint(new Predicate(Operator.GREATER, o1, o2));
     NTreeSearch tree = new NTreeSearch();
     tree.add(PredicateSetFactory.create(dc2.getPredicateSet()).getBitset());
 
@@ -240,12 +227,12 @@ public class UGuideDiscoveryTest {
   @Test
   public void testDCsViolationsSizeCompare() {
     // TODO: Violation size: tureDcs,candiDCs,gtDCs并无大小关系，因为冲突之间可能有元组对的重合，一对元组可能涉及多个冲突
-    DCViolationSet vioSet1 =
-        new HydraDetector(dirtyDataPath, candidateDCsPath, headerPath).detect();
-    DCViolationSet vioSet2 =
-        new HydraDetector(dirtyDataPath, candidateTrueDCsPath, headerPath).detect();
-    DCViolationSet vioSet3 =
-        new HydraDetector(dirtyDataPath, groundTruthDCsPath, headerPath).detect();
+    DCViolationSet vioSet1 = new HydraDetector(dirtyDataPath, candidateDCsPath,
+        headerPath).detect();
+    DCViolationSet vioSet2 = new HydraDetector(dirtyDataPath, candidateTrueDCsPath,
+        headerPath).detect();
+    DCViolationSet vioSet3 = new HydraDetector(dirtyDataPath, groundTruthDCsPath,
+        headerPath).detect();
     log.info("candi={}, candiTure={}, gt={}", vioSet1.size(), vioSet2.size(), vioSet3.size());
   }
 
@@ -289,31 +276,26 @@ public class UGuideDiscoveryTest {
     log.info("CellsOfChanges: {}, {}", cellsOfChanges.size(), cellsOfChanges.stream().findAny());
 
     // 检测冲突
-    DCViolationSet vioSetOfGroundTruthDCs =
-        new HydraDetector(dirtyDataPath, groundTruthDCsPath, headerPath).detect();
-    DCViolationSet vioSetOfTrueDCs =
-        new HydraDetector(dirtyDataPath, candidateTrueDCsPath, headerPath).detect();
+    DCViolationSet vioSetOfGroundTruthDCs = new HydraDetector(dirtyDataPath, groundTruthDCsPath,
+        headerPath).detect();
+    DCViolationSet vioSetOfTrueDCs = new HydraDetector(dirtyDataPath, candidateTrueDCsPath,
+        headerPath).detect();
     Input di = generateNewCopy(dirtyDataPath);
 
     // 转换成Cell
-    Set<TCell> cellsGroundTruth =
-        getCellsOfViolations(vioSetOfGroundTruthDCs.getViosSet(), di);
-    Set<TCell> cellsTrue =
-        getCellsOfViolations(vioSetOfTrueDCs.getViosSet(), di);
+    Set<TCell> cellsGroundTruth = getCellsOfViolations(vioSetOfGroundTruthDCs.getViosSet(), di);
+    Set<TCell> cellsTrue = getCellsOfViolations(vioSetOfTrueDCs.getViosSet(), di);
     log.info("CellsGroundTruth: {}, {}", cellsGroundTruth.size(),
         cellsGroundTruth.stream().findAny());
-    log.info("CellsTrue: {}, {}", cellsTrue.size(),
-        cellsTrue.stream().findAny());
+    log.info("CellsTrue: {}, {}", cellsTrue.size(), cellsTrue.stream().findAny());
 
     // 所有错误都能被发现
     assertTrue(cellsGroundTruth.containsAll(cellsOfChanges));
     assertTrue(cellsTrue.containsAll(cellsOfChanges));
 
     // 打印Cell样例
-    cellsGroundTruth.stream().findAny().ifPresent(tCell ->
-        log.info("Example1: {}", tCell));
-    cellsTrue.stream().findAny().ifPresent(tCell ->
-        log.info("Example2: {}", tCell));
+    cellsGroundTruth.stream().findAny().ifPresent(tCell -> log.info("Example1: {}", tCell));
+    cellsTrue.stream().findAny().ifPresent(tCell -> log.info("Example2: {}", tCell));
   }
 
   /**
@@ -333,11 +315,9 @@ public class UGuideDiscoveryTest {
     log.info("ExcludedLines={}", excludedLines.size());
 
     List<Integer> changesInExcludedLines = changedLines.stream()
-        .filter(i -> excludedLines.contains(i))
-        .collect(Collectors.toList());
+        .filter(i -> excludedLines.contains(i)).collect(Collectors.toList());
     List<Integer> excludesInChangedLines = excludedLines.stream()
-        .filter(i -> changedLines.contains(i))
-        .collect(Collectors.toList());
+        .filter(i -> changedLines.contains(i)).collect(Collectors.toList());
     log.info("changesInExcludedLines={}, excludesInChangedLines={}", changesInExcludedLines.size(),
         excludesInChangedLines.size());
   }
@@ -367,8 +347,8 @@ public class UGuideDiscoveryTest {
   public void testDiscoverDCUsingRLDCGenerator() {
     List<DenialConstraint> excludeDCs = DCLoader.load(headerPath, excludedDCsPath, new HashSet<>());
     log.debug("Visited DCs size={}", excludeDCs.size());
-    RLDCGenerator generator = new RLDCGenerator(sampledDataPath, evidencesPath,
-        dcsPathForDCMiner, headerPath);
+    RLDCGenerator generator = new RLDCGenerator(sampledDataPath, evidencesPath, dcsPathForDCMiner,
+        headerPath);
     generator.setExcludeDCs(new HashSet<>(excludeDCs));
 //    generator.setErrorThreshold(0.001);
     Set<DenialConstraint> dcs = generator.generateDCs();
@@ -384,8 +364,8 @@ public class UGuideDiscoveryTest {
   @Test
   public void testMinimizeDCs() {
     // 测试准备注入错误的20条DCs已经是最小化的、没有重复的。
-    String DCsPath = baseDir + File.separator +
-        "result_rules\\dcs_hospital_ground_inject_error_20.out";
+    String DCsPath =
+        baseDir + File.separator + "result_rules\\dcs_hospital_ground_inject_error_20.out";
     List<DenialConstraint> dcs = DCLoader.load(headerPath, DCsPath, new HashSet<>());
     de.hpi.naumann.dc.denialcontraints.DenialConstraintSet set = new de.hpi.naumann.dc.denialcontraints.DenialConstraintSet();
     for (DenialConstraint dc : dcs) {
@@ -427,33 +407,12 @@ public class UGuideDiscoveryTest {
     log.debug("DCs size = {}", next.size());
   }
 
-  @Test
-  public void testCellQuestion() {
-    // TODO: 目前发现一个BART的大bug，注入错误后，输出的dirty版本数据单引号变成两个单引号'->''
-    // CellQ算法
-    Set<DCViolation> vios =
-        new HydraDetector(dirtyDataPath, topKDCsPath, headerPath).detect().getViosSet();
-    Input di = generateNewCopy(dirtyDataPath);
-    Set<TCell> cellsOfChanges = getCellsOfChanges(loadChanges(changesPath));
-    List<DenialConstraint> dcs = DCLoader.load(headerPath, topKDCsPath);
-    log.debug("DCs={}", dcs.size());
-    log.debug("Violations={}", vios.size());
-    log.debug("CellsOfChanges={}", cellsOfChanges.size());
-    log.debug("CellQBudgets={}", maxCellQuestionBudget);
-    CellQuestion selector = new CellQuestionV2(di, cellsOfChanges, new HashSet<>(dcs), vios);
-
-    selector.simulate();
-    CellQuestionResult result = selector.getResult();
-
-    log.debug(result.toString());
-  }
-
   // Tuple strategy
   @Test
   public void testTupleQuestion() {
     // TODO: 测试优先选择关联冲突多的元组，以及优先选择关联冲突规则多的元组，以及在脏数据集还是采样数据集上效果更好？
-    Set<DCViolation> vios =
-        new HydraDetector(dirtyDataPath, fullDCsPath, headerPath).detect().getViosSet();
+    Set<DCViolation> vios = new HydraDetector(dirtyDataPath, fullDCsPath, headerPath).detect()
+        .getViosSet();
     Set<Integer> errorLines = getErrorLinesContainingChanges(loadChanges(changesPath));
     Map<Integer, Set<DCViolation>> lineViosCountMap = Maps.newHashMap();
     Map<Integer, Set<DenialConstraint>> lineDCsCountMap = Maps.newHashMap();
@@ -475,8 +434,7 @@ public class UGuideDiscoveryTest {
     }
 
     // 单一排序1:关联vio数量多的在前
-    ArrayList<Entry<Integer, Set<DCViolation>>> sortedLineVioMap = getSortedLines(
-        lineViosCountMap);
+    ArrayList<Entry<Integer, Set<DCViolation>>> sortedLineVioMap = getSortedLines(lineViosCountMap);
     // 单一排序2:关联DC数量多的在前
     ArrayList<Entry<Integer, Set<DenialConstraint>>> sortedLineDCMap = getSortedLines(
         lineDCsCountMap);
@@ -568,8 +526,7 @@ public class UGuideDiscoveryTest {
 //            trueDCs);
 //      }
 //    }
-    printSortResult(testDCs, columnsCorrScoreMap, minLenOfDC, 0.0, sortedEntries, 20,
-        trueDCs);
+    printSortResult(testDCs, columnsCorrScoreMap, minLenOfDC, 0.0, sortedEntries, 20, trueDCs);
 
   }
 
@@ -577,8 +534,8 @@ public class UGuideDiscoveryTest {
       Map<String, Double> columnsCorrScoreMap, int minLenOfDC, double succinctFactor,
       ArrayList<Entry<DenialConstraint, Set<DCViolation>>> sortedEntries, int limit,
       Set<DenialConstraint> trueDCs) {
-    Map<DenialConstraint, Double> dcScoreUniformMap = getDCScoreUniformMap(
-        testDCs, columnsCorrScoreMap, minLenOfDC, succinctFactor);
+    Map<DenialConstraint, Double> dcScoreUniformMap = getDCScoreUniformMap(testDCs,
+        columnsCorrScoreMap, minLenOfDC, succinctFactor);
     // 排序
     sortDCsByScore(sortedEntries, dcScoreUniformMap);
     int totalDCNum = 0;
@@ -596,13 +553,9 @@ public class UGuideDiscoveryTest {
         trueDCNum++;
       }
       log.debug("{},(len={},score={},vios={})({})", DCFormatUtil.convertDC2String(dc),
-          dc.getPredicateCount(),
-          dcScoreUniformMap.get(dc),
-          violations.size(),
-          isTrueDC);
+          dc.getPredicateCount(), dcScoreUniformMap.get(dc), violations.size(), isTrueDC);
     }
-    log.debug("TrueDC percent = {}, limit = {}, succinctFactor = {}",
-        (double) trueDCNum / limit,
+    log.debug("TrueDC percent = {}, limit = {}, succinctFactor = {}", (double) trueDCNum / limit,
         limit, succinctFactor);
   }
 
@@ -658,11 +611,8 @@ public class UGuideDiscoveryTest {
       ArrayList<Entry<DenialConstraint, Set<DCViolation>>> sortedEntries,
       Map<DenialConstraint, Double> dcScoreUniformMap) {
     // 根据简洁性+相关性和冲突个数排序
-    sortedEntries.sort(
-        Comparator
-            .comparingDouble(
-                (Entry<DenialConstraint, Set<DCViolation>> entry) -> -dcScoreUniformMap.get(
-                    entry.getKey()))
+    sortedEntries.sort(Comparator.comparingDouble(
+                (Entry<DenialConstraint, Set<DCViolation>> entry) -> -dcScoreUniformMap.get(entry.getKey()))
 //            .reversed()  // 综合打分（简洁性+相关性）高的在前
             .thenComparingInt(
                 (Entry<DenialConstraint, Set<DCViolation>> entry) -> -entry.getValue().size())
@@ -670,8 +620,8 @@ public class UGuideDiscoveryTest {
     );
   }
 
-  private static <T> double getErrorPercent(
-      Set<Integer> lines, Set<Integer> errorLines, int limit) {
+  private static <T> double getErrorPercent(Set<Integer> lines, Set<Integer> errorLines,
+      int limit) {
     int errorFound = 0;
     int i = 0;
     for (Integer line : lines) {
@@ -688,8 +638,8 @@ public class UGuideDiscoveryTest {
     return per;
   }
 
-  private static <T> double getErrorPercent(
-      List<Entry<Integer, Set<T>>> entries, Set<Integer> errorLines, int limit) {
+  private static <T> double getErrorPercent(List<Entry<Integer, Set<T>>> entries,
+      Set<Integer> errorLines, int limit) {
     int errorFound = 0;
     int i = 0;
     for (Entry<Integer, Set<T>> entry : entries) {

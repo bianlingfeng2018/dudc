@@ -1,18 +1,26 @@
 package edu.fudan;
 
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
+import de.hpi.naumann.dc.input.Input;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
 import edu.fudan.algorithms.BasicDCGenerator;
+import edu.fudan.algorithms.DCLoader;
 import edu.fudan.algorithms.DCViolation;
 import edu.fudan.algorithms.DCViolationSet;
 import edu.fudan.algorithms.HydraDetector;
 import edu.fudan.algorithms.TupleSampler;
+import edu.fudan.algorithms.uguide.CellQuestion;
+import edu.fudan.algorithms.uguide.CellQuestionResult;
+import edu.fudan.algorithms.uguide.CellQuestionV2;
+import edu.fudan.algorithms.uguide.TCell;
 import edu.fudan.algorithms.uguide.TChange;
 import edu.fudan.transformat.DCFormatUtil;
+import edu.fudan.utils.DCUtil;
 import edu.fudan.utils.FileUtil;
 import edu.fudan.utils.UGDParams;
 import edu.fudan.utils.UGDRunner;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -26,11 +34,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static edu.fudan.conf.DefaultConf.maxCellQuestionBudget;
 import static edu.fudan.conf.DefaultConf.numInCluster;
+import static edu.fudan.conf.DefaultConf.randomCellQ;
 import static edu.fudan.conf.DefaultConf.topKOfCluster;
+import static edu.fudan.utils.DCUtil.getCellsOfChanges;
 import static edu.fudan.utils.DCUtil.getErrorLinesContainingChanges;
 import static edu.fudan.utils.DCUtil.loadChanges;
 import static edu.fudan.utils.DCUtil.printDCVioMap;
+import static edu.fudan.utils.FileUtil.generateNewCopy;
 
 @Slf4j
 public class UGDTest {
@@ -93,7 +105,8 @@ public class UGDTest {
         params.headerPath, new HashSet<>(), g1, topK);
 
     Set<DenialConstraint> dcs = generator.generateDCs();
-    log.info("DCs size={}", dcs.size());
+    log.info("TopK dcs size={}", dcs.size());
+    DCUtil.persistTopKDCs(new ArrayList<>(dcs), params.topKDCsPath);
   }
 
   /**
@@ -101,7 +114,8 @@ public class UGDTest {
    */
   @Test
   public void testDetectViolations() {
-    HydraDetector detector = new HydraDetector(params.dirtyDataPath, params.fullDCsPath, params.headerPath);
+    HydraDetector detector = new HydraDetector(params.dirtyDataPath, params.topKDCsPath,
+        params.headerPath);
     DCViolationSet violationSet = detector.detect();
     log.debug("DCViolationSet={}", violationSet.size());
 
@@ -114,6 +128,24 @@ public class UGDTest {
    */
   @Test
   public void testCellQuestion() {
+    // TODO: 目前发现一个BART的大bug，注入错误后，输出的dirty版本数据单引号变成两个单引号'->''
+    int budget = 1000;
+    boolean randomChoose = true;
+    double delta = 0.1;
+    boolean canBreakEarly = false;
+    double excludeLinePercent = 0.1;
+    Set<DCViolation> vios = new HydraDetector(params.dirtyDataPath, params.topKDCsPath,
+        params.headerPath).detect().getViosSet();
+    Input di = generateNewCopy(params.dirtyDataPath);
+    Set<TCell> cellsOfChanges = getCellsOfChanges(loadChanges(params.changesPath));
+    List<DenialConstraint> dcs = DCLoader.load(params.headerPath, params.topKDCsPath);
+    log.debug("DCs={}, Violations={}, CellsOfChanges={}, CellQBudgets={}", dcs.size(), vios.size(),
+        cellsOfChanges.size(), maxCellQuestionBudget);
+    CellQuestion selector = new CellQuestionV2(di, cellsOfChanges, new HashSet<>(dcs), vios, budget,
+        delta, canBreakEarly, randomChoose, excludeLinePercent);
+    selector.simulate();
+    CellQuestionResult result = selector.getResult();
 
+    log.debug(result.toString());
   }
 }

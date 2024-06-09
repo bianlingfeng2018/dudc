@@ -21,7 +21,7 @@ public class CellQuestionResult {
   @Override
   public String toString() {
     return String.format(
-        "SelectedCells=%s, selectedViolations=%s, possibleTrueDCs=%s, falseDCs=%s, trueVios=%s, falseVios=%s, excludedLines=%s",
+        "SelectedCells=%s, SelectedViolations=%s, PossibleTrueDCs=%s, FalseDCs=%s, TrueVios=%s, FalseVios=%s, ExcludedLines=%s",
         selectedCells.size(),
         selectedViolations.size(),
         possibleTrueDCs.size(),

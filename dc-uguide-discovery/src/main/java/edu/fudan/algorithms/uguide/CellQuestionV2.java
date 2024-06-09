@@ -1,6 +1,5 @@
 package edu.fudan.algorithms.uguide;
 
-import static edu.fudan.conf.DefaultConf.maxCellQuestionBudget;
 import static edu.fudan.utils.DCUtil.getCellsOfViolation;
 
 import com.google.common.collect.Maps;
@@ -25,8 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Lingfeng
- * <p>
- * 输出: falseDC, possible trueDCs, possible true vios(exclude tuple pairs?)
  */
 @Slf4j
 public class CellQuestionV2 implements CellQuestion {
@@ -37,20 +34,26 @@ public class CellQuestionV2 implements CellQuestion {
   private final Set<DenialConstraint> dcs;
   private final Set<DCViolation> vios;
   // 默认设置
-  private int budget = maxCellQuestionBudget;
-  private double delta = 0.1;
-  private boolean canBreakEarly = false;
-  private boolean randomChoose = false;
-  private double excludeLinePercent = 0.1;
+  private final int budget;
+  private final double delta;
+  private final boolean canBreakEarly;
+  private final boolean randomChoose;
+  private final double excludeLinePercent;
   @Getter
   private CellQuestionResult result;
 
   public CellQuestionV2(Input di, Set<TCell> cellsOfChanges, Set<DenialConstraint> dcs,
-      Set<DCViolation> vios) {
+      Set<DCViolation> vios, int budget, double delta, boolean canBreakEarly, boolean randomChoose,
+      double excludeLinePercent) {
     this.di = di;
     this.cellsOfChanges = cellsOfChanges;
     this.dcs = dcs;
     this.vios = vios;
+    this.budget = budget;
+    this.delta = delta;
+    this.canBreakEarly = canBreakEarly;
+    this.randomChoose = randomChoose;
+    this.excludeLinePercent = excludeLinePercent;
   }
 
   @Override
@@ -59,8 +62,9 @@ public class CellQuestionV2 implements CellQuestion {
   }
 
   public void simulate() {
-    log.debug("Start simulate");
-    log.debug("Build index...");
+    log.debug("Simulating cell question...");
+    log.debug("Building index start.");
+    // All cells in all violations.
     Set<TCell> cells = Sets.newHashSet();
     Map<TCell, Set<DenialConstraint>> cellDCsMap = Maps.newHashMap();
     Map<TCell, Set<DCViolation>> cellViosMap = Maps.newHashMap();
@@ -73,39 +77,32 @@ public class CellQuestionV2 implements CellQuestion {
         throw new RuntimeException("Illegal dcs size");
       }
       DenialConstraint dc = dcsNoData.get(0);
-      Set<TCell> cellsOfViolation = getCellsOfViolation(this.di, dc, linePair);
-      // dc -> vios
       addToDCViosMap(vio, dc, dcViosMap);
+      Set<TCell> cellsOfViolation = getCellsOfViolation(this.di, dc, linePair);
       for (TCell tCell : cellsOfViolation) {
-        // cells
         cells.add(tCell);
-        // cell -> vios
         addToCellViosMap(vio, tCell, cellViosMap);
-        // vio -> cells
         addToVioCellsMap(vio, tCell, vioCellsMap);
-        // cell -> dcs
         addToCellDCsMap(dc, tCell, cellDCsMap);
       }
     }
-    log.debug("Cells = {}", cells.size());
-    log.debug("DCViosMap = {}(Not all DCs have vios)", dcViosMap.size());
-    log.debug("CellDCsMap = {}", cellDCsMap.size());
-    log.debug("CellViosMap = {}", cellViosMap.size());
-    log.debug("VioCellsMap = {}", vioCellsMap.size());
-    log.debug("Build index done");
+    log.debug("AllCellsInVios = {}", cells.size());
+    log.debug("DCViosMap(Not all dcs have vios)={}, CellDCsMap={}, CellViosMap={}, VioCellsMap={}",
+        dcViosMap.size(), cellDCsMap.size(), cellViosMap.size(), vioCellsMap.size());
+    log.debug("Building index done.");
 
-    // 打印假DC（仅仅作为测试）
-    int falseDCsSize = checkFalseDCs(vioCellsMap, cellsOfChanges);
+    // Print falseDCs (only for testing!!!).
+    int falseDCsSize = printFalseDCs(vioCellsMap, cellsOfChanges);
 
-    // w权重，关联的DC的平均置信度越低越优先
-    // w = 0.0 ~ +无穷
+    // The lower the average confidence(w) of the associated DC, the higher the priority.
+    // w = 0.0 ~ +infinity
     Map<DenialConstraint, Double> dcWeightMap = Maps.newHashMap();
     double wInit = 0.0;
     for (DenialConstraint dc : dcs) {
       dcWeightMap.put(dc, wInit);
     }
 
-    // 模拟提问，判定cell
+    // Start asking questions.
     ArrayList<TCell> cellsList = new ArrayList<>(cells);
     Set<TCell> chosenFromCellList = Sets.newHashSet();
     Set<TCell> chosenFromPendingList = Sets.newHashSet();
@@ -116,11 +113,15 @@ public class CellQuestionV2 implements CellQuestion {
     Set<DenialConstraint> possibleTrueDCs = Sets.newHashSet();
     Set<DCViolation> falseVios = Sets.newHashSet();
     Set<DCViolation> trueVios = Sets.newHashSet();
-    // 如果有一个脏cell，就说明是真vio，直接改DC置信度，就不用pending了，否则需要进一步确认
+    // If a cell is dirty, the corresponding violation is TURE violation.
+    // But if a cell is clean, the corresponding violation needs to be further confirmed by adding other cells in that violation.
     Set<TCell> pendingCells = Sets.newHashSet();
-    log.debug("Start asking cell questions...");
+    log.debug("Iterating through cells...");
     for (int i = 0; i < budget; i++) {
-      // 当所有的falseDC找到后，可以提前结束（仅仅用于测试）
+      if ((i + 1) % 100 == 0) {
+        log.debug("Budget used {}/{}", i + 1, budget);
+      }
+      // When all falseDCs are found, it can end early (only for testing!!!).
       if (canBreakEarly && falseDCs.size() == falseDCsSize) {
         break;
       }
@@ -128,27 +129,23 @@ public class CellQuestionV2 implements CellQuestion {
         log.warn("Cells is empty");
         break;
       }
-      if ((i + 1) % 100 == 0) {
-        log.debug("Select {}/{}", i + 1, budget);
-      }
       // TODO: 作为对比算法，我们发现，由于dirtyCell太少了，所有即便每次选取关联的DC平均置信度最低的cell的，也大概率选的是cleanCell
       //  此时对置信度其实并无贡献，只有发现dirtyCell了，才对置信度有贡献。
       // 选择cell
-      TCell selectedCell = randomChoose ?
-          randomChooseCell(cellsList) :  // 随机选择cell
+      TCell selCell = randomChoose ? randomChooseCell(cellsList) :  // 随机选择cell
           chooseCell(cellsList, cellDCsMap, dcWeightMap, pendingCells, falseDCs, chosenFromCellList,
               chosenFromPendingList);  // 根据置信度选择cell
-      selectedCells.add(selectedCell);
+      selectedCells.add(selCell);
 //      log.debug("SelectedCell = {}", selectedCell.toString());
 
       // 辅助结构
-      Set<DenialConstraint> dcsOfSelectedCell = cellDCsMap.get(selectedCell);
-      Set<DCViolation> viosOfSelectedCell = cellViosMap.get(selectedCell);
+      Set<DenialConstraint> dcsOfSelectedCell = cellDCsMap.get(selCell);
+      Set<DCViolation> viosOfSelectedCell = cellViosMap.get(selCell);
       Set<TCell> allCellsOfVios = getAllCellsOfVios(viosOfSelectedCell, vioCellsMap);
       // 判断选择的cell
-      if (cellsOfChanges.contains(selectedCell)) {
+      if (cellsOfChanges.contains(selCell)) {
         // 真错误
-        dirtyCells.add(selectedCell);
+        dirtyCells.add(selCell);
         // 真冲突
         trueVios.addAll(viosOfSelectedCell);
         // 更新DC置信度w1
@@ -166,7 +163,7 @@ public class CellQuestionV2 implements CellQuestion {
         }
       } else {
         // 假错误
-        cleanCells.add(selectedCell);
+        cleanCells.add(selCell);
 
         // 找到置信度最低的vio的cell放入pendingCells
         double minW = Double.MAX_VALUE;
@@ -189,9 +186,8 @@ public class CellQuestionV2 implements CellQuestion {
         if (minVio != null) {
           Set<TCell> minVioCells = vioCellsMap.get(minVio);
           // 已经被判定过为干净或者脏Cell的，或者已经在pendingCell里面的，需要过滤掉
-          Set<TCell> cellsToBeAdd = minVioCells.stream()
-              .filter(c -> !cleanCells.contains(c) && !dirtyCells.contains(c) &&
-                  !pendingCells.contains(c))
+          Set<TCell> cellsToBeAdd = minVioCells.stream().filter(
+                  c -> !cleanCells.contains(c) && !dirtyCells.contains(c) && !pendingCells.contains(c))
               .collect(Collectors.toSet());
           pendingCells.addAll(cellsToBeAdd);
         }
@@ -221,8 +217,7 @@ public class CellQuestionV2 implements CellQuestion {
           }
           if (dirtyCellNum > 0) {
             // 脏cell理论上应该只会出现一次，且第一次出现是在上面的脏cell分支中
-            throw new RuntimeException(
-                String.format("Illegal dirtyCellNum: %s", dirtyCellNum));
+            throw new RuntimeException(String.format("Illegal dirtyCellNum: %s", dirtyCellNum));
           }
           // 统计干净cell的数量
           if (cleanCellNum == cellNum) {
@@ -250,8 +245,7 @@ public class CellQuestionV2 implements CellQuestion {
     }
 
     log.debug(
-        "SelectedCells={}, DirtyCells={}, cleanCells={}, falseDCs={}, falseVios={}, trueVios={}, "
-            + "ChosenFromCellList={}, ChosenFromPendingList={}",
+        "SelectedCells={}, DirtyCells={}, CleanCells={}, FalseDCs={}, FalseVios={}, TrueVios={}, ChosenFromCellList={}, ChosenFromPendingList={}",
         selectedCells.size(), dirtyCells.size(), cleanCells.size(), falseDCs.size(),
         falseVios.size(), trueVios.size(), chosenFromCellList.size(), chosenFromPendingList.size());
     // 打印找到的falseDC和带置信度的DC
@@ -264,8 +258,8 @@ public class CellQuestionV2 implements CellQuestion {
       DenialConstraint dc = e.getKey();
       Double conf = e.getValue();
 
-      log.debug("{} -> {}(Added to possible trueDCs)", DCFormatUtil.convertDC2String(dc), conf);
       // 直接加入可能的真DC
+      log.debug("{} -> {}(Added to possible trueDCs)", DCFormatUtil.convertDC2String(dc), conf);
       possibleTrueDCs.add(dc);
       // 置信度高的加入真DC
 //      if (conf > 0.0) {
@@ -291,7 +285,7 @@ public class CellQuestionV2 implements CellQuestion {
         falseDCs, new HashSet<>(), new HashSet<>(), new HashSet<>());
   }
 
-  private static void addToDCViosMap(DCViolation vio, DenialConstraint dc,
+  private void addToDCViosMap(DCViolation vio, DenialConstraint dc,
       Map<DenialConstraint, Set<DCViolation>> dcViosMap) {
     if (dcViosMap.containsKey(dc)) {
       Set<DCViolation> viosOfDC = dcViosMap.get(dc);
@@ -301,7 +295,7 @@ public class CellQuestionV2 implements CellQuestion {
     }
   }
 
-  private static void addToCellDCsMap(DenialConstraint dc, TCell tCell,
+  private void addToCellDCsMap(DenialConstraint dc, TCell tCell,
       Map<TCell, Set<DenialConstraint>> cellDCsMap) {
     if (cellDCsMap.containsKey(tCell)) {
       Set<DenialConstraint> set = cellDCsMap.get(tCell);
@@ -311,7 +305,7 @@ public class CellQuestionV2 implements CellQuestion {
     }
   }
 
-  private static void addToVioCellsMap(DCViolation vio, TCell tCell,
+  private void addToVioCellsMap(DCViolation vio, TCell tCell,
       Map<DCViolation, Set<TCell>> vioCellsMap) {
     if (vioCellsMap.containsKey(vio)) {
       Set<TCell> tCells = vioCellsMap.get(vio);
@@ -321,7 +315,7 @@ public class CellQuestionV2 implements CellQuestion {
     }
   }
 
-  private static void addToCellViosMap(DCViolation vio, TCell tCell,
+  private void addToCellViosMap(DCViolation vio, TCell tCell,
       Map<TCell, Set<DCViolation>> cellViosMap) {
     if (cellViosMap.containsKey(tCell)) {
       Set<DCViolation> vios = cellViosMap.get(tCell);
@@ -331,14 +325,7 @@ public class CellQuestionV2 implements CellQuestion {
     }
   }
 
-  /**
-   * 根据冲突找出并打印所有falseDC
-   *
-   * @param vioCellsMap
-   * @param cellsOfChanges
-   * @return
-   */
-  private int checkFalseDCs(Map<DCViolation, Set<TCell>> vioCellsMap, Set<TCell> cellsOfChanges) {
+  private int printFalseDCs(Map<DCViolation, Set<TCell>> vioCellsMap, Set<TCell> cellsOfChanges) {
     Set<DenialConstraint> falseDCs = Sets.newHashSet();
     for (Entry<DCViolation, Set<TCell>> entry : vioCellsMap.entrySet()) {
       DCViolation vio = entry.getKey();
@@ -356,13 +343,12 @@ public class CellQuestionV2 implements CellQuestion {
         falseDCs.add(dc);
       }
     }
-    log.debug("FalseDCs: {}", falseDCs.size());
+    log.debug("Printing falseDCs: {}", falseDCs.size());
     for (DenialConstraint falseDC : falseDCs) {
-      log.debug("   {}", DCFormatUtil.convertDC2String(falseDC));
+      log.debug(" {}", DCFormatUtil.convertDC2String(falseDC));
     }
     return falseDCs.size();
   }
-
 
   private boolean allClean(Set<TCell> cells, Set<TCell> cellsOfChanges) {
     for (TCell cell : cells) {
@@ -373,14 +359,14 @@ public class CellQuestionV2 implements CellQuestion {
     return true;
   }
 
-  private static Set<TCell> getAllCellsOfVios(Set<DCViolation> viosOfSelectedCell,
+  private Set<TCell> getAllCellsOfVios(Set<DCViolation> vios,
       Map<DCViolation, Set<TCell>> vioCellsMap) {
-    Set<TCell> cls = Sets.newHashSet();
-    for (DCViolation vio : viosOfSelectedCell) {
-      Set<TCell> cs = vioCellsMap.get(vio);
-      cls.addAll(cs);
+    Set<TCell> results = Sets.newHashSet();
+    for (DCViolation vio : vios) {
+      Set<TCell> cells = vioCellsMap.get(vio);
+      results.addAll(cells);
     }
-    return cls;
+    return results;
   }
 
   private TCell randomChooseCell(ArrayList<TCell> cellsList) {
@@ -388,13 +374,11 @@ public class CellQuestionV2 implements CellQuestion {
     return cellsList.remove(0);
   }
 
-  private static TCell chooseCell(ArrayList<TCell> cellsList,
-      Map<TCell, Set<DenialConstraint>> cellDCsMap,
-      Map<DenialConstraint, Double> dcWeightMap,
-      Set<TCell> pendingCells, Set<DenialConstraint> falseDCs, Set<TCell> chosenFromCellList,
+  private TCell chooseCell(ArrayList<TCell> cellsList, Map<TCell, Set<DenialConstraint>> cellDCsMap,
+      Map<DenialConstraint, Double> dcWeightMap, Set<TCell> pendingCells,
+      Set<DenialConstraint> falseDCs, Set<TCell> chosenFromCellList,
       Set<TCell> chosenFromPendingList) {
     TCell selectedCell;
-    // 选cell
     if (!pendingCells.isEmpty()) {
       Iterator<TCell> it = pendingCells.iterator();
       selectedCell = it.next();
@@ -409,12 +393,8 @@ public class CellQuestionV2 implements CellQuestion {
     return selectedCell;
   }
 
-
-  private static void sortCells(
-      List<TCell> cells,
-      Map<TCell, Set<DenialConstraint>> cellDCsMap,
-      Map<DenialConstraint, Double> dcWeightMap,
-      Set<DenialConstraint> falseDCs) {
+  private void sortCells(List<TCell> cells, Map<TCell, Set<DenialConstraint>> cellDCsMap,
+      Map<DenialConstraint, Double> dcWeightMap, Set<DenialConstraint> falseDCs) {
     cells.sort(Comparator.comparingDouble(cell -> {
       Set<DenialConstraint> dcs = cellDCsMap.get(cell);
       double sum1 = 0.0;
