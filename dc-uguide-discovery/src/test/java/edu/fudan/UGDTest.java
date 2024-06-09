@@ -4,11 +4,17 @@ import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
 import edu.fudan.algorithms.BasicDCGenerator;
+import edu.fudan.algorithms.DCViolation;
+import edu.fudan.algorithms.DCViolationSet;
+import edu.fudan.algorithms.HydraDetector;
 import edu.fudan.algorithms.TupleSampler;
 import edu.fudan.algorithms.uguide.TChange;
+import edu.fudan.transformat.DCFormatUtil;
 import edu.fudan.utils.FileUtil;
 import edu.fudan.utils.UGDParams;
 import edu.fudan.utils.UGDRunner;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,6 +30,7 @@ import static edu.fudan.conf.DefaultConf.numInCluster;
 import static edu.fudan.conf.DefaultConf.topKOfCluster;
 import static edu.fudan.utils.DCUtil.getErrorLinesContainingChanges;
 import static edu.fudan.utils.DCUtil.loadChanges;
+import static edu.fudan.utils.DCUtil.printDCVioMap;
 
 @Slf4j
 public class UGDTest {
@@ -87,5 +94,26 @@ public class UGDTest {
 
     Set<DenialConstraint> dcs = generator.generateDCs();
     log.info("DCs size={}", dcs.size());
+  }
+
+  /**
+   * Test detect violations.
+   */
+  @Test
+  public void testDetectViolations() {
+    HydraDetector detector = new HydraDetector(params.dirtyDataPath, params.fullDCsPath, params.headerPath);
+    DCViolationSet violationSet = detector.detect();
+    log.debug("DCViolationSet={}", violationSet.size());
+
+    printDCVioMap(violationSet);
+  }
+
+
+  /**
+   * Test cell question.
+   */
+  @Test
+  public void testCellQuestion() {
+
   }
 }

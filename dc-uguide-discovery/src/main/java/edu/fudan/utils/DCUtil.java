@@ -29,6 +29,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -352,33 +353,27 @@ public class DCUtil {
   }
 
   /**
-   * 统计每个规则关联多少冲突
+   * Print dc-violations map.
    *
-   * @param vioSet 冲突集合
+   * @param violationSet All violations
    */
-  public static void printDCViolationsMap(DCViolationSet vioSet) {
-    log.debug("Print DC-Violations map:");
-    Map<String, Integer> dcViolationMap = Maps.newHashMap();
-    if (vioSet.size() != 0) {
-      Set<DCViolation> viosSet = vioSet.getViosSet();
-      for (DCViolation vio : viosSet) {
-        List<DenialConstraint> dcs = vio.getDenialConstraintsNoData();
-        if (dcs.size() != 1) {
-          throw new RuntimeException("Illegal dcs size");
-        }
-        DenialConstraint dc = dcs.get(0);
-        // Key为dcString
-        String dcString = DCFormatUtil.convertDC2String(dc);
-        if (dcViolationMap.containsKey(dcString)) {
-          Integer i = dcViolationMap.get(dcString);
-          dcViolationMap.put(dcString, i + 1);
-        } else {
-          dcViolationMap.put(dcString, 1);
-        }
+  public static void printDCVioMap(DCViolationSet violationSet) {
+    log.debug("Print dc-violations map:");
+    Set<DCViolation> vioSet = violationSet.getViosSet();
+    Map<DenialConstraint, Integer> map = new HashMap<>();
+    for (DCViolation vio : vioSet) {
+      DenialConstraint dc = vio.getDenialConstraintsNoData().get(0);
+      if (map.containsKey(dc)) {
+        Integer i = map.get(dc);
+        map.put(dc, i + 1);
+      } else {
+        map.put(dc, 1);
       }
     }
-    for (String dcString : dcViolationMap.keySet()) {
-      log.debug("{}->{}", dcString, dcViolationMap.get(dcString));
+    for (DenialConstraint dc : map.keySet()) {
+      String s = DCFormatUtil.convertDC2String(dc);
+      Integer i = map.get(dc);
+      log.debug("{}->{}", s, i);
     }
   }
 }

@@ -1,6 +1,7 @@
 package edu.fudan;
 
-import static edu.fudan.utils.DCUtil.printDCViolationsMap;
+
+import static edu.fudan.utils.DCUtil.printDCVioMap;
 
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import edu.fudan.algorithms.BasicDCGenerator;
@@ -46,7 +47,7 @@ public class IncrementRepairTest {
     DCViolationSet violationSet = detector.detect();
     log.info("violationSet={}", violationSet.size());
 
-    printDCViolationsMap(violationSet);
+    printDCVioMap(violationSet);
   }
 
 

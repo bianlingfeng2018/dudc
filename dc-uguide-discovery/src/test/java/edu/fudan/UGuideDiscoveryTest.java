@@ -222,7 +222,7 @@ public class UGuideDiscoveryTest {
     DCViolationSet violationSet = detector.detect();
     log.info("violationSet={}", violationSet.size());
 
-    printDCViolationsMap(violationSet);
+    printDCVioMap(violationSet);
   }
 
   /**
@@ -273,7 +273,7 @@ public class UGuideDiscoveryTest {
     HydraDetector detector = new HydraDetector(sampledDataPath, groundTruthDCsPath, headerPath);
     DCViolationSet violationSet = detector.detect();
     log.info("ViolationSet={}", violationSet.size());
-    printDCViolationsMap(violationSet);
+    printDCVioMap(violationSet);
   }
 
   /**
@@ -712,7 +712,7 @@ public class UGuideDiscoveryTest {
     DCViolationSet violationSet = detector.detect();
     log.info("ViolationSet={}", violationSet.size());
 
-    printDCViolationsMap(violationSet);
+    printDCVioMap(violationSet);
 
     List<TChange> changes = loadChanges(changesPath);
     Set<TCell> cellsOfChanges = getCellsOfChanges(changes);
