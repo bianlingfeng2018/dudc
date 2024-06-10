@@ -15,6 +15,7 @@ import static edu.fudan.conf.DefaultConf.questionsConf;
 import static edu.fudan.conf.DefaultConf.randomClusterS;
 import static edu.fudan.conf.DefaultConf.topKOfCluster;
 import static edu.fudan.conf.DefaultConf.tupleQStrategy;
+import static edu.fudan.utils.CorrelationUtil.readColumnCorrScoreMap;
 import static edu.fudan.utils.FileUtil.generateNewCopy;
 import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
 
@@ -71,15 +72,19 @@ public class UGuideDiscovery {
   // 评价
   private final Evaluation evaluation;
   /**
-   * 当发现的规则少于top-k个时，直接结束循环
+   * When dcs size is less than k, end loop.
    */
-  private boolean breakEarly = false;
+  private boolean dcsLessThanK = false;
+  /**
+   * The correlation score map.
+   */
+  private final Map<String, Double> columnsCorrScoreMap;
 
   public UGuideDiscovery(String cleanDataPath, String changesPath, String dirtyDataPath,
       String excludedLinesPath, String sampledDataPath, String dcsPathForFCDC,
       String dcsPathForDCMiner, String evidencesPathForFCDC, String topKDCsPath,
       String groundTruthDCsPath, String candidateDCsPath, String trueDCsPath, String visitedDCsPath,
-      String headerPath, String csvResultPath) {
+      String headerPath, String csvResultPath, String correlationByUserPath) throws IOException {
     this.cleanDS = new CleanDS(cleanDataPath, headerPath, changesPath);
     this.dirtyDS = new DirtyDS(dirtyDataPath, excludedLinesPath, headerPath);
     this.sampleDS = new SampleDS(sampledDataPath, headerPath);
@@ -87,6 +92,8 @@ public class UGuideDiscovery {
         topKDCsPath);
     this.evaluation = new Evaluation(cleanDS, dirtyDS, groundTruthDCsPath, candidateDCsPath,
         trueDCsPath, visitedDCsPath, csvResultPath);
+    this.columnsCorrScoreMap = readColumnCorrScoreMap(correlationByUserPath);
+
   }
 
   public void guidedDiscovery()
@@ -105,7 +112,7 @@ public class UGuideDiscovery {
       sample();
       // 发现规则
       discoveryDCs();
-      if (this.breakEarly) {
+      if (this.dcsLessThanK) {
         log.debug("Break early");
         break;
       }
@@ -305,7 +312,7 @@ public class UGuideDiscovery {
 //      throw new RuntimeException(String.format("Discovery DCs size is not %s: %s",
 //          topK, dcs.size()));
       // 提前结束
-      this.breakEarly = true;
+      this.dcsLessThanK = true;
     }
     DCUtil.persistTopKDCs(new ArrayList<>(dcs), candidateDCs.getTopKDCsPath());
 

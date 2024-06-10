@@ -71,7 +71,7 @@ public class TupleQuestion {
       case VIOLATIONS_PRIOR:
         sorted = getSortedLines(lineDCsCountMap, lineViosCountMap);
         break;
-      case RANDOM:
+      case RANDOM_TUPLE:
         sorted = new ArrayList<>(lines);
         break;
       default:

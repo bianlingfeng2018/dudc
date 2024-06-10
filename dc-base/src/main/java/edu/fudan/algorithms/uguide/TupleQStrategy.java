@@ -23,5 +23,5 @@ public enum TupleQStrategy {
   /**
    * Random choose tuples(lines).
    */
-  RANDOM
+  RANDOM_TUPLE
 }

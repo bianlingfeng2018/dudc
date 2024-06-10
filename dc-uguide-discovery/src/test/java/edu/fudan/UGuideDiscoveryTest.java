@@ -1,5 +1,25 @@
 package edu.fudan;
 
+import static edu.fudan.algorithms.BasicDCGenerator.getSortedDCs;
+import static edu.fudan.algorithms.BasicDCGenerator.persistDCFinderDCs;
+import static edu.fudan.conf.DefaultConf.predictArgs;
+import static edu.fudan.conf.DefaultConf.sharedArgs;
+import static edu.fudan.conf.DefaultConf.trainArgs;
+import static edu.fudan.utils.DCUtil.genLineChangesMap;
+import static edu.fudan.utils.DCUtil.getCellsOfChanges;
+import static edu.fudan.utils.DCUtil.getCellsOfViolation;
+import static edu.fudan.utils.DCUtil.getCellsOfViolations;
+import static edu.fudan.utils.DCUtil.getErrorLinesContainingChanges;
+import static edu.fudan.utils.DCUtil.loadChanges;
+import static edu.fudan.utils.DCUtil.loadDirtyDataExcludedLines;
+import static edu.fudan.utils.DCUtil.printDCVioMap;
+import static edu.fudan.utils.FileUtil.generateNewCopy;
+import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
+import static edu.fudan.utils.GlobalConf.baseDir;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
 import ch.javasoft.bitset.search.NTreeSearch;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -13,43 +33,37 @@ import de.metanome.algorithm_integration.Operator;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
 import de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraintSet;
-import edu.fudan.algorithms.*;
-import edu.fudan.algorithms.uguide.*;
+import edu.fudan.algorithms.DCLoader;
+import edu.fudan.algorithms.DCViolation;
+import edu.fudan.algorithms.DCViolationSet;
+import edu.fudan.algorithms.DiscoveryEntry;
+import edu.fudan.algorithms.HydraDetector;
+import edu.fudan.algorithms.PythonCaller;
+import edu.fudan.algorithms.RLDCGenerator;
+import edu.fudan.algorithms.UGuideDiscovery;
+import edu.fudan.algorithms.uguide.TCell;
+import edu.fudan.algorithms.uguide.TChange;
 import edu.fudan.transformat.DCFormatUtil;
 import edu.fudan.utils.DCUtil;
 import edu.fudan.utils.FileUtil;
 import edu.fudan.utils.UGDParams;
 import edu.fudan.utils.UGDRunner;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
-import static edu.fudan.algorithms.BasicDCGenerator.getSortedDCs;
-import static edu.fudan.algorithms.BasicDCGenerator.persistDCFinderDCs;
-import static edu.fudan.conf.DefaultConf.*;
-import static edu.fudan.utils.CorrelationUtil.getDCScoreUniformMap;
-import static edu.fudan.utils.CorrelationUtil.readColumnCorrScoreMap;
-import static edu.fudan.utils.DCUtil.*;
-import static edu.fudan.utils.FileUtil.generateNewCopy;
-import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
-import static edu.fudan.utils.GlobalConf.baseDir;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 
 /**
  * @author Lingfeng
  */
 @Slf4j
 public class UGuideDiscoveryTest {
-
-  private String correlationByUserPath = "D:\\MyFile\\gitee\\dc_miner\\data\\preprocessed_data\\correlation_matrix\\model_ltr_eval_hospital.csv";
 
   private int dsIndex = 0;
   private String headerPath;
@@ -67,6 +81,7 @@ public class UGuideDiscoveryTest {
   private String candidateTrueDCsPath;
   private String excludedDCsPath;
   private String csvResultPath;
+  private String correlationByUserPath;
 
   @Before
   public void setUp() throws Exception {
@@ -86,15 +101,16 @@ public class UGuideDiscoveryTest {
     candidateTrueDCsPath = params.candidateTrueDCsPath;
     excludedDCsPath = params.excludedDCsPath;
     csvResultPath = params.csvResultPath;
+    correlationByUserPath = params.correlationByUserPath;
   }
 
   @Test
   public void testOneRoundUGuide()
-      throws InputGenerationException, InputIterationException, IOException, DCMinderToolsException {
+      throws InputGenerationException, InputIterationException, IOException {
     UGuideDiscovery ud = new UGuideDiscovery(cleanDataPath, changesPath, dirtyDataPath,
         excludedLinesPath, sampledDataPath, fullDCsPath, dcsPathForDCMiner, evidencesPath,
         topKDCsPath, groundTruthDCsPath, candidateDCsPath, candidateTrueDCsPath, excludedDCsPath,
-        headerPath, csvResultPath);
+        headerPath, csvResultPath, correlationByUserPath);
     ud.guidedDiscovery();
   }
 
@@ -405,100 +421,6 @@ public class UGuideDiscoveryTest {
     log.debug("DCs size = {}", next.size());
   }
 
-  // DC strategy
-  @Test
-  public void testDCsQuestion() throws IOException {
-    // TODO:考虑什么DC最有可能是真DC
-    //  同时考虑DC如何给出上下文辅助用户判断正误，因为直接判断比较难，同时这个上下文可以用来训练相关性打分矩阵
-    // 1.简洁性 + 覆盖率 = interesting
-    // 2.关联冲突个数，希望真冲突的个数越多越好；怎么判断真冲突？
-    // DC-Violation置信度 Line-Violations 如果一个DC是真DC，那么真的错误会出现一个Line关联非常多的Vios，但是假的DC这种情况会减少，不是少数Line cover所有Vios，而是大家比较平均？
-    // 冲突数量不能判断规则真假，冲突多少只取决于反例的个数
-    int minLenOfDC = 2;
-//    double succinctFactor = 0.8;
-    List<DenialConstraint> testDCs = DCLoader.load(headerPath, fullDCsPath);
-    Set<DenialConstraint> trueDCs = Sets.newHashSet();
-    List<DenialConstraint> gtDCs = DCLoader.load(headerPath, groundTruthDCsPath);
-    NTreeSearch gtTree = new NTreeSearch();
-    for (DenialConstraint gtDC : gtDCs) {
-      gtTree.add(PredicateSetFactory.create(gtDC.getPredicateSet()).getBitset());
-    }
-    for (DenialConstraint dc : testDCs) {
-      if (dc.isImpliedBy(gtTree)) {
-        // 是真DC
-        trueDCs.add(dc);
-      }
-    }
-    log.debug("TrueDCs: {}", trueDCs.size());
-    for (DenialConstraint dc : trueDCs) {
-      log.debug("{}", DCFormatUtil.convertDC2String(dc));
-    }
-    // 计算冲突个数
-    Set<DCViolation> vios = new HydraDetector(dirtyDataPath, fullDCsPath, headerPath).detect()
-        .getViosSet();
-    Map<DenialConstraint, Set<DCViolation>> dcViosMap = Maps.newHashMap();
-    for (DCViolation vio : vios) {
-      List<DenialConstraint> dcList = vio.getDenialConstraintsNoData();
-      for (DenialConstraint dc : dcList) {
-        if (dcViosMap.containsKey(dc)) {
-          Set<DCViolation> viosOfDC = dcViosMap.get(dc);
-          viosOfDC.add(vio);
-        } else {
-          dcViosMap.put(dc, Sets.newHashSet(vio));
-        }
-      }
-    }
-    ArrayList<Entry<DenialConstraint, Set<DCViolation>>> sortedEntries = new ArrayList<>(
-        dcViosMap.entrySet());
-    log.debug("Test DCs: {}", sortedEntries.size());
-    // 读取相关性矩阵
-    Map<String, Double> columnsCorrScoreMap = readColumnCorrScoreMap(correlationByUserPath);
-    // 计算综合分数 排序 打印
-//    int size = testDCs.size();
-//    for (int j = 1; j <= 20; j++) {
-//      int limit = Math.min(size, j * 5);
-//      log.debug("====== dcs = {} ======", limit);
-//
-//      for (int i = 0; i <= 10; i++) {
-//        double succinctFactor = i * 0.1;
-//        log.debug("------ succinctFactor = {} ------", succinctFactor);
-//        printSortResult(testDCs, columnsCorrScoreMap, minLenOfDC, succinctFactor, sortedEntries, limit,
-//            trueDCs);
-//      }
-//    }
-    printSortResult(testDCs, columnsCorrScoreMap, minLenOfDC, 0.0, sortedEntries, 20, trueDCs);
-
-  }
-
-  private static void printSortResult(List<DenialConstraint> testDCs,
-      Map<String, Double> columnsCorrScoreMap, int minLenOfDC, double succinctFactor,
-      ArrayList<Entry<DenialConstraint, Set<DCViolation>>> sortedEntries, int limit,
-      Set<DenialConstraint> trueDCs) {
-    Map<DenialConstraint, Double> dcScoreUniformMap = getDCScoreUniformMap(testDCs,
-        columnsCorrScoreMap, minLenOfDC, succinctFactor);
-    // 排序
-    sortDCsByScore(sortedEntries, dcScoreUniformMap);
-    int totalDCNum = 0;
-    int trueDCNum = 0;
-
-    for (Entry<DenialConstraint, Set<DCViolation>> entry : sortedEntries) {
-      totalDCNum++;
-      if (totalDCNum > limit) {
-        break;
-      }
-      DenialConstraint dc = entry.getKey();
-      Set<DCViolation> violations = entry.getValue();
-      boolean isTrueDC = trueDCs.contains(dc);
-      if (isTrueDC) {
-        trueDCNum++;
-      }
-      log.debug("{},(len={},score={},vios={})({})", DCFormatUtil.convertDC2String(dc),
-          dc.getPredicateCount(), dcScoreUniformMap.get(dc), violations.size(), isTrueDC);
-    }
-    log.debug("TrueDC percent = {}, limit = {}, succinctFactor = {}", (double) trueDCNum / limit,
-        limit, succinctFactor);
-  }
-
   // Dynamic g1 strategy
   @Test
   public void testDynamicG1() {
@@ -545,19 +467,6 @@ public class UGuideDiscoveryTest {
     for (DenialConstraint dc : dcs) {
       log.debug("{}", DCFormatUtil.convertDC2String(dc));
     }
-  }
-
-  private static void sortDCsByScore(
-      ArrayList<Entry<DenialConstraint, Set<DCViolation>>> sortedEntries,
-      Map<DenialConstraint, Double> dcScoreUniformMap) {
-    // 根据简洁性+相关性和冲突个数排序
-    sortedEntries.sort(Comparator.comparingDouble(
-                (Entry<DenialConstraint, Set<DCViolation>> entry) -> -dcScoreUniformMap.get(entry.getKey()))
-//            .reversed()  // 综合打分（简洁性+相关性）高的在前
-            .thenComparingInt(
-                (Entry<DenialConstraint, Set<DCViolation>> entry) -> -entry.getValue().size())
-//            .reversed()  // 综合打分相同的情况下，冲突数量多的在前
-    );
   }
 
   private static void detectUsingHydraDetector(HydraDetector detector, String changesPath,

@@ -19,4 +19,5 @@ public class UGDParams {
   public String excludedDCsPath;
   public String headerPath;
   public String csvResultPath;
+  public String correlationByUserPath;
 }

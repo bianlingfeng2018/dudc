@@ -12,7 +12,6 @@ import edu.fudan.transformat.DCFormatUtil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -129,7 +128,7 @@ public class CellQuestionV2 {
       // 2.根据置信度选择cell
       TCell selCell = null;
       switch (strategy) {
-        case RANDOM:
+        case RANDOM_CELL:
           selCell = randomChooseCell(cellsList);
           break;
         case VIO_AND_CONF:

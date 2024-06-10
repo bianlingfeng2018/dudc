@@ -120,7 +120,8 @@ public class UGDRunner implements Callable<Integer> {
         params.candidateTrueDCsPath,
         params.excludedDCsPath,
         params.headerPath,
-        params.csvResultPath);
+        params.csvResultPath,
+        params.correlationByUserPath);
 //    ud.guidedDiscovery();
 
     log.info("Finished algorithms.");
@@ -136,7 +137,7 @@ public class UGDRunner implements Callable<Integer> {
     params.dirtyDataPath = baseDir + "/preprocessed_" + dsName + "_dirty.csv";
     params.excludedLinesPath = baseDir + "/preprocessed_" + dsName + "_dirty_excluded.csv";
     params.sampledDataPath = baseDir + "/preprocessed_" + dsName + "_dirty_sample.csv";
-    params.groundTruthDCsPath = baseDir + "/dcs_" + dsName + "_ground.txt";
+    params.groundTruthDCsPath = baseDir + "/dcs_ground_" + dsName + ".txt";
     params.fullDCsPath = baseDir + "/dcs_full_" + dsName + ".txt";
     params.topKDCsPath = baseDir + "/dcs_top_k_" + dsName + ".txt";
     params.evidencesPath = baseDir + "/evidences_" + dsName + ".txt";
@@ -145,6 +146,7 @@ public class UGDRunner implements Callable<Integer> {
     params.candidateTrueDCsPath = baseDir + "/dcs_candidate_true" + dsName + ".txt";
     params.excludedDCsPath = baseDir + "/dcs_excluded_" + dsName + ".txt";
     params.csvResultPath = baseDir + "/eval_error_detect_" + dsName + ".txt";
+    params.correlationByUserPath = baseDir + "/model_ltr_eval_" + dsName + ".csv";
     return params;
   }
 }

@@ -11,5 +11,5 @@ public enum CellQStrategy {
   /**
    * Random choose cells.
    */
-  RANDOM
+  RANDOM_CELL
 }
