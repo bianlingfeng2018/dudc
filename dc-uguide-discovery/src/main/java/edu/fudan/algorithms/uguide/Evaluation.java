@@ -99,6 +99,7 @@ public class Evaluation {
    * violations.
    */
   private final Set<DenialConstraint> groundTruthDCs = Sets.newHashSet();
+  @Getter
   private final NTreeSearch gtTree = new NTreeSearch();
 
   /**

@@ -3,6 +3,7 @@ package edu.fudan.algorithms;
 import static edu.fudan.conf.DefaultConf.addCounterExampleS;
 import static edu.fudan.conf.DefaultConf.canBreakEarly;
 import static edu.fudan.conf.DefaultConf.cellQStrategy;
+import static edu.fudan.conf.DefaultConf.dCsQStrategy;
 import static edu.fudan.conf.DefaultConf.dcGeneratorConf;
 import static edu.fudan.conf.DefaultConf.delta;
 import static edu.fudan.conf.DefaultConf.excludeLinePercent;
@@ -10,15 +11,18 @@ import static edu.fudan.conf.DefaultConf.maxCellQuestionBudget;
 import static edu.fudan.conf.DefaultConf.maxDCQuestionBudget;
 import static edu.fudan.conf.DefaultConf.maxDiscoveryRound;
 import static edu.fudan.conf.DefaultConf.maxTupleQuestionBudget;
+import static edu.fudan.conf.DefaultConf.minLenOfDC;
 import static edu.fudan.conf.DefaultConf.numInCluster;
 import static edu.fudan.conf.DefaultConf.questionsConf;
 import static edu.fudan.conf.DefaultConf.randomClusterS;
+import static edu.fudan.conf.DefaultConf.succinctFactor;
 import static edu.fudan.conf.DefaultConf.topKOfCluster;
 import static edu.fudan.conf.DefaultConf.tupleQStrategy;
 import static edu.fudan.utils.CorrelationUtil.readColumnCorrScoreMap;
 import static edu.fudan.utils.FileUtil.generateNewCopy;
 import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
 
+import ch.javasoft.bitset.search.NTreeSearch;
 import com.google.common.collect.Lists;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.input.Input;
@@ -30,6 +34,8 @@ import edu.fudan.algorithms.uguide.CandidateDCs;
 import edu.fudan.algorithms.uguide.CellQuestionResult;
 import edu.fudan.algorithms.uguide.CellQuestionV2;
 import edu.fudan.algorithms.uguide.CleanDS;
+import edu.fudan.algorithms.uguide.DCsQuestion;
+import edu.fudan.algorithms.uguide.DCsQuestionResult;
 import edu.fudan.algorithms.uguide.DirtyDS;
 import edu.fudan.algorithms.uguide.Evaluation;
 import edu.fudan.algorithms.uguide.Evaluation.EvalResult;
@@ -178,25 +184,20 @@ public class UGuideDiscovery {
   private void askDCQuestion() {
     log.info("===== 5.3 Ask DC question ======");
     // 给用户推荐DC进行判断
-    Set<DenialConstraint> questions = evaluation.genDCQuestionsFromCurrState(maxDCQuestionBudget);
-    int budgetUsed = questions.size();
+    NTreeSearch gtTree = evaluation.getGtTree();
+    Set<DenialConstraint> currDCs = evaluation.getCurrDCs();
+    Set<DCViolation> currVios = evaluation.getCurrVios();
+
+    DCsQuestion selector = new DCsQuestion(gtTree, currDCs, currVios, columnsCorrScoreMap,
+        minLenOfDC, succinctFactor, dCsQStrategy, maxDCQuestionBudget);
+
+    DCsQuestionResult result = selector.simulate();
+
+    int budgetUsed = result.getBudgetUsed();
     log.info("DCQuestions/MaxDCQuestionBudget/CurrDCsSize={}/{}/{}", budgetUsed,
         maxDCQuestionBudget, evaluation.getCurrDCs().size());
     evaluation.addDCBudget(budgetUsed);
-    // 判断得到真DC
-    Set<DenialConstraint> trueDCs = questions.stream().filter(dc -> evaluation.isTrueDC(dc))
-        .collect(Collectors.toSet());
-    log.info("TureDCs(DCsQ): {}", trueDCs.size());
-    for (DenialConstraint dc : trueDCs) {
-      log.debug("{}", DCFormatUtil.convertDC2String(dc));
-    }
-    // 判断得到假DC
-    Set<DenialConstraint> falseDCs = questions.stream().filter(dc -> !evaluation.isTrueDC(dc))
-        .collect(Collectors.toSet());
-    log.info("FalseDCs(DCsQ): {}", falseDCs.size());
-    for (DenialConstraint dc : falseDCs) {
-      log.debug("{}", DCFormatUtil.convertDC2String(dc));
-    }
+    Set<DenialConstraint> falseDCs = result.getFalseDCs();
 //    // 排除真DC在脏数据上的冲突元组
 //    Set<Integer> excludedLinesInDCsQ = Sets.newHashSet();
 //    DCViolationSet vios = new HydraDetector(evaluation.getDirtyDS().getDataPath(), trueDCs).detect();
@@ -207,14 +208,14 @@ public class UGuideDiscovery {
 //      excludedLinesInDCsQ.add(line1);
 //      excludedLinesInDCsQ.add(line2);
 //    }
-//    // TODO: 优选排除的元组
+//    // TODO: 优选排除的元组，需要设定一定比例，否则可能排除数据集的大部分元组
 //    int sizeBefore = excludedLinesInDCsQ.size();
 //    int sizeAfter = (int) (sizeBefore * 0.1);
 //    Set<Integer> excludedLinesInDCsQRandom = new HashSet<>(
 //        getRandomElements(excludedLinesInDCsQ, sizeAfter));
 //    log.debug("ExcludedLinesInDCsQRandom before {}, after {}", sizeBefore, sizeAfter);
 //    evaluation.setExcludedLinesInDCsQ(excludedLinesInDCsQRandom);
-    // TODO: DCsQ排除的元组虽然是真冲突中的，但是如果排除太多会导致有的规则因为缺少反例而无法发现，这里暂时不排除
+    // TODO: DCsQ排除暂时仅排除假DC
     evaluation.update(null, falseDCs, null, null, null);
   }
 

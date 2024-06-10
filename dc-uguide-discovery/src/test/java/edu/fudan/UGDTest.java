@@ -12,8 +12,10 @@ import static edu.fudan.utils.DCUtil.loadChanges;
 import static edu.fudan.utils.DCUtil.printDCVioMap;
 import static edu.fudan.utils.FileUtil.generateNewCopy;
 
+import ch.javasoft.bitset.search.NTreeSearch;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.input.Input;
+import de.hpi.naumann.dc.predicates.sets.PredicateSetFactory;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
 import edu.fudan.algorithms.BasicDCGenerator;
@@ -177,14 +179,13 @@ public class UGDTest {
    */
   @Test
   public void testDCsQuestion() throws IOException {
-    // TODO:考虑什么DC最有可能是真DC
-    //  同时考虑DC如何给出上下文辅助用户判断正误，因为直接判断比较难，同时这个上下文可以用来训练相关性打分矩阵
-    // 1.简洁性 + 覆盖率 = interesting
-    // 2.关联冲突个数，希望真冲突的个数越多越好；怎么判断真冲突？
-    // DC-Violation置信度 Line-Violations 如果一个DC是真DC，那么真的错误会出现一个Line关联非常多的Vios，但是假的DC这种情况会减少，不是少数Line cover所有Vios，而是大家比较平均？
-    // 冲突数量不能判断规则真假，冲突多少只取决于反例的个数
+    // TODO:考虑什么DC最有可能是真DC，同时考虑:
+    //  1.如何给出数据集的语法概要(Syntactic Profile)，辅助用户间接判断DC是否为真
+    //  2.训练相关性打分矩阵
+    // 1.简洁性+相关性/简洁性+覆盖率(interesting)
+    // 2.关联冲突个数，希望真冲突的个数越多越好
     int minLenOfDC = 2;
-    double succinctFactor = 0.8;
+    double succinctFactor = 0.5;
     int budget = 10;
     DCsQStrategy strategy = DCsQStrategy.RANDOM_DC;
     Set<DCViolation> vios = new HydraDetector(params.dirtyDataPath, params.topKDCsPath,
@@ -193,9 +194,12 @@ public class UGDTest {
     List<DenialConstraint> testDCs = DCLoader.load(params.headerPath, params.topKDCsPath);
     List<DenialConstraint> gtDCs = DCLoader.load(params.headerPath, params.groundTruthDCsPath);
     Map<String, Double> columnsCorrScoreMap = readColumnCorrScoreMap(params.correlationByUserPath);
-
-    DCsQuestion selector = new DCsQuestion(gtDCs, testDCs, vios, columnsCorrScoreMap, minLenOfDC,
-        succinctFactor, strategy, budget);
+    NTreeSearch gtTree = new NTreeSearch();
+    for (DenialConstraint gtDC : gtDCs) {
+      gtTree.add(PredicateSetFactory.create(gtDC.getPredicateSet()).getBitset());
+    }
+    DCsQuestion selector = new DCsQuestion(gtTree, new HashSet<>(testDCs), vios,
+        columnsCorrScoreMap, minLenOfDC, succinctFactor, strategy, budget);
 
     DCsQuestionResult result = selector.simulate();
     log.debug(result.toString());

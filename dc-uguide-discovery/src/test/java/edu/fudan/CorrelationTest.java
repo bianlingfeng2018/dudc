@@ -5,6 +5,7 @@ import edu.fudan.algorithms.DCLoader;
 import edu.fudan.transformat.DCFormatUtil;
 import edu.fudan.utils.UGDParams;
 import edu.fudan.utils.UGDRunner;
+import java.util.HashSet;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
@@ -83,7 +84,7 @@ public class CorrelationTest {
     Map<String, Double> columnsCorrScoreMap = readColumnCorrScoreMap(correlationByUserPath);
     // 计算综合分数
     Map<DenialConstraint, Double> dcScoreUniformMap = getDCScoreUniformMap(
-        testDCs, columnsCorrScoreMap, 2, 0.5);
+        new HashSet<>(testDCs), columnsCorrScoreMap, 2, 0.5);
     // 排序
     ArrayList<Entry<DenialConstraint, Double>> entries = new ArrayList<>(
         dcScoreUniformMap.entrySet());

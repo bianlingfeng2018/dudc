@@ -22,7 +22,7 @@ public class DCsQuestionResult {
 
   @Override
   public String toString() {
-    return String.format("FalseDCs=%S, TrueDCs=%s, TrueDCRate={}, BudgetUsed=%s", falseDCs.size(),
+    return String.format("FalseDCs=%S, TrueDCs=%s, TrueDCRate=%s, BudgetUsed=%s", falseDCs.size(),
         trueDCs.size(), trueDCRate, budgetUsed);
   }
 }

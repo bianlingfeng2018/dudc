@@ -1,6 +1,7 @@
 package edu.fudan.conf;
 
 import edu.fudan.algorithms.uguide.CellQStrategy;
+import edu.fudan.algorithms.uguide.DCsQStrategy;
 import edu.fudan.algorithms.uguide.TupleQStrategy;
 
 /**
@@ -55,6 +56,9 @@ public class DefaultConf {
   public static TupleQStrategy tupleQStrategy = TupleQStrategy.VIOLATIONS_PRIOR;
   public static int maxTupleQuestionBudget = 100;
   // DCsQ
+  public static int minLenOfDC = 2;
+  public static double succinctFactor = 0.5;
+  public static DCsQStrategy dCsQStrategy = DCsQStrategy.RANDOM_DC;
   public static int maxDCQuestionBudget = 5;
   // Other
   public static Integer[] questionsConf = new Integer[]{1, 1, 1};

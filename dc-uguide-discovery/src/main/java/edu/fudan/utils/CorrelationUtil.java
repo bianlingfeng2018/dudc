@@ -43,7 +43,7 @@ public class CorrelationUtil {
   }
 
   public static Map<DenialConstraint, Double> getDCScoreUniformMap(
-      List<DenialConstraint> dcs,
+      Set<DenialConstraint> dcs,
       Map<String, Double> columnsCorrScoreMap,
       int minLenOfDC,
       double succinctFactor

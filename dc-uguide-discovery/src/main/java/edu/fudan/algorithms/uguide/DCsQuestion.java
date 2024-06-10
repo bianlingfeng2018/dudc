@@ -23,8 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DCsQuestion {
 
-  private final List<DenialConstraint> gtDCs;
-  private final List<DenialConstraint> testDCs;
+  private final NTreeSearch gtTree;
+  private final Set<DenialConstraint> testDCs;
   private final Set<DCViolation> vios;
   private final Map<String, Double> columnsCorrScoreMap;
   private final int minLenOfDC;
@@ -32,10 +32,10 @@ public class DCsQuestion {
   private final DCsQStrategy strategy;
   private final int budget;
 
-  public DCsQuestion(List<DenialConstraint> gtDCs, List<DenialConstraint> testDCs,
+  public DCsQuestion(NTreeSearch gtTree, Set<DenialConstraint> testDCs,
       Set<DCViolation> vios, Map<String, Double> columnsCorrScoreMap, int minLenOfDC,
       double succinctFactor, DCsQStrategy strategy, int budget) {
-    this.gtDCs = gtDCs;
+    this.gtTree = gtTree;
     this.testDCs = testDCs;
     this.vios = vios;
     this.columnsCorrScoreMap = columnsCorrScoreMap;
@@ -48,10 +48,7 @@ public class DCsQuestion {
   public DCsQuestionResult simulate() {
     log.debug("Simulating dc question...");
     log.debug("Using strategy = {}, budget = {}", strategy, budget);
-    NTreeSearch gtTree = new NTreeSearch();
-    for (DenialConstraint gtDC : gtDCs) {
-      gtTree.add(PredicateSetFactory.create(gtDC.getPredicateSet()).getBitset());
-    }
+    log.debug("SuccinctFactor = {}, minLenOfDC = {}", succinctFactor, minLenOfDC);
 
     Map<DenialConstraint, Integer> dcViosMap = Maps.newHashMap();
     for (DCViolation vio : vios) {
