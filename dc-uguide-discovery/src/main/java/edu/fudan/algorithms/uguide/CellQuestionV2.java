@@ -19,14 +19,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Lingfeng
  */
 @Slf4j
-public class CellQuestionV2 implements CellQuestion {
+public class CellQuestionV2 {
 
   // 输入
   private final Input di;
@@ -37,14 +36,12 @@ public class CellQuestionV2 implements CellQuestion {
   private final int budget;
   private final double delta;
   private final boolean canBreakEarly;
-  private final boolean randomChoose;
+  private final CellQStrategy strategy;
   private final double excludeLinePercent;
-  @Getter
-  private CellQuestionResult result;
 
   public CellQuestionV2(Input di, Set<TCell> cellsOfChanges, Set<DenialConstraint> dcs,
-      Set<DCViolation> vios, int budget, double delta, boolean canBreakEarly, boolean randomChoose,
-      double excludeLinePercent) {
+      Set<DCViolation> vios, int budget, double delta, boolean canBreakEarly,
+      CellQStrategy strategy, double excludeLinePercent) {
     this.di = di;
     this.cellsOfChanges = cellsOfChanges;
     this.dcs = dcs;
@@ -52,17 +49,13 @@ public class CellQuestionV2 implements CellQuestion {
     this.budget = budget;
     this.delta = delta;
     this.canBreakEarly = canBreakEarly;
-    this.randomChoose = randomChoose;
+    this.strategy = strategy;
     this.excludeLinePercent = excludeLinePercent;
   }
 
-  @Override
-  public int getBudgetUsed() {
-    return this.result.getSelectedCells().size();
-  }
-
-  public void simulate() {
+  public CellQuestionResult simulate() {
     log.debug("Simulating cell question...");
+    log.debug("Using strategy = {}, budget = {}", strategy, budget);
     log.debug("Building index start.");
     // All cells in all violations.
     Set<TCell> cells = Sets.newHashSet();
@@ -134,9 +127,19 @@ public class CellQuestionV2 implements CellQuestion {
       // 选择cell:
       // 1.随机选择cell
       // 2.根据置信度选择cell
-      TCell selCell = randomChoose ? randomChooseCell(cellsList)
-          : chooseCell(cellsList, cellDCsMap, dcWeightMap, pendingCells, falseDCs,
+      TCell selCell = null;
+      switch (strategy) {
+        case RANDOM:
+          selCell = randomChooseCell(cellsList);
+          break;
+        case VIO_AND_CONF:
+          selCell = chooseCell(cellsList, cellDCsMap, dcWeightMap, pendingCells, falseDCs,
               chosenFromCellList, chosenFromPendingList);
+          break;
+        default:
+          log.error("Unknown strategy: {}", strategy);
+          break;
+      }
       selectedCells.add(selCell);
 //      log.debug("SelectedCell = {}", selectedCell.toString());
 
@@ -284,8 +287,7 @@ public class CellQuestionV2 implements CellQuestion {
 //    List<Integer> randomExcludedLines = getRandomElements(excludedLines, num);
 //    log.debug("RandomExcludedLines = {}, {} of {}", randomExcludedLines.size(), excludeLinePercent,
 //        excludedLines.size());
-    this.result = new CellQuestionResult(new HashSet<>(), new HashSet<>(), new HashSet<>(),
-        falseDCs, new HashSet<>(), new HashSet<>(), new HashSet<>());
+    return new CellQuestionResult(falseDCs, selectedCells.size());
   }
 
   private void addToDCViosMap(DCViolation vio, DenialConstraint dc,

@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -27,18 +26,29 @@ public class Strategy {
   }
 
   /**
-   * 根据行关联的对象集合的数量降序排序
+   * 根据行关联的对象集合的数量降序排序，先按第一个Map排序，再按第二个Map排序。
    *
-   * @param lineSetCountMap 行和关联对象集合的Map
-   * @param <T>             关联的对象泛型
-   * @return 排好序的Map
+   * @param map1 第一个Map
+   * @param map2 第二个Map
+   * @param <T1> 对象1泛型
+   * @param <T2> 对象2泛型
+   * @return 排好序的Lines
    */
-  public static <T> ArrayList<Entry<Integer, Set<T>>> getSortedLines(
-      Map<Integer, Set<T>> lineSetCountMap) {
-    ArrayList<Entry<Integer, Set<T>>> sortedEntries = new ArrayList<>(
-        lineSetCountMap.entrySet());
-    sortedEntries.sort(Comparator.comparingInt(entry -> -entry.getValue().size()));
-    return sortedEntries;
+  public static <T1, T2> List<Integer> getSortedLines(Map<Integer, Set<T1>> map1,
+      Map<Integer, Set<T2>> map2) {
+    Set<Integer> set1 = map1.keySet();
+    List<Integer> result = new ArrayList<>(set1);
+    // Sort by map1 in descending order.
+    result.sort(Comparator.comparingInt(l -> -map1.get(l).size()));
+    if (map2 != null) {
+      Set<Integer> set2 = map2.keySet();
+      if (!set1.equals(set2)) {
+        throw new IllegalArgumentException("Not equal: set1, set2.");
+      }
+      // Sort by map2 in descending order.
+      result.sort(Comparator.comparingInt(l -> -map2.get(l).size()));
+    }
+    return result;
   }
 
   /**

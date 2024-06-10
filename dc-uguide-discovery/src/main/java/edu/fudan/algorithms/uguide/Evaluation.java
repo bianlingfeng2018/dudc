@@ -1,8 +1,6 @@
 package edu.fudan.algorithms.uguide;
 
-import static edu.fudan.algorithms.uguide.Strategy.addToCountMap;
 import static edu.fudan.algorithms.uguide.Strategy.getRandomElements;
-import static edu.fudan.algorithms.uguide.Strategy.getSortedLines;
 import static edu.fudan.conf.DefaultConf.debugDCVioMap;
 import static edu.fudan.conf.DefaultConf.defaultErrorThreshold;
 import static edu.fudan.conf.DefaultConf.dynamicG1;
@@ -35,7 +33,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
@@ -203,23 +200,23 @@ public class Evaluation {
     List<DenialConstraint> dcList = DCLoader.load(headerPath, this.groundTruthDCsPath);
     // 检测冲突，结果应该为0
     log.debug("Confirm clean data HAS NO vios wrt ground truth DCs");
-    DCViolationSet viosOnClean =
-        new HydraDetector(cleanPath, this.groundTruthDCsPath, headerPath).detect();
+    DCViolationSet viosOnClean = new HydraDetector(cleanPath, this.groundTruthDCsPath,
+        headerPath).detect();
     if (viosOnClean.size() != 0) {
       throw new RuntimeException("Found vios of gtDCs on clean data");
     }
     // 检测冲突，设定GroundTruth规则应当在脏数据集上发现的冲突数量
     log.debug("Confirm dirty data HAS vios wrt ground truth DCs");
-    DCViolationSet viosOnDirty =
-        new HydraDetector(dirtyPath, this.groundTruthDCsPath, headerPath).detect();
+    DCViolationSet viosOnDirty = new HydraDetector(dirtyPath, this.groundTruthDCsPath,
+        headerPath).detect();
     if (viosOnDirty.size() == 0) {
       throw new RuntimeException("No vios of gtDCs on dirty data");
     }
     // 设定GroundTruth
     this.groundTruthViolations = viosOnDirty.getViosSet();
     this.groundTruthDCs.addAll(dcList);
-    log.info("GroundTruthDCsSize={}, ViosSize={}",
-        this.groundTruthDCs.size(), this.groundTruthViolations.size());
+    log.info("GroundTruthDCsSize={}, ViosSize={}", this.groundTruthDCs.size(),
+        this.groundTruthViolations.size());
     for (DenialConstraint gtDC : this.groundTruthDCs) {
       this.gtTree.add(PredicateSetFactory.create(gtDC.getPredicateSet()).getBitset());
     }
@@ -234,11 +231,8 @@ public class Evaluation {
     this.clearVisitedDCs();
   }
 
-  public void update(Set<DenialConstraint> newCandiDCs,
-      Set<DenialConstraint> falseDCs,
-      Set<DCViolation> newCandiVios,
-      Set<DCViolation> falseViolations,
-      Set<Integer> excludedLines) {
+  public void update(Set<DenialConstraint> newCandiDCs, Set<DenialConstraint> falseDCs,
+      Set<DCViolation> newCandiVios, Set<DCViolation> falseViolations, Set<Integer> excludedLines) {
     // 更新当前状态
     updateCurrState(newCandiDCs, newCandiVios);
     if (newCandiDCs != null) {
@@ -377,14 +371,12 @@ public class Evaluation {
     this.cellsOfTrueVios = getCellsOfViolations(this.trueViolations,
         generateNewCopy(this.dirtyDS.getDataPath()));
     this.cellsOfTrueViosAndChanges = this.cellsOfTrueVios.stream()
-        .filter(tc -> this.cellsOfChanges.contains(tc))
-        .collect(Collectors.toSet());
+        .filter(tc -> this.cellsOfChanges.contains(tc)).collect(Collectors.toSet());
     long t4 = System.currentTimeMillis();
     log.debug("Eval 3 time = {}s", (t4 - t3) / 1000.0);
     // 评价sample中已排除的错误元组数量
     this.errorLinesInSampleAndExcluded = this.errorLinesInSample.stream()
-        .filter(lineIndex -> this.excludedLines.contains(lineIndex))
-        .collect(Collectors.toSet());
+        .filter(lineIndex -> this.excludedLines.contains(lineIndex)).collect(Collectors.toSet());
     long t5 = System.currentTimeMillis();
     log.debug("Eval 4 time = {}s", (t5 - t4) / 1000.0);
     // 评价sample的error lines
@@ -415,8 +407,7 @@ public class Evaluation {
     this.sampleResult = sampleResult;
     Set<Integer> allLinesInSample = this.sampleResult.getLineIndices();
     this.errorLinesInSample = allLinesInSample.stream()
-        .filter(i -> this.errorLinesOfChanges.contains(i))
-        .collect(Collectors.toSet());
+        .filter(i -> this.errorLinesOfChanges.contains(i)).collect(Collectors.toSet());
   }
 
   public boolean isTrueDC(DenialConstraint dc) {
@@ -425,7 +416,9 @@ public class Evaluation {
   }
 
   public boolean isTrueViolation(DenialConstraint dc, LinePair linePair) {
-    // TODO: 可以这么判断真冲突，但是不能就说它对应的规则就是真规则
+    // TODO: 这里判断真冲突的方法是取巧的方法。
+    //  正确判断真冲突的方法是：若冲突内包含脏数据，则为真冲突。
+    //  真冲突不能说明其对应的规则为真规则。
     return this.isTrueDC(dc);
   }
 
@@ -457,32 +450,6 @@ public class Evaluation {
   public int getSampleResultSize() {
     Set<Integer> lineIndices = this.sampleResult.getLineIndices();
     return lineIndices.size();
-  }
-
-  public Set<Integer> genTupleQuestionsFromCurrState(int maxQueryBudget) {
-    // 随机选择元组问题
-//    List<Integer> chosenLinesInSample = getRandomElements(this.sampleResult.getLineIndices(),
-//        maxQueryBudget);
-    // 优化选择元组问题
-    Map<Integer, Set<DCViolation>> lineViosCountMap = Maps.newHashMap();
-    for (DCViolation vio : this.currVios) {
-      LinePair linePair = vio.getLinePair();
-      int line1 = linePair.getLine1();
-      int line2 = linePair.getLine2();
-      addToCountMap(lineViosCountMap, line1, vio);
-      addToCountMap(lineViosCountMap, line2, vio);
-    }
-    // 关联vio数量多的在前
-    ArrayList<Entry<Integer, Set<DCViolation>>> sortedLineVioMap = getSortedLines(
-        lineViosCountMap);
-    List<Entry<Integer, Set<DCViolation>>> subList = sortedLineVioMap.subList(0,
-        Math.min(maxQueryBudget, sortedLineVioMap.size()));
-    Set<Integer> chosenLines = Sets.newHashSet();
-    for (Entry<Integer, Set<DCViolation>> entry : subList) {
-      Integer key = entry.getKey();
-      chosenLines.add(key);
-    }
-    return new HashSet<>(chosenLines);
   }
 
   public Set<DenialConstraint> genDCQuestionsFromCurrState(int maxQueryBudget) {
@@ -535,8 +502,7 @@ public class Evaluation {
   /**
    * 重新计算changes相关的数据
    */
-  public void updateChanges()
-      throws InputGenerationException, FileNotFoundException {
+  public void updateChanges() throws InputGenerationException, FileNotFoundException {
     this.lineChangesMap = genLineChangesMap(this.dirtyDS.getDataPath(), this.changes);
     this.cellsOfChanges = DCUtil.getCellsOfChanges(this.changes);
     this.errorLinesOfChanges = getErrorLinesContainingChanges(this.changes);

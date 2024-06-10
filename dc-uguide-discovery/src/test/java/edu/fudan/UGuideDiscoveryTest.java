@@ -32,8 +32,6 @@ import java.util.stream.Collectors;
 
 import static edu.fudan.algorithms.BasicDCGenerator.getSortedDCs;
 import static edu.fudan.algorithms.BasicDCGenerator.persistDCFinderDCs;
-import static edu.fudan.algorithms.uguide.Strategy.addToCountMap;
-import static edu.fudan.algorithms.uguide.Strategy.getSortedLines;
 import static edu.fudan.conf.DefaultConf.*;
 import static edu.fudan.utils.CorrelationUtil.getDCScoreUniformMap;
 import static edu.fudan.utils.CorrelationUtil.readColumnCorrScoreMap;
@@ -407,64 +405,6 @@ public class UGuideDiscoveryTest {
     log.debug("DCs size = {}", next.size());
   }
 
-  // Tuple strategy
-  @Test
-  public void testTupleQuestion() {
-    // TODO: 测试优先选择关联冲突多的元组，以及优先选择关联冲突规则多的元组，以及在脏数据集还是采样数据集上效果更好？
-    Set<DCViolation> vios = new HydraDetector(dirtyDataPath, fullDCsPath, headerPath).detect()
-        .getViosSet();
-    Set<Integer> errorLines = getErrorLinesContainingChanges(loadChanges(changesPath));
-    Map<Integer, Set<DCViolation>> lineViosCountMap = Maps.newHashMap();
-    Map<Integer, Set<DenialConstraint>> lineDCsCountMap = Maps.newHashMap();
-    Set<Integer> lines = Sets.newHashSet();
-    for (DCViolation vio : vios) {
-      LinePair linePair = vio.getLinePair();
-      List<DenialConstraint> dcList = vio.getDenialConstraintsNoData();
-      int line1 = linePair.getLine1();
-      int line2 = linePair.getLine2();
-      addToCountMap(lineViosCountMap, line1, vio);
-      addToCountMap(lineViosCountMap, line2, vio);
-      for (DenialConstraint dc : dcList) {
-        addToCountMap(lineDCsCountMap, line1, dc);
-        addToCountMap(lineDCsCountMap, line2, dc);
-      }
-
-      lines.add(line1);
-      lines.add(line2);
-    }
-
-    // 单一排序1:关联vio数量多的在前
-    ArrayList<Entry<Integer, Set<DCViolation>>> sortedLineVioMap = getSortedLines(lineViosCountMap);
-    // 单一排序2:关联DC数量多的在前
-    ArrayList<Entry<Integer, Set<DenialConstraint>>> sortedLineDCMap = getSortedLines(
-        lineDCsCountMap);
-    // 混合排序1:以DC数量排序为主
-    List<Entry<Integer, Set<DCViolation>>> sortedComposeDCCountPrior = sortedLineVioMap.stream()
-        .sorted(Comparator.comparingInt(entry -> {
-          int size = lineDCsCountMap.get(entry.getKey()).size();
-          return -size;
-        })).collect(Collectors.toList());
-    // 混合排序2:以vio数量排序位置
-    List<Entry<Integer, Set<DenialConstraint>>> sortedComposeVioCountPrior = sortedLineDCMap.stream()
-        .sorted(Comparator.comparingInt(entry -> {
-          int size = lineViosCountMap.get(entry.getKey()).size();
-          return -size;
-        })).collect(Collectors.toList());
-    int limit = 100;
-    // 随机
-    double errorPerByVioCount = getErrorPercent(sortedLineVioMap, errorLines, limit);
-    double errorPerByDCCount = getErrorPercent(sortedLineDCMap, errorLines, limit);
-    double errorPerByComposeDCPrior = getErrorPercent(sortedComposeDCCountPrior, errorLines, limit);
-    double errorPerByComposeVioPrior = getErrorPercent(sortedComposeVioCountPrior, errorLines,
-        limit);
-    double errorPerByRandom = getErrorPercent(lines, errorLines, limit);
-    log.debug("ErrorPerByVioCount = {}", errorPerByVioCount);
-    log.debug("ErrorPerByDCCount = {}", errorPerByDCCount);
-    log.debug("ErrorPerByComposeDCPrior = {}", errorPerByComposeDCPrior);
-    log.debug("ErrorPerByComposeVioPrior = {}", errorPerByComposeVioPrior);
-    log.debug("ErrorPerByRandom = {}", errorPerByRandom);
-  }
-
   // DC strategy
   @Test
   public void testDCsQuestion() throws IOException {
@@ -618,43 +558,6 @@ public class UGuideDiscoveryTest {
                 (Entry<DenialConstraint, Set<DCViolation>> entry) -> -entry.getValue().size())
 //            .reversed()  // 综合打分相同的情况下，冲突数量多的在前
     );
-  }
-
-  private static <T> double getErrorPercent(Set<Integer> lines, Set<Integer> errorLines,
-      int limit) {
-    int errorFound = 0;
-    int i = 0;
-    for (Integer line : lines) {
-      i++;
-      if (i > limit) {
-        break;
-      }
-      if (errorLines.contains(line)) {
-        errorFound++;
-      }
-    }
-    log.debug("Error lines {} in {} limit {}", errorFound, errorLines.size(), limit);
-    double per = (double) errorFound / limit;
-    return per;
-  }
-
-  private static <T> double getErrorPercent(List<Entry<Integer, Set<T>>> entries,
-      Set<Integer> errorLines, int limit) {
-    int errorFound = 0;
-    int i = 0;
-    for (Entry<Integer, Set<T>> entry : entries) {
-      i++;
-      if (i > limit) {
-        break;
-      }
-      Integer line = entry.getKey();
-      if (errorLines.contains(line)) {
-        errorFound++;
-      }
-    }
-    log.debug("Error lines {} in {} limit {}", errorFound, errorLines.size(), limit);
-    double per = (double) errorFound / limit;
-    return per;
   }
 
   private static void detectUsingHydraDetector(HydraDetector detector, String changesPath,

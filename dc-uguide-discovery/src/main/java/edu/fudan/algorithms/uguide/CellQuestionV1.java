@@ -14,29 +14,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Lingfeng
  */
 @Slf4j
-public class CellQuestionV1 implements CellQuestion {
+public class CellQuestionV1 {
 
   private final Evaluation evaluation;
-  @Getter
-  private CellQuestionResult result;
 
   public CellQuestionV1(Evaluation evaluation) {
     this.evaluation = evaluation;
   }
 
-  @Override
-  public int getBudgetUsed() {
-    return this.result.getSelectedViolations().size();
-  }
-
-  public void simulate() {
+  public CellQuestionResult simulate() {
     Set<DCViolation> selectedVios = evaluation.genCellQuestionsFromCurrState(maxCellQuestionBudget);
     Set<Integer> excludedLinesInCellQ = Sets.newHashSet();
     Set<DenialConstraint> dcsFromQuestions = getDCsSetFromViolations(selectedVios);
@@ -55,24 +47,23 @@ public class CellQuestionV1 implements CellQuestion {
       }
     }
     for (DCViolation vio : selectedVios) {
-      // TODO: Input和LinePair结合找出相关Cells，给用户判断是否为真冲突
       List<DenialConstraint> dcs = vio.getDenialConstraintsNoData();
-      for (DenialConstraint dc : dcs) {
-        if (evaluation.isTrueViolation(dc, vio.getLinePair())) {
-          trueVios.add(vio);
-          // 若为真冲突，则增加DC的置信度
-          dcTrustMap.put(dc, dcTrustMap.get(dc) + 1);
-          // 若为真冲突，排除脏数据
-          LinePair linePair = vio.getLinePair();
-          int line1 = linePair.getLine1();
-          int line2 = linePair.getLine2();
-          excludedLinesInCellQ.add(line1);
-          excludedLinesInCellQ.add(line2);
-        } else {
-          falseVios.add(vio);
-          // 若为假冲突，排除假阳性DC
-          falseDCs.add(dc);
-        }
+      DenialConstraint dc = dcs.get(0);
+      // Simulate check if it is a true violation!!!
+      if (evaluation.isTrueViolation(dc, vio.getLinePair())) {
+        trueVios.add(vio);
+        // 若为真冲突，则增加DC的置信度
+        dcTrustMap.put(dc, dcTrustMap.get(dc) + 1);
+        // 若为真冲突，排除脏数据
+        LinePair linePair = vio.getLinePair();
+        int line1 = linePair.getLine1();
+        int line2 = linePair.getLine2();
+        excludedLinesInCellQ.add(line1);
+        excludedLinesInCellQ.add(line2);
+      } else {
+        falseVios.add(vio);
+        // 若为假冲突，排除假阳性DC
+        falseDCs.add(dc);
       }
     }
     log.info("CheckedDCs(with trusts(TrueViolationSize)): {}", dcTrustMap.keySet().size());
@@ -97,10 +88,7 @@ public class CellQuestionV1 implements CellQuestion {
       log.debug("{}", DCFormatUtil.convertDC2String(dc));
     }
 
-    this.result = new CellQuestionResult(new HashSet<>(), selectedVios, trueDCs, falseDCs, trueVios,
-        falseVios,
-        excludedLinesInCellQ);
+    return new CellQuestionResult(falseDCs, selectedVios.size());
   }
-
 
 }

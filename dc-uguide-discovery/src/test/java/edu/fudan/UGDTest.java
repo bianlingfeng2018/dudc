@@ -21,11 +21,14 @@ import edu.fudan.algorithms.DCViolation;
 import edu.fudan.algorithms.DCViolationSet;
 import edu.fudan.algorithms.HydraDetector;
 import edu.fudan.algorithms.TupleSampler;
-import edu.fudan.algorithms.uguide.CellQuestion;
+import edu.fudan.algorithms.uguide.CellQStrategy;
 import edu.fudan.algorithms.uguide.CellQuestionResult;
 import edu.fudan.algorithms.uguide.CellQuestionV2;
 import edu.fudan.algorithms.uguide.TCell;
 import edu.fudan.algorithms.uguide.TChange;
+import edu.fudan.algorithms.uguide.TupleQStrategy;
+import edu.fudan.algorithms.uguide.TupleQuestion;
+import edu.fudan.algorithms.uguide.TupleQuestionResult;
 import edu.fudan.utils.DCUtil;
 import edu.fudan.utils.FileUtil;
 import edu.fudan.utils.UGDParams;
@@ -126,8 +129,8 @@ public class UGDTest {
   public void testCellQuestion() {
     // TODO: 目前发现一个BART的BUG:
     //  注入错误后，输出的xxx_dirty.csv中单引号(')变成两个单引号('')，如果出现这种情况，需要手动替换一下。
-    boolean randomChoose = true;
-    int budget = 1000;
+    CellQStrategy strategy = CellQStrategy.VIO_AND_CONF;
+    int budget = 100;
     Set<DCViolation> vios = new HydraDetector(params.dirtyDataPath, params.topKDCsPath,
         params.headerPath).detect().getViosSet();
     Input di = generateNewCopy(params.dirtyDataPath);
@@ -136,11 +139,30 @@ public class UGDTest {
     log.debug("DCs={}, Violations={}, CellsOfChanges={}, CellQBudgets={}", dcs.size(), vios.size(),
         cellsOfChanges.size(), budget);
 
-    CellQuestion selector = new CellQuestionV2(di, cellsOfChanges, new HashSet<>(dcs), vios, budget,
-        delta, canBreakEarly, randomChoose, excludeLinePercent);
-    selector.simulate();
+    CellQuestionV2 selector = new CellQuestionV2(di, cellsOfChanges, new HashSet<>(dcs), vios,
+        budget, delta, canBreakEarly, strategy, excludeLinePercent);
+    CellQuestionResult result = selector.simulate();
 
-    CellQuestionResult result = selector.getResult();
     log.debug(result.toString());
   }
+
+  /**
+   * Test tuple question.
+   */
+  @Test
+  public void testTupleQuestion() {
+    // RANDOM, DCS, VIOLATIONS, DCS_PRIOR, VIOLATIONS_PRIOR
+    // 0.02, 0.26, 0.715, 0.47, 0.725
+    TupleQStrategy strategy = TupleQStrategy.VIOLATIONS_PRIOR;
+    int budget = 200;
+    Set<DCViolation> vios = new HydraDetector(params.dirtyDataPath, params.topKDCsPath,
+        params.headerPath).detect().getViosSet();
+
+    Set<Integer> errorLines = getErrorLinesContainingChanges(loadChanges(params.changesPath));
+    TupleQuestion selector = new TupleQuestion(errorLines, vios, strategy, budget);
+    TupleQuestionResult result = selector.simulate();
+
+    log.debug(result.toString());
+  }
+
 }

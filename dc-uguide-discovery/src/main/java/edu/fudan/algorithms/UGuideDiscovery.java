@@ -2,6 +2,7 @@ package edu.fudan.algorithms;
 
 import static edu.fudan.conf.DefaultConf.addCounterExampleS;
 import static edu.fudan.conf.DefaultConf.canBreakEarly;
+import static edu.fudan.conf.DefaultConf.cellQStrategy;
 import static edu.fudan.conf.DefaultConf.dcGeneratorConf;
 import static edu.fudan.conf.DefaultConf.delta;
 import static edu.fudan.conf.DefaultConf.excludeLinePercent;
@@ -11,9 +12,9 @@ import static edu.fudan.conf.DefaultConf.maxDiscoveryRound;
 import static edu.fudan.conf.DefaultConf.maxTupleQuestionBudget;
 import static edu.fudan.conf.DefaultConf.numInCluster;
 import static edu.fudan.conf.DefaultConf.questionsConf;
-import static edu.fudan.conf.DefaultConf.randomCellQ;
 import static edu.fudan.conf.DefaultConf.randomClusterS;
 import static edu.fudan.conf.DefaultConf.topKOfCluster;
+import static edu.fudan.conf.DefaultConf.tupleQStrategy;
 import static edu.fudan.utils.FileUtil.generateNewCopy;
 import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
 
@@ -25,7 +26,6 @@ import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
 import edu.fudan.algorithms.TupleSampler.SampleResult;
 import edu.fudan.algorithms.uguide.CandidateDCs;
-import edu.fudan.algorithms.uguide.CellQuestion;
 import edu.fudan.algorithms.uguide.CellQuestionResult;
 import edu.fudan.algorithms.uguide.CellQuestionV2;
 import edu.fudan.algorithms.uguide.CleanDS;
@@ -34,6 +34,8 @@ import edu.fudan.algorithms.uguide.Evaluation;
 import edu.fudan.algorithms.uguide.Evaluation.EvalResult;
 import edu.fudan.algorithms.uguide.SampleDS;
 import edu.fudan.algorithms.uguide.TCell;
+import edu.fudan.algorithms.uguide.TupleQuestion;
+import edu.fudan.algorithms.uguide.TupleQuestionResult;
 import edu.fudan.transformat.DCFormatUtil;
 import edu.fudan.utils.CSVWriter;
 import edu.fudan.utils.DCUtil;
@@ -45,6 +47,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -169,10 +172,10 @@ public class UGuideDiscovery {
     log.info("===== 5.3 Ask DC question ======");
     // 给用户推荐DC进行判断
     Set<DenialConstraint> questions = evaluation.genDCQuestionsFromCurrState(maxDCQuestionBudget);
-    int qNum = questions.size();
-    log.info("DCQuestions/MaxDCQuestionBudget/CurrDCsSize={}/{}/{}", qNum, maxDCQuestionBudget,
-        evaluation.getCurrDCs().size());
-    evaluation.addDCBudget(qNum);
+    int budgetUsed = questions.size();
+    log.info("DCQuestions/MaxDCQuestionBudget/CurrDCsSize={}/{}/{}", budgetUsed,
+        maxDCQuestionBudget, evaluation.getCurrDCs().size());
+    evaluation.addDCBudget(budgetUsed);
     // 判断得到真DC
     Set<DenialConstraint> trueDCs = questions.stream().filter(dc -> evaluation.isTrueDC(dc))
         .collect(Collectors.toSet());
@@ -211,16 +214,19 @@ public class UGuideDiscovery {
   private void askTupleQuestion() {
     log.info("===== 5.2 Ask TUPLE question =====");
     // 在脏数据中，推荐一些元组让用户判断
-    Set<Integer> questions = evaluation.genTupleQuestionsFromCurrState(maxTupleQuestionBudget);
-    int qNum = questions.size();
-    log.info("TupleQuestions/MaxTupleQuestionBudget/SampleSize={}/{}/{}", qNum,
-        maxTupleQuestionBudget, evaluation.getSampleResultSize());
-    evaluation.addTupleBudget(qNum);
+    Set<Integer> errorLines = evaluation.getErrorLinesOfChanges();
+    Set<DCViolation> currVios = evaluation.getCurrVios();
+    TupleQuestion selector = new TupleQuestion(errorLines, currVios, tupleQStrategy,
+        maxTupleQuestionBudget);
+    TupleQuestionResult result = selector.simulate();
+
     // 排除错误行
-    Set<Integer> excludedLines = questions.stream()
-        .filter(lineIndex -> evaluation.getErrorLinesOfChanges().contains(lineIndex))
-        .collect(Collectors.toSet());
+    Set<Integer> excludedLines = new HashSet<>(result.getExcludedTuples());
     evaluation.setExcludedLinesInTupleQ(excludedLines);
+    int budgetUsed = result.getBudgetUsed();
+    log.info("TupleQuestions/MaxTupleQuestionBudget/SampleSize={}/{}/{}", budgetUsed,
+        maxTupleQuestionBudget, evaluation.getSampleResultSize());
+    evaluation.addTupleBudget(budgetUsed);
     log.info("FalseTuples(excludedLinesInDirty): {}", excludedLines.size());
     log.debug("TupleQuestion exclude : {}", excludedLines);
     evaluation.update(null, null, null, null, excludedLines);
@@ -235,20 +241,17 @@ public class UGuideDiscovery {
     Set<TCell> cellsOfChanges = evaluation.getCellsOfChanges();
     Set<DenialConstraint> currDCs = evaluation.getCurrDCs();
     Set<DCViolation> currVios = evaluation.getCurrVios();
-    CellQuestion selector = new CellQuestionV2(input, cellsOfChanges, currDCs, currVios,
-        maxCellQuestionBudget, delta, canBreakEarly, randomCellQ, excludeLinePercent);
+    CellQuestionV2 selector = new CellQuestionV2(input, cellsOfChanges, currDCs, currVios,
+        maxCellQuestionBudget, delta, canBreakEarly, cellQStrategy, excludeLinePercent);
 
-    selector.simulate();
-    CellQuestionResult result = selector.getResult();
+    CellQuestionResult result = selector.simulate();
     Set<DenialConstraint> falseDCs = result.getFalseDCs();
-//    Set<Integer> excludedLinesInCellQ = result.getExcludedLines();
-    int qNum = selector.getBudgetUsed();
-    log.info("CellQuestions/MaxCellQuestionBudget/CurrViosSize={}/{}/{}", qNum,
+    int budgetUsed = result.getBudgetUsed();
+    log.info("CellQuestions/MaxCellQuestionBudget/CurrViosSize={}/{}/{}", budgetUsed,
         maxCellQuestionBudget, currVios.size());
-    evaluation.addCellBudget(qNum);
-//    evaluation.setExcludedLinesInCellQ(excludedLinesInCellQ);
-    // TODO:这里效率待优化
-    // TODO: CellQ排除的元组虽然是真冲突中的，但是如果排除太多会导致有的规则因为缺少反例而无法发现，这里暂时不排除
+    evaluation.addCellBudget(budgetUsed);
+    // TODO: 这里效率待优化
+    // TODO: CellQ目前仅排除假规则
     evaluation.update(null, falseDCs, null, null, null);
   }
 

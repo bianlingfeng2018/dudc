@@ -1,5 +1,8 @@
 package edu.fudan.conf;
 
+import edu.fudan.algorithms.uguide.CellQStrategy;
+import edu.fudan.algorithms.uguide.TupleQStrategy;
+
 /**
  * @author Lingfeng
  */
@@ -44,11 +47,12 @@ public class DefaultConf {
   // CellQ
   public static int maxDiscoveryRound = 50;
   public static int maxCellQuestionBudget = 100;
-  public static boolean randomCellQ = false;
+  public static CellQStrategy cellQStrategy = CellQStrategy.VIO_AND_CONF;
   public static double delta = 0.1;
   public static boolean canBreakEarly = false;
   public static double excludeLinePercent = 0.1;
   // TupleQ
+  public static TupleQStrategy tupleQStrategy = TupleQStrategy.VIOLATIONS_PRIOR;
   public static int maxTupleQuestionBudget = 100;
   // DCsQ
   public static int maxDCQuestionBudget = 5;

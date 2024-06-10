@@ -132,10 +132,11 @@ public class ObjectConsistTest {
     map.put(1, set3);
     map.put(2, set2);
     map.put(3, set1);
-    ArrayList<Entry<Integer, Set<String>>> sortedLines = getSortedLines(map);
-    for (Entry<Integer, Set<String>> entry : sortedLines) {
-      log.debug("Entry.key = {}, Entry.value = {}", entry.getKey(), entry.getValue());
-    }  // Entry.key = 3 1 2 0
+    List<Integer> sortedLines = getSortedLines(map, null);
+    // line = 3 1 2 0
+    for (Integer line : sortedLines) {
+      log.debug("line = {}", line);
+    }
   }
 
   /**
