@@ -6,15 +6,20 @@ import static edu.fudan.conf.DefaultConf.excludeLinePercent;
 import static edu.fudan.conf.DefaultConf.numInCluster;
 import static edu.fudan.conf.DefaultConf.topKOfCluster;
 import static edu.fudan.utils.CorrelationUtil.readColumnCorrScoreMap;
+import static edu.fudan.utils.DCUtil.genLineChangesMap;
 import static edu.fudan.utils.DCUtil.getCellsOfChanges;
+import static edu.fudan.utils.DCUtil.getCellsOfViolation;
 import static edu.fudan.utils.DCUtil.getErrorLinesContainingChanges;
 import static edu.fudan.utils.DCUtil.loadChanges;
 import static edu.fudan.utils.DCUtil.printDCVioMap;
 import static edu.fudan.utils.FileUtil.generateNewCopy;
+import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
 
 import ch.javasoft.bitset.search.NTreeSearch;
+import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.input.Input;
+import de.hpi.naumann.dc.paritions.LinePair;
 import de.hpi.naumann.dc.predicates.sets.PredicateSetFactory;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
@@ -35,6 +40,7 @@ import edu.fudan.algorithms.uguide.TChange;
 import edu.fudan.algorithms.uguide.TupleQStrategy;
 import edu.fudan.algorithms.uguide.TupleQuestion;
 import edu.fudan.algorithms.uguide.TupleQuestionResult;
+import edu.fudan.transformat.DCFormatUtil;
 import edu.fudan.utils.DCUtil;
 import edu.fudan.utils.FileUtil;
 import edu.fudan.utils.UGDParams;
@@ -197,14 +203,14 @@ public class UGDTest {
     List<DenialConstraint> gtDCs = DCLoader.load(params.headerPath, params.groundTruthDCsPath);
     Map<String, Double> corrMap = readColumnCorrScoreMap(params.correlationByUserPath);
 
-    printCorrMap(corrMap);
+    printCorrMap(corrMap, 10);
 
     NTreeSearch gtTree = new NTreeSearch();
     for (DenialConstraint gtDC : gtDCs) {
       gtTree.add(PredicateSetFactory.create(gtDC.getPredicateSet()).getBitset());
     }
-    DCsQuestion selector = new DCsQuestion(gtTree, new HashSet<>(testDCs), vios,
-        corrMap, minLenOfDC, succinctFactor, strategy, budget);
+    DCsQuestion selector = new DCsQuestion(gtTree, new HashSet<>(testDCs), vios, corrMap,
+        minLenOfDC, succinctFactor, strategy, budget);
 
     // SUC_AND_COR_VIOS:
     // succinctFactor = 0.5
@@ -229,11 +235,95 @@ public class UGDTest {
     log.debug(result.toString());
   }
 
-  private void printCorrMap(Map<String, Double> columnsCorrScoreMap) {
+
+  /**
+   * Test repair lines.
+   */
+  @Test
+  public void testRepairLines()
+      throws IOException, InputGenerationException, InputIterationException {
+    File dataF = new File(params.dirtyDataPath);
+    List<TChange> changes = loadChanges(params.changesPath);
+    List<DenialConstraint> dcs = DCLoader.load(params.headerPath, params.topKDCsPath);
+    HydraDetector detector = new HydraDetector(params.dirtyDataPath, new HashSet<>(dcs));
+
+    // Detect violations before repairing lines.
+    log.debug("Detect before repairing.");
+    detectAndPrintViosWithCells(detector, params.dirtyDataPath, changes);
+
+    // Repair specified lines(e.g. all the lines containing errors.)
+    Map<Integer, Map<Integer, String>> lineChangesMap = genLineChangesMap(params.dirtyDataPath,
+        changes);
+    log.debug("Building index for changes={}", lineChangesMap.size());
+
+    // Specify some lines.
+    // Sets.newHashSet(6467)
+    Set<Integer> errorLinesOfChanges = getErrorLinesContainingChanges(changes);
+    log.debug("Specify error lines={}", errorLinesOfChanges.size());
+
+    // Repair lines.
+    List<List<String>> repairedLinesWithHeader = getRepairedLinesWithHeader(errorLinesOfChanges,
+        lineChangesMap, dataF);
+    log.debug("Repair lines={}", repairedLinesWithHeader.size());
+
+    // Persist.
+    log.debug("Write to file: {}", params.dirtyDataPath);
+    FileUtil.writeListLinesToFile(repairedLinesWithHeader, dataF);
+
+    // Detect violations after repairing lines.
+    log.debug("Detect after repairing.");
+    detectAndPrintViosWithCells(detector, params.dirtyDataPath, changes);
+  }
+
+  /**
+   * Detect and print violations with cells contained in it.
+   *
+   * @param detector      Hydra detector
+   * @param dirtyDataPath Dirty data path
+   * @param changes       Changes loaded from file
+   */
+  private void detectAndPrintViosWithCells(HydraDetector detector, String dirtyDataPath,
+      List<TChange> changes) {
+    DCViolationSet vios = detector.detect();
+
+    printDCVioMap(vios);
+
+    Set<TCell> cellsOfChanges = getCellsOfChanges(changes);
+
+    // 每个DC只打印一个冲突样例
+    log.debug("Print example violation with cells contained in it.");
+    Set<DenialConstraint> visitedDCs = Sets.newHashSet();
+    Input di = generateNewCopy(dirtyDataPath);
+    for (DCViolation v : vios.getViosSet()) {
+      List<DenialConstraint> dcs = v.getDenialConstraintsNoData();
+      DenialConstraint dc = dcs.get(0);
+      String dcStr = DCFormatUtil.convertDC2String(dc);
+      if (!visitedDCs.contains(dc)) {
+        // 打印一个冲突中所有的Cell
+        LinePair linePair = v.getLinePair();
+        visitedDCs.add(dc);
+        log.debug("DC = {}", dcStr);
+        log.debug("LinePair = {}", linePair);
+        Set<TCell> cells = getCellsOfViolation(di, dc, linePair);
+        for (TCell cell : cells) {
+          boolean contains = cellsOfChanges.contains(cell);
+          log.debug("Cell={}, ContainedInChanges={}", cell, contains);
+        }
+      }
+    }
+  }
+
+  /**
+   * Print top-k column pairs with correlation score.
+   *
+   * @param columnsCorrScoreMap Correlation score map
+   * @param topK                Top-k
+   */
+  private void printCorrMap(Map<String, Double> columnsCorrScoreMap, int topK) {
     log.debug("ColumnsCorrScoreMap={}", columnsCorrScoreMap.size());
     ArrayList<Entry<String, Double>> entries = new ArrayList<>(columnsCorrScoreMap.entrySet());
     entries.sort(Comparator.comparingDouble(e -> -e.getValue()));
-    List<Entry<String, Double>> subList = entries.subList(0, 10);
+    List<Entry<String, Double>> subList = entries.subList(0, topK);
     for (Entry<String, Double> entry : subList) {
       log.debug("k={}, v={}", entry.getKey(), entry.getValue());
     }

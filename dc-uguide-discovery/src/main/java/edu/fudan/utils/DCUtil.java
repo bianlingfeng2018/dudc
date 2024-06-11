@@ -2,6 +2,7 @@ package edu.fudan.utils;
 
 import static edu.fudan.transformat.DCFormatUtil.extractColumnNameType;
 import static edu.fudan.transformat.DCFormatUtil.isLegalIndex4DCString;
+import static edu.fudan.utils.FileUtil.readColumnNames;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -13,10 +14,7 @@ import de.hpi.naumann.dc.paritions.LinePair;
 import de.hpi.naumann.dc.predicates.Predicate;
 import de.hpi.naumann.dc.predicates.operands.ColumnOperand;
 import de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
-import de.metanome.algorithm_integration.input.InputGenerationException;
-import de.metanome.algorithm_integration.input.RelationalInput;
 import de.metanome.algorithms.dcfinder.predicates.sets.PredicateSet;
-import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import edu.fudan.algorithms.DCLoader;
 import edu.fudan.algorithms.DCViolation;
 import edu.fudan.algorithms.DCViolationSet;
@@ -25,7 +23,6 @@ import edu.fudan.algorithms.uguide.TChange;
 import edu.fudan.transformat.DCFormatUtil;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -164,46 +161,46 @@ public class DCUtil {
     return cells;
   }
 
-  /**
-   * 获取冲突的单元格，单元格值直接从hydraDC中读取
-   *
-   * @param hydraDC
-   * @param linePair
-   * @return
-   */
-  public static Set<TCell> getCellsOfViolation(DenialConstraint hydraDC, LinePair linePair) {
-    Set<TCell> cells = new HashSet<>();
-    int line1 = linePair.getLine1();
-    int line2 = linePair.getLine2();
-    PredicateBitSet predicateSet = hydraDC.getPredicateSet();
-    for (Predicate predicate : predicateSet) {
-      ColumnOperand<?> operand1 = predicate.getOperand1();
-      ColumnOperand<?> operand2 = predicate.getOperand2();
-      String colName1 = operand1.getColumn().getName();
-      String colName2 = operand2.getColumn().getName();
-
-      // 直接读取值v1 v2
-      Comparable<?> v1 = operand1.getValue(line1, line2);
-      Comparable<?> v2 = operand2.getValue(line1, line2);
-
-      String v1String = v1.toString();
-      String v2String = v2.toString();
-      String col1Lowercase = extractColumnNameType(colName1)[0];
-      String col2Lowercase = extractColumnNameType(colName2)[0];
-
-      cells.add(new TCell(line1, col1Lowercase.toLowerCase(), v1String));
-      cells.add(new TCell(line2, col2Lowercase.toLowerCase(), v2String));
-    }
-    return cells;
-  }
+//  /**
+//   * 获取冲突的单元格，单元格值直接从hydraDC中读取
+//   *
+//   * @param hydraDC
+//   * @param linePair
+//   * @return
+//   */
+//  public static Set<TCell> getCellsOfViolation(DenialConstraint hydraDC, LinePair linePair) {
+//    Set<TCell> cells = new HashSet<>();
+//    int line1 = linePair.getLine1();
+//    int line2 = linePair.getLine2();
+//    PredicateBitSet predicateSet = hydraDC.getPredicateSet();
+//    for (Predicate predicate : predicateSet) {
+//      ColumnOperand<?> operand1 = predicate.getOperand1();
+//      ColumnOperand<?> operand2 = predicate.getOperand2();
+//      String colName1 = operand1.getColumn().getName();
+//      String colName2 = operand2.getColumn().getName();
+//
+//      // 直接读取值v1 v2
+//      Comparable<?> v1 = operand1.getValue(line1, line2);
+//      Comparable<?> v2 = operand2.getValue(line1, line2);
+//
+//      String v1String = v1.toString();
+//      String v2String = v2.toString();
+//      String col1Lowercase = extractColumnNameType(colName1)[0];
+//      String col2Lowercase = extractColumnNameType(colName2)[0];
+//
+//      cells.add(new TCell(line1, col1Lowercase.toLowerCase(), v1String));
+//      cells.add(new TCell(line2, col2Lowercase.toLowerCase(), v2String));
+//    }
+//    return cells;
+//  }
 
   /**
    * 获取冲突的单元格，单元格值间接从input中读取
    *
-   * @param di
-   * @param dcNoData
-   * @param linePair
-   * @return
+   * @param di       数据输入
+   * @param dcNoData DC规则，不含数据
+   * @param linePair 元组对
+   * @return 一个冲突包含的单元格
    */
   public static Set<TCell> getCellsOfViolation(Input di, DenialConstraint dcNoData,
       LinePair linePair) {
@@ -280,52 +277,29 @@ public class DCUtil {
       String col1Name = extractColumnNameType(operand1.getColumn().getName())[0];
       String col2Name = extractColumnNameType(operand2.getColumn().getName())[0];
       String op = DCFormatUtil.convertOperator2String(p.getOperator());
-      if (!isLegalIndex4DCString(operand1Index) ||
-          !isLegalIndex4DCString(operand2Index)) {
+      if (!isLegalIndex4DCString(operand1Index) || !isLegalIndex4DCString(operand2Index)) {
         throw new RuntimeException("Illegal column index for DC string");
       }
-      String predicate = "t"
-          + operand1Index
-          + "."
-          + col1Name
-          + op
-          + "t"
-          + operand2Index
-          + "."
-          + col2Name;
+      String predicate =
+          "t" + operand1Index + "." + col1Name + op + "t" + operand2Index + "." + col2Name;
       predicates.add(predicate);
     }
-    String dcStr = "not("
-        + predicates.stream()
-        .sorted()
-        .collect(Collectors.joining("^"))
-        + ")";
+    String dcStr = "not(" + predicates.stream().sorted().collect(Collectors.joining("^")) + ")";
     return dcStr;
   }
 
   /**
-   * 根据changes，按行和列存储正确值
+   * 生成每一行的所有修改，每个修改包含列索引和列正确值。
    *
-   * @param dirtyDataPath
-   * @param changes
-   * @return
-   * @throws InputGenerationException
-   * @throws FileNotFoundException
+   * @param dirtyDataPath 脏数据路径
+   * @param changes       所有修改
+   * @return 每行对应列修改的映射
    */
   public static Map<Integer, Map<Integer, String>> genLineChangesMap(String dirtyDataPath,
-      List<TChange> changes)
-      throws InputGenerationException, FileNotFoundException {
-    RelationalInput ri = new DefaultFileInputGenerator(
-        new File(dirtyDataPath)).generateNewCopy();
-    List<String> columnNames = ri.columnNames();
-    try {
-      ri.close();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+      List<TChange> changes) {
+    List<String> columnNames = readColumnNames(dirtyDataPath);
     List<String> columnNamesSimple = columnNames.stream()
-        .map(col -> extractColumnNameType(col)[0].toLowerCase())
-        .collect(Collectors.toList());
+        .map(col -> extractColumnNameType(col)[0].toLowerCase()).collect(Collectors.toList());
     // 行-<列索引-列正确值>
     Map<Integer, Map<Integer, String>> lineChangesMap = Maps.newHashMap();
     for (TChange change : changes) {
@@ -358,7 +332,7 @@ public class DCUtil {
    * @param violationSet All violations
    */
   public static void printDCVioMap(DCViolationSet violationSet) {
-    log.debug("Print dc-violations map:");
+    log.debug("Violations size = {}, print dc-violations map:", violationSet.size());
     Set<DCViolation> vioSet = violationSet.getViosSet();
     Map<DenialConstraint, Integer> map = new HashMap<>();
     for (DCViolation vio : vioSet) {

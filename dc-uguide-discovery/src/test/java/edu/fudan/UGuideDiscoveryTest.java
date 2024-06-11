@@ -227,15 +227,6 @@ public class UGuideDiscoveryTest {
   }
 
   /**
-   * Test detect DCViolation using hydra, and print some logs
-   */
-  @Test
-  public void testDetectDCViolationUsingHydra() {
-    HydraDetector detector = new HydraDetector(dirtyDataPath, candidateTrueDCsPath, headerPath);
-    detectUsingHydraDetector(detector, changesPath, dirtyDataPath);
-  }
-
-  /**
    * Test violations size compare
    */
   @Test
@@ -425,85 +416,6 @@ public class UGuideDiscoveryTest {
   @Test
   public void testDynamicG1() {
     // TODO:如果待发现规则长，g1有生成太通用规则的风险，如果待发现规则短，g1有生成太特殊规则的风险
-  }
-
-  /**
-   * 测试修复脏数据
-   */
-  @Test
-  public void testRepairingDirty()
-      throws IOException, InputGenerationException, InputIterationException {
-    // 修复前检测
-    List<DenialConstraint> dcsWithoutData = DCLoader.load(headerPath, fullDCsPath);
-    HydraDetector detector = new HydraDetector(dirtyDataPath, new HashSet<>(dcsWithoutData));
-    detectUsingHydraDetector(detector, changesPath, dirtyDataPath);
-
-    // 修复脏数据指定的行（例如所有有错误的行）
-    String dataPath = dirtyDataPath;
-    File dataFile = new File(dataPath);
-    List<TChange> changes = loadChanges(changesPath);
-    Map<Integer, Map<Integer, String>> lineChangesMap = genLineChangesMap(dataPath, changes);
-    Set<Integer> errorLinesOfChanges = getErrorLinesContainingChanges(changes);
-//    Set<Integer> errorLinesOfChanges = Sets.newHashSet(6467);
-
-    // 修复
-    List<List<String>> repairedLinesWithHeader = getRepairedLinesWithHeader(errorLinesOfChanges,
-        lineChangesMap, dataFile);
-
-    // 保存
-    log.debug("Write to file: {}", dataPath);
-    FileUtil.writeListLinesToFile(repairedLinesWithHeader, dataFile);
-
-    // 修复后检测
-    detectUsingHydraDetector(detector, changesPath, dirtyDataPath);
-  }
-
-  /**
-   * 测试将规则转换成字符串时，谓词顺序永远保持一致
-   */
-  @Test
-  public void testDC2String() {
-    List<DenialConstraint> dcs = DCLoader.load(headerPath, fullDCsPath);
-    for (DenialConstraint dc : dcs) {
-      log.debug("{}", DCFormatUtil.convertDC2String(dc));
-    }
-  }
-
-  private static void detectUsingHydraDetector(HydraDetector detector, String changesPath,
-      String dirtyDataPath) {
-    DCViolationSet violationSet = detector.detect();
-    log.info("ViolationSet={}", violationSet.size());
-
-    printDCVioMap(violationSet);
-
-    List<TChange> changes = loadChanges(changesPath);
-    Set<TCell> cellsOfChanges = getCellsOfChanges(changes);
-
-    // 每个DC只打印一个冲突样例
-    Set<DenialConstraint> visitedDCs = Sets.newHashSet();
-    Input di = generateNewCopy(dirtyDataPath);
-    for (DCViolation v : violationSet.getViosSet()) {
-//      List<DenialConstraint> dcs = v.getConstraints();
-      List<DenialConstraint> dcs = v.getDenialConstraintsNoData();
-      if (dcs.size() != 1) {
-        throw new RuntimeException("Illegal dcs size");
-      }
-      DenialConstraint dc = dcs.get(0);
-      String dcStr = DCFormatUtil.convertDC2String(dc);
-      if (!visitedDCs.contains(dc)) {
-        // 打印一个冲突中所有的Cell
-        LinePair linePair = v.getLinePair();
-        visitedDCs.add(dc);
-        log.debug("{}", dcStr);
-        log.debug("LinePair = {}", linePair);
-//        Set<TCell> cells = getCellsOfViolation(dc, linePair);
-        Set<TCell> cells = getCellsOfViolation(di, dc, linePair);
-        for (TCell cell : cells) {
-          boolean contains = cellsOfChanges.contains(cell);
-          log.debug("cell={}, contains={}", cell, contains);
-        }
-      }
-    }
   }
 
 }

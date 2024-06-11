@@ -22,6 +22,13 @@ import java.util.stream.Collectors;
  */
 public class DCFormatUtil {
 
+  /**
+   * 将规则字符串转换成规则对象
+   *
+   * @param dcStr  规则字符串
+   * @param header 表头
+   * @return 规则对象
+   */
   public static DenialConstraint convertString2DC(String dcStr, String header) {
     try {
       if (dcStr == null || header == null) {
@@ -80,6 +87,12 @@ public class DCFormatUtil {
     }
   }
 
+  /**
+   * 将规则对象转换成规则字符串，且谓词顺序永远保持一致
+   *
+   * @param dc 规则对象
+   * @return 规则字符串
+   */
   public static String convertDC2String(DenialConstraint dc) {
     try {
       List<String> predicates = Lists.newArrayList();

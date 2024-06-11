@@ -6,7 +6,6 @@ import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
 import de.metanome.algorithm_integration.input.RelationalInput;
 import de.metanome.backend.input.file.DefaultFileInputGenerator;
-import edu.fudan.transformat.OperatorConst;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -23,6 +22,32 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class FileUtil {
+
+  /**
+   * 读取指定数据文件路径的列名称，并在结束时关闭资源
+   *
+   * @param path 数据路径
+   * @return 列名称
+   */
+  public static List<String> readColumnNames(String path) {
+    List<String> columnNames;
+    RelationalInput ri = null;
+    try {
+      ri = new DefaultFileInputGenerator(new File(path)).generateNewCopy();
+      columnNames = ri.columnNames();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    } finally {
+      try {
+        if (ri != null) {
+          ri.close();
+        }
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return columnNames;
+  }
 
   /**
    * 读取数据，并在结束时关闭资源
@@ -142,8 +167,7 @@ public class FileUtil {
   public static List<List<String>> getRepairedLinesWithHeader(Set<Integer> excludedLines,
       Map<Integer, Map<Integer, String>> lineChangesMap, File data)
       throws FileNotFoundException, InputGenerationException, InputIterationException {
-    DefaultFileInputGenerator actualGenerator =
-        new DefaultFileInputGenerator(data);
+    DefaultFileInputGenerator actualGenerator = new DefaultFileInputGenerator(data);
     ArrayList<List<String>> lines = Lists.newArrayList();
     RelationalInput ri = actualGenerator.generateNewCopy();
     // Add header
