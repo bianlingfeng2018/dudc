@@ -242,49 +242,56 @@ public class UGDTest {
   @Test
   public void testRepairLines()
       throws IOException, InputGenerationException, InputIterationException {
-    File dataF = new File(params.dirtyDataPath);
-    List<TChange> changes = loadChanges(params.changesPath);
-    List<DenialConstraint> dcs = DCLoader.load(params.headerPath, params.topKDCsPath);
-    HydraDetector detector = new HydraDetector(params.dirtyDataPath, new HashSet<>(dcs));
+//    String dsDirtyPath = params.dirtyDataPath;
+//    String changesPath = params.changesPath;
+//    String headerPath = params.headerPath;
+//    String topKDCsPath = params.topKDCsPath;
+    String dsDirtyPath = "../data/ds_dirty.txt";
+    String changesPath = "../data/changes.txt";
+    String headerPath = "../data/header.txt";
+    String topKDCsPath = "../data/dc_gt.txt";
+
+    File dataF = new File(dsDirtyPath);
+    List<TChange> changes = loadChanges(changesPath);
 
     // Detect violations before repairing lines.
     log.debug("Detect before repairing.");
-    detectAndPrintViosWithCells(detector, params.dirtyDataPath, changes);
+    detectAndPrintViosWithCells(headerPath, topKDCsPath, dsDirtyPath, changes);
 
     // Repair specified lines(e.g. all the lines containing errors.)
-    Map<Integer, Map<Integer, String>> lineChangesMap = genLineChangesMap(params.dirtyDataPath,
-        changes);
-    log.debug("Building index for changes={}", lineChangesMap.size());
+    Map<Integer, Map<Integer, String>> lineChangesMap = genLineChangesMap(dsDirtyPath, changes);
+    log.debug("Building index, lineChangesMap={}", lineChangesMap.size());
 
     // Specify some lines.
     // Sets.newHashSet(6467)
     Set<Integer> errorLinesOfChanges = getErrorLinesContainingChanges(changes);
-    log.debug("Specify error lines={}", errorLinesOfChanges.size());
+    log.debug("ErrorLinesOfChanges={}", errorLinesOfChanges.size());
 
     // Repair lines.
     List<List<String>> repairedLinesWithHeader = getRepairedLinesWithHeader(errorLinesOfChanges,
         lineChangesMap, dataF);
-    log.debug("Repair lines={}", repairedLinesWithHeader.size());
+    log.debug("RepairedLinesWithHeader={}", repairedLinesWithHeader.size());
 
     // Persist.
-    log.debug("Write to file: {}", params.dirtyDataPath);
+    log.debug("Write to file: {}", dsDirtyPath);
     FileUtil.writeListLinesToFile(repairedLinesWithHeader, dataF);
 
     // Detect violations after repairing lines.
     log.debug("Detect after repairing.");
-    detectAndPrintViosWithCells(detector, params.dirtyDataPath, changes);
+    detectAndPrintViosWithCells(headerPath, topKDCsPath, dsDirtyPath, changes);
   }
 
   /**
    * Detect and print violations with cells contained in it.
    *
-   * @param detector      Hydra detector
-   * @param dirtyDataPath Dirty data path
-   * @param changes       Changes loaded from file
+   * @param headerPath Header path
+   * @param dcsPath    DCs path
+   * @param changes    Changes loaded from file
    */
-  private void detectAndPrintViosWithCells(HydraDetector detector, String dirtyDataPath,
+  private void detectAndPrintViosWithCells(String headerPath, String dcsPath, String dsPath,
       List<TChange> changes) {
-    DCViolationSet vios = detector.detect();
+    List<DenialConstraint> dcs = DCLoader.load(headerPath, dcsPath);
+    DCViolationSet vios = new HydraDetector(dsPath, new HashSet<>(dcs)).detect();
 
     printDCVioMap(vios);
 
@@ -293,10 +300,9 @@ public class UGDTest {
     // 每个DC只打印一个冲突样例
     log.debug("Print example violation with cells contained in it.");
     Set<DenialConstraint> visitedDCs = Sets.newHashSet();
-    Input di = generateNewCopy(dirtyDataPath);
+    Input di = generateNewCopy(dsPath);
     for (DCViolation v : vios.getViosSet()) {
-      List<DenialConstraint> dcs = v.getDenialConstraintsNoData();
-      DenialConstraint dc = dcs.get(0);
+      DenialConstraint dc = v.getDenialConstraintsNoData().get(0);
       String dcStr = DCFormatUtil.convertDC2String(dc);
       if (!visitedDCs.contains(dc)) {
         // 打印一个冲突中所有的Cell
