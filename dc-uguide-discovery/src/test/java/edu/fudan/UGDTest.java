@@ -41,7 +41,6 @@ import edu.fudan.algorithms.uguide.TupleQStrategy;
 import edu.fudan.algorithms.uguide.TupleQuestion;
 import edu.fudan.algorithms.uguide.TupleQuestionResult;
 import edu.fudan.transformat.DCFormatUtil;
-import edu.fudan.utils.DCUtil;
 import edu.fudan.utils.FileUtil;
 import edu.fudan.utils.UGDParams;
 import edu.fudan.utils.UGDRunner;
@@ -117,11 +116,10 @@ public class UGDTest {
 
     log.debug("Params = {}", params.toString());
     BasicDCGenerator generator = new BasicDCGenerator(params.sampledDataPath, params.fullDCsPath,
-        params.headerPath, new HashSet<>(), g1, topK);
+        params.topKDCsPath, params.headerPath, new HashSet<>(), g1, topK);
 
     Set<DenialConstraint> dcs = generator.generateDCs();
     log.info("TopK dcs size={}", dcs.size());
-    DCUtil.persistTopKDCs(new ArrayList<>(dcs), params.topKDCsPath);
   }
 
   /**
@@ -242,24 +240,24 @@ public class UGDTest {
   @Test
   public void testRepairLines()
       throws IOException, InputGenerationException, InputIterationException {
-//    String dsDirtyPath = params.dirtyDataPath;
+//    String dsPath = params.dirtyDataPath;
 //    String changesPath = params.changesPath;
 //    String headerPath = params.headerPath;
-//    String topKDCsPath = params.topKDCsPath;
-    String dsDirtyPath = "../data/ds_dirty.txt";
+//    String dcsPath = params.topKDCsPath;
+    String dsPath = "../data/ds_dirty.txt";
     String changesPath = "../data/changes.txt";
     String headerPath = "../data/header.txt";
-    String topKDCsPath = "../data/dc_gt.txt";
+    String dcsPath = "../data/dc_gt.txt";
 
-    File dataF = new File(dsDirtyPath);
+    File dataF = new File(dsPath);
     List<TChange> changes = loadChanges(changesPath);
 
     // Detect violations before repairing lines.
     log.debug("Detect before repairing.");
-    detectAndPrintViosWithCells(headerPath, topKDCsPath, dsDirtyPath, changes);
+    detectAndPrintViosWithCells(headerPath, dcsPath, dsPath, changes);
 
     // Repair specified lines(e.g. all the lines containing errors.)
-    Map<Integer, Map<Integer, String>> lineChangesMap = genLineChangesMap(dsDirtyPath, changes);
+    Map<Integer, Map<Integer, String>> lineChangesMap = genLineChangesMap(dsPath, changes);
     log.debug("Building index, lineChangesMap={}", lineChangesMap.size());
 
     // Specify some lines.
@@ -273,12 +271,12 @@ public class UGDTest {
     log.debug("RepairedLinesWithHeader={}", repairedLinesWithHeader.size());
 
     // Persist.
-    log.debug("Write to file: {}", dsDirtyPath);
+    log.debug("Write to file: {}", dsPath);
     FileUtil.writeListLinesToFile(repairedLinesWithHeader, dataF);
 
     // Detect violations after repairing lines.
     log.debug("Detect after repairing.");
-    detectAndPrintViosWithCells(headerPath, topKDCsPath, dsDirtyPath, changes);
+    detectAndPrintViosWithCells(headerPath, dcsPath, dsPath, changes);
   }
 
   /**
@@ -286,6 +284,7 @@ public class UGDTest {
    *
    * @param headerPath Header path
    * @param dcsPath    DCs path
+   * @param dsPath     Dataset path
    * @param changes    Changes loaded from file
    */
   private void detectAndPrintViosWithCells(String headerPath, String dcsPath, String dsPath,
@@ -333,6 +332,38 @@ public class UGDTest {
     for (Entry<String, Double> entry : subList) {
       log.debug("k={}, v={}", entry.getKey(), entry.getValue());
     }
+  }
+
+  /**
+   * Test dynamic g1. Vary g1 to compare effectiveness of DC discovery.
+   */
+  @Test
+  public void testDynamicG1() {
+    // TODO: g1的设定到底取决于什么？什么情况下需要更小的g1，什么情况下需要更大的g1？
+    //  错误率->元组对->证据集->证据集覆盖->g1
+    //  最理想的情况下，发现的DC在脏数据集上产生的所有冲突都是真冲突，那么此时g1设置的刚刚好。
+    //  因此，可以通过估计错误，进而估计真冲突数量，最后估计真冲突元组对数量与所有元组对数量的比值，即g1
+    //  例如：3条元组，错误为其中1条，真冲突元组对数量为4，g1应当为4/6，即2/3；当g1大于2/3时，可以发现真DC
+    String dsPath = "../data/ds_dirty.txt";
+    String headerPath = "../data/header.txt";
+    String gtDCsPath = "../data/dc_gt.txt";
+    List<DenialConstraint> gtDCs = DCLoader.load(headerPath, gtDCsPath);
+
+    log.debug("Detect violations by gtDCs.");
+    DCViolationSet vios = new HydraDetector(dsPath, new HashSet<>(gtDCs)).detect();
+
+    // not(t1.A=t2.A^t1.B!=t2.B)->4
+    printDCVioMap(vios);
+
+    double g1 = 0.8;  // 0.66 0.67
+    String fullDCsPath = "../data/dc_full.txt";
+    String topKDCsPath = "../data/dc_top_k.txt";
+    log.debug("Discover dcs using g1 = {}.", g1);
+    BasicDCGenerator generator = new BasicDCGenerator(dsPath, fullDCsPath, topKDCsPath, headerPath,
+        new HashSet<>(), g1, Integer.MAX_VALUE);
+
+    Set<DenialConstraint> genDCs = generator.generateDCs();
+    log.info("GenDCs size = {}", genDCs.size());
   }
 
 }

@@ -291,13 +291,13 @@ public class DCUtil {
   /**
    * 生成每一行的所有修改，每个修改包含列索引和列正确值。
    *
-   * @param dirtyDataPath 脏数据路径
-   * @param changes       所有修改
+   * @param dsPath  数据路径
+   * @param changes 所有修改
    * @return 每行对应列修改的映射
    */
-  public static Map<Integer, Map<Integer, String>> genLineChangesMap(String dirtyDataPath,
+  public static Map<Integer, Map<Integer, String>> genLineChangesMap(String dsPath,
       List<TChange> changes) {
-    List<String> columnNames = readColumnNames(dirtyDataPath);
+    List<String> columnNames = readColumnNames(dsPath);
     List<String> columnNamesSimple = columnNames.stream()
         .map(col -> extractColumnNameType(col)[0].toLowerCase()).collect(Collectors.toList());
     // 行-<列索引-列正确值>

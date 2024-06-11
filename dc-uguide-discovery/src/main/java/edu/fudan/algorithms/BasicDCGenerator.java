@@ -22,16 +22,18 @@ import lombok.extern.slf4j.Slf4j;
 public class BasicDCGenerator implements DCGenerator {
 
   private final String inputDataPath;
-  private final String dcsPath;
+  private final String fullDCsPath;
+  private final String topKDCsPath;
   private final String headerPath;
   private final Set<DenialConstraint> excludeDCs;
   private final double errorThreshold;
   private final int topK;
 
-  public BasicDCGenerator(String inputDataPath, String dcsPath, String headerPath,
-      Set<DenialConstraint> excludeDCs, double errorThreshold, int topK) {
+  public BasicDCGenerator(String inputDataPath, String fullDCsPath, String topKDCsPath,
+      String headerPath, Set<DenialConstraint> excludeDCs, double errorThreshold, int topK) {
     this.inputDataPath = inputDataPath;
-    this.dcsPath = dcsPath;
+    this.fullDCsPath = fullDCsPath;
+    this.topKDCsPath = topKDCsPath;
     this.headerPath = headerPath;
     this.excludeDCs = excludeDCs;
     this.errorThreshold = errorThreshold;
@@ -43,18 +45,21 @@ public class BasicDCGenerator implements DCGenerator {
     try {
       DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(this.inputDataPath,
           this.errorThreshold);
-      List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint> dcList =
-          getSortedDCs(dcs);
+      List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint> dcList = getSortedDCs(
+          dcs);
       log.info("Result size: " + dcList.size());
 
-      log.debug("Saving DCs into: " + this.dcsPath);
-      persistDCFinderDCs(dcList, this.dcsPath);
+      log.debug("Saving DCs into: " + this.fullDCsPath);
+      persistDCFinderDCs(dcList, this.fullDCsPath);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
     // 取前k个规则
-    List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(this.topK, this.dcsPath,
+    List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(this.topK, this.fullDCsPath,
         this.headerPath, this.excludeDCs);
+    if (topKDCsPath != null) {
+      DCUtil.persistTopKDCs(topKDCs, this.topKDCsPath);
+    }
     return new HashSet<>(topKDCs);
   }
 
@@ -71,8 +76,8 @@ public class BasicDCGenerator implements DCGenerator {
     writer.close();
   }
 
-  public static List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint>
-  getSortedDCs(DenialConstraintSet dcs) {
+  public static List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint> getSortedDCs(
+      DenialConstraintSet dcs) {
     List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint> dcList = Lists.newArrayList();
     for (de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint dc : dcs) {
       dcList.add(dc);
@@ -80,8 +85,7 @@ public class BasicDCGenerator implements DCGenerator {
     dcList.sort(
         new Comparator<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint>() {
           @Override
-          public int compare(
-              de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint o1,
+          public int compare(de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint o1,
               de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint o2) {
             return Integer.compare(o1.getPredicateCount(), o2.getPredicateCount());
           }

@@ -16,6 +16,7 @@ import static edu.fudan.conf.DefaultConf.numInCluster;
 import static edu.fudan.conf.DefaultConf.questionsConf;
 import static edu.fudan.conf.DefaultConf.randomClusterS;
 import static edu.fudan.conf.DefaultConf.succinctFactor;
+import static edu.fudan.conf.DefaultConf.topK;
 import static edu.fudan.conf.DefaultConf.topKOfCluster;
 import static edu.fudan.conf.DefaultConf.tupleQStrategy;
 import static edu.fudan.utils.CorrelationUtil.readColumnCorrScoreMap;
@@ -45,7 +46,6 @@ import edu.fudan.algorithms.uguide.TupleQuestion;
 import edu.fudan.algorithms.uguide.TupleQuestionResult;
 import edu.fudan.transformat.DCFormatUtil;
 import edu.fudan.utils.CSVWriter;
-import edu.fudan.utils.DCUtil;
 import edu.fudan.utils.FileUtil;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -53,7 +53,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -305,7 +304,6 @@ public class UGuideDiscovery {
   private void discoveryDCs() {
     log.info("====== 3.Discovery DCs from sample ======");
     log.info("DCGeneratorConf: {}", dcGeneratorConf);
-    int topK = 5;
     DCGenerator generator = getGenerator(dcGeneratorConf, topK);
     Set<DenialConstraint> dcs = generator.generateDCs();
 
@@ -315,7 +313,6 @@ public class UGuideDiscovery {
       // 提前结束
       this.dcsLessThanK = true;
     }
-    DCUtil.persistTopKDCs(new ArrayList<>(dcs), candidateDCs.getTopKDCsPath());
 
     evaluation.update(dcs, null, null, null, null);
   }
@@ -361,8 +358,8 @@ public class UGuideDiscovery {
   private DCGenerator getGenerator(String dcGenerator, int topK) {
     if (dcGenerator.equals("Basic")) {
       BasicDCGenerator generator = new BasicDCGenerator(sampleDS.getDataPath(),
-          candidateDCs.getFullDCsPath(), sampleDS.getHeaderPath(), evaluation.getVisitedDCs(),
-          evaluation.getErrorThreshold(), topK);
+          candidateDCs.getFullDCsPath(), candidateDCs.getTopKDCsPath(), sampleDS.getHeaderPath(),
+          evaluation.getVisitedDCs(), evaluation.getErrorThreshold(), topK);
       return generator;
     } else if (dcGenerator.equals("DCMiner")) {
       RLDCGenerator generator = new RLDCGenerator(sampleDS.getDataPath(),

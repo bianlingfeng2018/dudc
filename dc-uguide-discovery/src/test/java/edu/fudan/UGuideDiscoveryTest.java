@@ -412,10 +412,4 @@ public class UGuideDiscoveryTest {
     log.debug("DCs size = {}", next.size());
   }
 
-  // Dynamic g1 strategy
-  @Test
-  public void testDynamicG1() {
-    // TODO:如果待发现规则长，g1有生成太通用规则的风险，如果待发现规则短，g1有生成太特殊规则的风险
-  }
-
 }
