@@ -5,7 +5,6 @@ import static edu.fudan.utils.CorrelationUtil.getDCScoreUniformMap;
 import ch.javasoft.bitset.search.NTreeSearch;
 import com.google.common.collect.Maps;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
-import de.hpi.naumann.dc.predicates.sets.PredicateSetFactory;
 import edu.fudan.algorithms.DCViolation;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -75,13 +74,20 @@ public class DCsQuestion {
     // 1.简洁性+相关性打分高的在前
     // 2.冲突数量多的在前
     switch (strategy) {
-      case RANDOM_DC:
-        Collections.shuffle(entries);
-        break;
-      case SUC_AND_COR:
+      case SUC_AND_COR_VIOS:
         entries.sort(Comparator.comparingDouble(
                 (Entry<DenialConstraint, Integer> entry) -> -dcScoreUniformMap.get(entry.getKey()))
             .thenComparingInt((Entry<DenialConstraint, Integer> entry) -> -entry.getValue()));
+        break;
+      case SUC_AND_COR:
+        entries.sort(Comparator.comparingDouble(
+            (Entry<DenialConstraint, Integer> entry) -> -dcScoreUniformMap.get(entry.getKey())));
+        break;
+      case RANDOM_DC:
+        Collections.shuffle(entries);
+        break;
+      default:
+        log.error("Unknown strategy: {}", strategy);
         break;
     }
 
@@ -89,11 +95,15 @@ public class DCsQuestion {
     Set<DenialConstraint> falseDCs = new HashSet<>();
     List<Entry<DenialConstraint, Integer>> subList = entries.subList(0,
         Math.min(budget, entries.size()));
+    int totalViosSize = 0;
     for (Entry<DenialConstraint, Integer> e : subList) {
       DenialConstraint dc = e.getKey();
+      Integer viosSize = e.getValue();
       // Simulate checking if it is true dc!!!
       if (isTrueDC(dc, gtTree)) {
         trueDCs.add(dc);
+        // True violations size
+        totalViosSize += viosSize;
       } else {
         falseDCs.add(dc);
       }
@@ -102,7 +112,7 @@ public class DCsQuestion {
     int budgetUsed = subList.size();
     double trueDCRate = (double) trueDCs.size() / budgetUsed;
 
-    return new DCsQuestionResult(falseDCs, trueDCs, trueDCRate, budgetUsed);
+    return new DCsQuestionResult(falseDCs, trueDCs, trueDCRate, totalViosSize, budgetUsed);
   }
 
   private boolean isTrueDC(DenialConstraint dc, NTreeSearch gtTree) {

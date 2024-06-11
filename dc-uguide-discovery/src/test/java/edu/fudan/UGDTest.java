@@ -42,9 +42,11 @@ import edu.fudan.utils.UGDRunner;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -187,22 +189,54 @@ public class UGDTest {
     int minLenOfDC = 2;
     double succinctFactor = 0.5;
     int budget = 10;
-    DCsQStrategy strategy = DCsQStrategy.RANDOM_DC;
+    DCsQStrategy strategy = DCsQStrategy.SUC_AND_COR;
     Set<DCViolation> vios = new HydraDetector(params.dirtyDataPath, params.topKDCsPath,
         params.headerPath).detect().getViosSet();
 
     List<DenialConstraint> testDCs = DCLoader.load(params.headerPath, params.topKDCsPath);
     List<DenialConstraint> gtDCs = DCLoader.load(params.headerPath, params.groundTruthDCsPath);
-    Map<String, Double> columnsCorrScoreMap = readColumnCorrScoreMap(params.correlationByUserPath);
+    Map<String, Double> corrMap = readColumnCorrScoreMap(params.correlationByUserPath);
+
+    printCorrMap(corrMap);
+
     NTreeSearch gtTree = new NTreeSearch();
     for (DenialConstraint gtDC : gtDCs) {
       gtTree.add(PredicateSetFactory.create(gtDC.getPredicateSet()).getBitset());
     }
     DCsQuestion selector = new DCsQuestion(gtTree, new HashSet<>(testDCs), vios,
-        columnsCorrScoreMap, minLenOfDC, succinctFactor, strategy, budget);
+        corrMap, minLenOfDC, succinctFactor, strategy, budget);
 
+    // SUC_AND_COR_VIOS:
+    // succinctFactor = 0.5
+    //  FalseDCs=3, TrueDCs=7, TrueDCRate=0.7, TotalViosSize=108256, BudgetUsed=10
+    // succinctFactor = 0.0
+    //  FalseDCs=3, TrueDCs=7, TrueDCRate=0.7, BudgetUsed=10
+    // succinctFactor = 1.0
+    //  FalseDCs=8, TrueDCs=2, TrueDCRate=0.2, BudgetUsed=10
+
+    // SUC_AND_COR:
+    // succinctFactor = 0.5
+    //  FalseDCs=3, TrueDCs=7, TrueDCRate=0.7, TotalViosSize=108256, BudgetUsed=10
+    // succinctFactor = 0.0
+    //  FalseDCs=3, TrueDCs=7, TrueDCRate=0.7, BudgetUsed=10
+    // succinctFactor = 1.0
+    //  FalseDCs=8, TrueDCs=2, TrueDCRate=0.2, BudgetUsed=10
+
+    // RANDOM_DC:
+    // succinctFactor = 0.5
+    //  FalseDCs=8, TrueDCs=2, TrueDCRate=0.2, BudgetUsed=10
     DCsQuestionResult result = selector.simulate();
     log.debug(result.toString());
+  }
+
+  private void printCorrMap(Map<String, Double> columnsCorrScoreMap) {
+    log.debug("ColumnsCorrScoreMap={}", columnsCorrScoreMap.size());
+    ArrayList<Entry<String, Double>> entries = new ArrayList<>(columnsCorrScoreMap.entrySet());
+    entries.sort(Comparator.comparingDouble(e -> -e.getValue()));
+    List<Entry<String, Double>> subList = entries.subList(0, 10);
+    for (Entry<String, Double> entry : subList) {
+      log.debug("k={}, v={}", entry.getKey(), entry.getValue());
+    }
   }
 
 }
