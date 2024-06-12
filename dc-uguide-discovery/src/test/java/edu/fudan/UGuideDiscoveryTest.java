@@ -114,19 +114,19 @@ public class UGuideDiscoveryTest {
     ud.guidedDiscovery();
   }
 
-  /**
-   * Discover dc using fdcd(2023)
-   */
+//  /**
+//   * Discover dc using fdcd(2023)
+//   */
 //  @Test
 //  public void testDiscoveryDCsUsingFDCD() {
-//    DiscoveryEntry.doDiscovery(cleanDataPath, universalDCsPath);
+//    DiscoveryEntry.doDiscovery(cleanDataPath, fullDCsPath);
 //  }
 
   /**
    * Discover dc using dcFinder(2019)
    */
   @Test
-  public void testDiscoveryDCsUsingDCFinderNoEvidence() throws IOException {
+  public void testDiscoveryDCsUsingDCFinderNoEvidence() {
     // 1.当evidenceFile为null，则生成规则集合
     DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(cleanDataPath, 0.0, null);
     log.info("DCs: {}", dcs.size());

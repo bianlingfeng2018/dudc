@@ -13,6 +13,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -28,6 +29,8 @@ public class BasicDCGenerator implements DCGenerator {
   private final Set<DenialConstraint> excludeDCs;
   private final double errorThreshold;
   private final int topK;
+  @Setter
+  private String evidencePath;
 
   public BasicDCGenerator(String inputDataPath, String fullDCsPath, String topKDCsPath,
       String headerPath, Set<DenialConstraint> excludeDCs, double errorThreshold, int topK) {
@@ -44,7 +47,7 @@ public class BasicDCGenerator implements DCGenerator {
   public Set<DenialConstraint> generateDCs() {
     try {
       DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(this.inputDataPath,
-          this.errorThreshold);
+          this.errorThreshold, this.evidencePath);
       List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint> dcList = getSortedDCs(
           dcs);
       log.info("Result size: " + dcList.size());

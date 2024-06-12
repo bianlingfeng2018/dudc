@@ -342,8 +342,9 @@ public class UGDTest {
     // TODO: g1的设定到底取决于什么？什么情况下需要更小的g1，什么情况下需要更大的g1？
     //  错误率->元组对->证据集->证据集覆盖->g1
     //  最理想的情况下，发现的DC在脏数据集上产生的所有冲突都是真冲突，那么此时g1设置的刚刚好。
-    //  因此，可以通过估计错误，进而估计真冲突数量，最后估计真冲突元组对数量与所有元组对数量的比值，即g1
-    //  例如：3条元组，错误为其中1条，真冲突元组对数量为4，g1应当为4/6，即2/3；当g1大于2/3时，可以发现真DC
+    //  因此，可以通过估计错误，进而估计真冲突数量，最后估计真冲突与所有元组对的比值，从而得到合适的g1
+    //  例如：
+    //  n条元组，错误为其中x条，组合数为a=x!/(x-2)!，真冲突元组对组合数为b=n!/(n-2)!，占比为r=a/b；当g1>r时，可以发现真DC
     String dsPath = "../data/ds_dirty.txt";
     String headerPath = "../data/header.txt";
     String gtDCsPath = "../data/dc_gt.txt";
@@ -355,13 +356,29 @@ public class UGDTest {
     // not(t1.A=t2.A^t1.B!=t2.B)->4
     printDCVioMap(vios);
 
-    double g1 = 0.8;  // 0.66 0.67
+    // TODO: 为什么证据集（体现多重性的）数量不等于元组对组合数量？
+    //  好像是因为生成证据集时，没有把所有谓词都不等的情况算进去？
+    // 90 * 0.011 = 0.99 --- 1 violations (max=38) × not(t1.Abbr!=t2.Abbr^t1.City=t2.City)
+    // 90 * 0.012 = 1.08 --- 2 violations (max=38) √ not(t1.Abbr!=t2.Abbr^t1.City=t2.City)
+    // 90 * 0.18 = 16.2 --- 17 violations (max=38) × not(t1.City=t2.City)
+    // 90 * 0.19 = 17.1 --- 18 violations (max=38) √ not(t1.City=t2.City)
+    // 90 * 0.81 = 72.9 --- 73 violations (max=38) ×
+    // 90 * 0.82 = 73.8 --- 74 violations (max=38) ×
+    // 90 * 0.41 = 36.9 --- 37 violations (max=38) √
+    // 90 * 0.42 = 37.8 --- 38 violations (max=38) ×
+    // 90 * 0.43 = 38.7 --- 39 violations (max=38) ×
+    // 90 * 1.00 = 90.0 --- 90 violations (max=38) ×
+    // 90 * 0.24 = 21.6 --- 22 violations (max=38) √ not(t1.Abbr!=t2.Abbr) ×
+    // 90 * 0.17 = 15.3 --- 16 violations (max=38) √ not(t1.Abbr=t2.Abbr) √ 因为不会同时生成 not(t1.Abbr!=t2.Abbr) 和 not(t1.Abbr=t2.Abbr)，所以选产生冲突少（覆盖证据集多）的作为规则而生成，即后者
+    double g1 = 0.16;
     String fullDCsPath = "../data/dc_full.txt";
     String topKDCsPath = "../data/dc_top_k.txt";
+    String evidencePath = "../data/evidence.txt";
     log.debug("Discover dcs using g1 = {}.", g1);
     BasicDCGenerator generator = new BasicDCGenerator(dsPath, fullDCsPath, topKDCsPath, headerPath,
         new HashSet<>(), g1, Integer.MAX_VALUE);
 
+    generator.setEvidencePath(evidencePath);
     Set<DenialConstraint> genDCs = generator.generateDCs();
     log.info("GenDCs size = {}", genDCs.size());
   }
