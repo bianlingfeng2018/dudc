@@ -2,19 +2,16 @@ package edu.fudan;
 
 import static edu.fudan.algorithms.BasicDCGenerator.getSortedDCs;
 import static edu.fudan.algorithms.BasicDCGenerator.persistDCFinderDCs;
+import static edu.fudan.algorithms.DCLoader.loadHeader;
 import static edu.fudan.conf.DefaultConf.predictArgs;
 import static edu.fudan.conf.DefaultConf.sharedArgs;
 import static edu.fudan.conf.DefaultConf.trainArgs;
-import static edu.fudan.utils.DCUtil.genLineChangesMap;
 import static edu.fudan.utils.DCUtil.getCellsOfChanges;
-import static edu.fudan.utils.DCUtil.getCellsOfViolation;
 import static edu.fudan.utils.DCUtil.getCellsOfViolations;
-import static edu.fudan.utils.DCUtil.getErrorLinesContainingChanges;
 import static edu.fudan.utils.DCUtil.loadChanges;
 import static edu.fudan.utils.DCUtil.loadDirtyDataExcludedLines;
 import static edu.fudan.utils.DCUtil.printDCVioMap;
 import static edu.fudan.utils.FileUtil.generateNewCopy;
-import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
 import static edu.fudan.utils.GlobalConf.baseDir;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -45,7 +42,6 @@ import edu.fudan.algorithms.uguide.TCell;
 import edu.fudan.algorithms.uguide.TChange;
 import edu.fudan.transformat.DCFormatUtil;
 import edu.fudan.utils.DCUtil;
-import edu.fudan.utils.FileUtil;
 import edu.fudan.utils.UGDParams;
 import edu.fudan.utils.UGDRunner;
 import java.io.File;
@@ -212,6 +208,41 @@ public class UGuideDiscoveryTest {
     assert dcs1.get(0).isImpliedBy(gtTree1);
 //    assert gtDCs1.contains(dcs1.get(0));
 
+  }
+
+  /**
+   * Test implication of dc string.
+   */
+  @Test
+  public void testImplicationOfDCString() {
+    // not(t1.City!=t2.City^t1.Year!=t2.Year) + not(t1.Abbr!=t2.Abbr^t1.City=t2.City)
+    //  -> not(t1.Abbr!=t2.Abbr^t1.Year!=t2.Year)
+    String headerPath = "../data/header.txt";
+    String dcStr1 = "not(t1.City!=t2.City^t1.Year!=t2.Year)";
+    String dcStr2 = "not(t1.Abbr!=t2.Abbr^t1.City=t2.City)";
+    String dcStr3 = "not(t1.Abbr=t2.Abbr^t1.City!=t2.City)";
+    String dcStr4 = "not(t1.Abbr!=t2.Abbr^t1.Year!=t2.Year)";
+    String header = loadHeader(headerPath);
+    DenialConstraint dc1 = DCFormatUtil.convertString2DC(dcStr1, header);
+    DenialConstraint dc2 = DCFormatUtil.convertString2DC(dcStr2, header);
+    DenialConstraint dc3 = DCFormatUtil.convertString2DC(dcStr3, header);
+    DenialConstraint dc4 = DCFormatUtil.convertString2DC(dcStr4, header);
+
+    NTreeSearch gtTree = new NTreeSearch();
+    gtTree.add(PredicateSetFactory.create(dc1.getPredicateSet()).getBitset());
+    gtTree.add(PredicateSetFactory.create(dc2.getPredicateSet()).getBitset());
+    gtTree.add(PredicateSetFactory.create(dc3.getPredicateSet()).getBitset());
+
+    boolean implied = dc4.isImpliedBy(gtTree);
+    log.debug("Implied={}", implied);
+
+    de.hpi.naumann.dc.denialcontraints.DenialConstraintSet dcSet = new de.hpi.naumann.dc.denialcontraints.DenialConstraintSet();
+    dcSet.add(dc1);
+    dcSet.add(dc2);
+    dcSet.add(dc3);
+    dcSet.add(dc4);
+    dcSet.minimize();
+    log.debug("DCSet={}", dcSet.size());
   }
 
   /**

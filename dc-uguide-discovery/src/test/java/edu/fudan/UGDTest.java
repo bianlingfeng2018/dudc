@@ -340,11 +340,16 @@ public class UGDTest {
   @Test
   public void testDynamicG1() {
     // TODO: g1的设定到底取决于什么？什么情况下需要更小的g1，什么情况下需要更大的g1？
-    //  错误率->元组对->证据集->证据集覆盖->g1
-    //  最理想的情况下，发现的DC在脏数据集上产生的所有冲突都是真冲突，那么此时g1设置的刚刚好。
-    //  因此，可以通过估计错误，进而估计真冲突数量，最后估计真冲突与所有元组对的比值，从而得到合适的g1
-    //  例如：
-    //  n条元组，错误为其中x条，组合数为a=x!/(x-2)!，真冲突元组对组合数为b=n!/(n-2)!，占比为r=a/b；当g1>r时，可以发现真DC
+    //  发现的DC在脏数据集上产生的真冲突尽可能多（反之DC太特化，g1偏小），假冲突尽可能少（反之DC太泛化，g1偏大），说明此时g1比较合理。
+    //  不同的规则合理的g1范围不同；不同的错误率合理的g1范围不同；不同数据分布合理的g1范围不同；
+    //  规则不包含的属性的错误不影响这个规则的发现；
+    //  1.如何估计g1？
+    //  估计错误率->计算冲突元组对->计算临界值->估计g1（估计原则为让g1比临界值大一点点，即刚好容纳所有冲突，再小可能产生特化的规则，再大可能产生泛化的规则）
+    //  例如：n条元组，估计错误x条，冲突元组对组合数a=x!/(x-2)!，所有元组对组合数为b=n!/(n-2)!，占比为r=a/b；g1≈r+d（d为一个较小的值）
+    //  2.如何计算理论上合理的g1范围？
+    //  当规则属性都没有错误时，g1=0
+    //  当规则检测无冲突时，g1=0
+    //  当前规则的g1 <= 合理的g1 < 减一个谓词的所有泛化规则的g1的最小值
     String dsPath = "../data/ds_dirty.txt";
     String headerPath = "../data/header.txt";
     String gtDCsPath = "../data/dc_gt.txt";
@@ -370,7 +375,7 @@ public class UGDTest {
     // 90 * 1.00 = 90.0 --- 90 violations (max=38) ×
     // 90 * 0.24 = 21.6 --- 22 violations (max=38) √ not(t1.Abbr!=t2.Abbr) ×
     // 90 * 0.17 = 15.3 --- 16 violations (max=38) √ not(t1.Abbr=t2.Abbr) √ 因为不会同时生成 not(t1.Abbr!=t2.Abbr) 和 not(t1.Abbr=t2.Abbr)，所以选产生冲突少（覆盖证据集多）的作为规则而生成，即后者
-    double g1 = 0.16;
+    double g1 = 0.0;
     String fullDCsPath = "../data/dc_full.txt";
     String topKDCsPath = "../data/dc_top_k.txt";
     String evidencePath = "../data/evidence.txt";
