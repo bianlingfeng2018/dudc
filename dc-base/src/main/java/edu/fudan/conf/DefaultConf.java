@@ -45,8 +45,11 @@ public class DefaultConf {
   public static double defaultErrorThreshold = 0.001;
   public static boolean dynamicG1 = true;
   // Questions(CellQ TupleQ DCsQ)
-  // CellQ
   public static int maxDiscoveryRound = 50;
+  public static Integer[] questionsConf = new Integer[]{1, 1, 1};
+  public static boolean debugDCVioMap = false;
+  public static boolean repairExcluded = false;
+  // CellQ
   public static int maxCellQuestionBudget = 100;
   public static CellQStrategy cellQStrategy = CellQStrategy.VIO_AND_CONF;
   public static double delta = 0.1;
@@ -60,9 +63,6 @@ public class DefaultConf {
   public static double succinctFactor = 0.5;
   public static DCsQStrategy dCsQStrategy = DCsQStrategy.RANDOM_DC;
   public static int maxDCQuestionBudget = 5;
-  // Other
-  public static Integer[] questionsConf = new Integer[]{1, 1, 1};
-  public static boolean debugDCVioMap = false;
   // DCMiner
   // TODO: 慎用static final关键字，因为修改后需要重新mvn clean一下才生效
   public static String dcGeneratorConf = "Basic";  // Basic DCMiner

@@ -143,7 +143,7 @@ public class UGDRunner implements Callable<Integer> {
     params.evidencesPath = baseDir + "/evidences_" + dsName + ".txt";
     params.dcsPathForDCMiner = baseDir + "/dcs_dc_miner_top_5_" + dsName + ".txt";
     params.candidateDCsPath = baseDir + "/dcs_candidate_" + dsName + ".txt";
-    params.candidateTrueDCsPath = baseDir + "/dcs_candidate_true" + dsName + ".txt";
+    params.candidateTrueDCsPath = baseDir + "/dcs_candidate_true_" + dsName + ".txt";
     params.excludedDCsPath = baseDir + "/dcs_excluded_" + dsName + ".txt";
     params.csvResultPath = baseDir + "/eval_error_detect_" + dsName + ".txt";
     params.correlationByUserPath = baseDir + "/model_ltr_eval_" + dsName + ".csv";

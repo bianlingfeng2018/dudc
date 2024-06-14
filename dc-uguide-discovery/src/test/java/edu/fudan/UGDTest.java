@@ -3,6 +3,7 @@ package edu.fudan;
 import static edu.fudan.conf.DefaultConf.canBreakEarly;
 import static edu.fudan.conf.DefaultConf.delta;
 import static edu.fudan.conf.DefaultConf.excludeLinePercent;
+import static edu.fudan.conf.DefaultConf.maxDiscoveryRound;
 import static edu.fudan.conf.DefaultConf.numInCluster;
 import static edu.fudan.conf.DefaultConf.topKOfCluster;
 import static edu.fudan.utils.CorrelationUtil.readColumnCorrScoreMap;
@@ -399,6 +400,7 @@ public class UGDTest {
   @Test
   public void testOneRoundUGuide()
       throws InputGenerationException, InputIterationException, IOException {
+    maxDiscoveryRound = 1;
     UGuideDiscovery ud = new UGuideDiscovery(params.cleanDataPath, params.changesPath,
         params.dirtyDataPath, params.excludedLinesPath, params.sampledDataPath, params.fullDCsPath,
         params.dcsPathForDCMiner, params.evidencesPath, params.topKDCsPath,

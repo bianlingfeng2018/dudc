@@ -503,7 +503,7 @@ public class Evaluation {
   /**
    * 重新计算changes相关的数据
    */
-  public void updateChanges() throws InputGenerationException, FileNotFoundException {
+  public void updateChanges() {
     this.lineChangesMap = genLineChangesMap(this.dirtyDS.getDataPath(), this.changes);
     this.cellsOfChanges = DCUtil.getCellsOfChanges(this.changes);
     this.errorLinesOfChanges = getErrorLinesContainingChanges(this.changes);

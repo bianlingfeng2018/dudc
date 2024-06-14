@@ -15,6 +15,7 @@ import static edu.fudan.conf.DefaultConf.minLenOfDC;
 import static edu.fudan.conf.DefaultConf.numInCluster;
 import static edu.fudan.conf.DefaultConf.questionsConf;
 import static edu.fudan.conf.DefaultConf.randomClusterS;
+import static edu.fudan.conf.DefaultConf.repairExcluded;
 import static edu.fudan.conf.DefaultConf.succinctFactor;
 import static edu.fudan.conf.DefaultConf.topK;
 import static edu.fudan.conf.DefaultConf.topKOfCluster;
@@ -112,7 +113,9 @@ public class UGuideDiscovery {
       round++;
       log.info("------ Round {} -------", round);
       // 修复
-      simRepairing();
+      if (repairExcluded) {
+        simRepairing();
+      }
       // 采样
       sample();
       // 发现规则
