@@ -29,6 +29,7 @@ import edu.fudan.algorithms.DCViolation;
 import edu.fudan.algorithms.DCViolationSet;
 import edu.fudan.algorithms.HydraDetector;
 import edu.fudan.algorithms.TupleSampler;
+import edu.fudan.algorithms.UGuideDiscovery;
 import edu.fudan.algorithms.uguide.CellQStrategy;
 import edu.fudan.algorithms.uguide.CellQuestionResult;
 import edu.fudan.algorithms.uguide.CellQuestionV2;
@@ -388,4 +389,22 @@ public class UGDTest {
     log.info("GenDCs size = {}", genDCs.size());
   }
 
+  /**
+   * Test user guided detection.
+   *
+   * @throws InputGenerationException
+   * @throws InputIterationException
+   * @throws IOException
+   */
+  @Test
+  public void testOneRoundUGuide()
+      throws InputGenerationException, InputIterationException, IOException {
+    UGuideDiscovery ud = new UGuideDiscovery(params.cleanDataPath, params.changesPath,
+        params.dirtyDataPath, params.excludedLinesPath, params.sampledDataPath, params.fullDCsPath,
+        params.dcsPathForDCMiner, params.evidencesPath, params.topKDCsPath,
+        params.groundTruthDCsPath, params.candidateDCsPath, params.candidateTrueDCsPath,
+        params.excludedDCsPath, params.headerPath, params.csvResultPath,
+        params.correlationByUserPath);
+    ud.guidedDiscovery();
+  }
 }
