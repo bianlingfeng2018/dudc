@@ -47,7 +47,7 @@ public class UGDRunner implements Callable<Integer> {
   @Option(names = {"-u", "--update"}, description = "Update: EXCLUDE, REPAIR.")
   UpdateStrategy updateStrategy = UpdateStrategy.EXCLUDE;
 
-  @Option(names = {"-s", "--sample"}, description = "Sample: Random, Efficient.")
+  @Option(names = {"-s", "--sample"}, description = "Sample: Random, EFFICIENT.")
   SampleStrategy sampleStrategy = SampleStrategy.RANDOM;
 
   @Option(names = {"-a", "--discovery"}, description = "Approximate DC discovery method.")

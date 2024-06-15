@@ -63,7 +63,7 @@ public class DefaultConf {
   public static int maxDCQuestionBudget = 5;
   public static int minLenOfDC = 2;
   public static double succinctFactor = 0.5;
-  public static DCQStrategy defDCQStrategy = DCQStrategy.RANDOM_DC;
+  public static DCQStrategy defDCQStrategy = DCQStrategy.SUC_COR_VIOS;
   // DCMiner
   // TODO: 慎用static final关键字，因为修改后需要重新mvn clean一下才生效
   public static String dcGeneratorConf = "Basic";  // Basic DCMiner

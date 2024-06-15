@@ -74,12 +74,12 @@ public class DCsQuestion {
     // 1.简洁性+相关性打分高的在前
     // 2.冲突数量多的在前
     switch (strategy) {
-      case SUC_AND_COR_VIOS:
+      case SUC_COR_VIOS:
         entries.sort(Comparator.comparingDouble(
                 (Entry<DenialConstraint, Integer> entry) -> -dcScoreUniformMap.get(entry.getKey()))
             .thenComparingInt((Entry<DenialConstraint, Integer> entry) -> -entry.getValue()));
         break;
-      case SUC_AND_COR:
+      case SUC_COR:
         entries.sort(Comparator.comparingDouble(
             (Entry<DenialConstraint, Integer> entry) -> -dcScoreUniformMap.get(entry.getKey())));
         break;

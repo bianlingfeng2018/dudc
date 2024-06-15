@@ -197,7 +197,7 @@ public class UGDTest {
     int minLenOfDC = 2;
     double succinctFactor = 0.5;
     int budget = 10;
-    DCQStrategy strategy = DCQStrategy.SUC_AND_COR;
+    DCQStrategy strategy = DCQStrategy.SUC_COR;
     Set<DCViolation> vios = new HydraDetector(params.dirtyDataPath, params.topKDCsPath,
         params.headerPath).detect().getViosSet();
 
@@ -403,7 +403,7 @@ public class UGDTest {
   public void testOneRoundUGuide()
       throws InputGenerationException, InputIterationException, IOException {
     maxDiscoveryRound = 1;
-    repairErrors = false;
+    repairErrors = true;
     UGuideDiscovery ud = new UGuideDiscovery(params.cleanDataPath, params.changesPath,
         params.dirtyDataPath, params.excludedLinesPath, params.sampledDataPath, params.fullDCsPath,
         params.dcsPathForDCMiner, params.evidencesPath, params.topKDCsPath,
@@ -419,7 +419,7 @@ public class UGDTest {
    */
   @Test
   public void testUGuide() {
-    String[] args = "-r 1 -u EXCLUDE -g DYNAMIC".split(" ");
+    String[] args = "-i 0 -r 50 -u REPAIR -s EFFICIENT -a HYDRA -c VIO_AND_CONF -t VIOLATIONS_PRIOR -d SUC_COR_VIOS -g DYNAMIC".split(" ");
     int exitCode = new CommandLine(new UGDRunner()).execute(args);
     log.debug("ExitCode = {}", exitCode);
   }

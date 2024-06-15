@@ -87,14 +87,14 @@ public class UGuideDiscovery {
   private final Map<String, Double> columnsCorrScoreMap;
 
   public UGuideDiscovery(String cleanDataPath, String changesPath, String dirtyDataPath,
-      String excludedLinesPath, String sampledDataPath, String dcsPathForFCDC,
-      String dcsPathForDCMiner, String evidencesPathForFCDC, String topKDCsPath,
+      String excludedLinesPath, String sampledDataPath, String fullDCsPath,
+      String dcsPathForDCMiner, String evidencesPath, String topKDCsPath,
       String groundTruthDCsPath, String candidateDCsPath, String trueDCsPath, String visitedDCsPath,
       String headerPath, String csvResultPath, String correlationByUserPath) throws IOException {
     this.cleanDS = new CleanDS(cleanDataPath, headerPath, changesPath);
     this.dirtyDS = new DirtyDS(dirtyDataPath, excludedLinesPath, headerPath);
     this.sampleDS = new SampleDS(sampledDataPath, headerPath);
-    this.candidateDCs = new CandidateDCs(dcsPathForFCDC, dcsPathForDCMiner, evidencesPathForFCDC,
+    this.candidateDCs = new CandidateDCs(fullDCsPath, dcsPathForDCMiner, evidencesPath,
         topKDCsPath);
     this.evaluation = new Evaluation(cleanDS, dirtyDS, groundTruthDCsPath, candidateDCsPath,
         trueDCsPath, visitedDCsPath, csvResultPath);

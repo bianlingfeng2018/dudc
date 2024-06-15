@@ -5,7 +5,8 @@ package edu.fudan.algorithms.uguide;
  */
 public enum CellQStrategy {
   /**
-   * Choose cell which can form a potential false violation or relates to dcs with low confidence.
+   * Choose cell if it: 1.can form a potential false violation; 2.relates to dcs with low
+   * confidence.
    */
   VIO_AND_CONF,
   /**

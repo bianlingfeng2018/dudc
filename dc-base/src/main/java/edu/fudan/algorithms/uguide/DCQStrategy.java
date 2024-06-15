@@ -7,11 +7,11 @@ public enum DCQStrategy {
   /**
    * Rank dc by combined score of succinctness and correlation, violations size.
    */
-  SUC_AND_COR_VIOS,
+  SUC_COR_VIOS,
   /**
    * Rank dc by combined score of succinctness and correlation.
    */
-  SUC_AND_COR,
+  SUC_COR,
   /**
    * Random choose dcs.
    */
