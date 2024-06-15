@@ -5,7 +5,7 @@ import static edu.fudan.conf.DefaultConf.delta;
 import static edu.fudan.conf.DefaultConf.excludeLinePercent;
 import static edu.fudan.conf.DefaultConf.maxDiscoveryRound;
 import static edu.fudan.conf.DefaultConf.numInCluster;
-import static edu.fudan.conf.DefaultConf.repairExcluded;
+import static edu.fudan.conf.DefaultConf.repairErrors;
 import static edu.fudan.conf.DefaultConf.topKOfCluster;
 import static edu.fudan.utils.CorrelationUtil.readColumnCorrScoreMap;
 import static edu.fudan.utils.DCUtil.genLineChangesMap;
@@ -35,7 +35,7 @@ import edu.fudan.algorithms.UGuideDiscovery;
 import edu.fudan.algorithms.uguide.CellQStrategy;
 import edu.fudan.algorithms.uguide.CellQuestionResult;
 import edu.fudan.algorithms.uguide.CellQuestionV2;
-import edu.fudan.algorithms.uguide.DCsQStrategy;
+import edu.fudan.algorithms.uguide.DCQStrategy;
 import edu.fudan.algorithms.uguide.DCsQuestion;
 import edu.fudan.algorithms.uguide.DCsQuestionResult;
 import edu.fudan.algorithms.uguide.TCell;
@@ -60,6 +60,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
+import picocli.CommandLine;
 
 @Slf4j
 public class UGDTest {
@@ -196,7 +197,7 @@ public class UGDTest {
     int minLenOfDC = 2;
     double succinctFactor = 0.5;
     int budget = 10;
-    DCsQStrategy strategy = DCsQStrategy.SUC_AND_COR;
+    DCQStrategy strategy = DCQStrategy.SUC_AND_COR;
     Set<DCViolation> vios = new HydraDetector(params.dirtyDataPath, params.topKDCsPath,
         params.headerPath).detect().getViosSet();
 
@@ -392,7 +393,7 @@ public class UGDTest {
   }
 
   /**
-   * Test user guided detection.
+   * Test user guided detection 1 round.
    *
    * @throws InputGenerationException
    * @throws InputIterationException
@@ -402,7 +403,7 @@ public class UGDTest {
   public void testOneRoundUGuide()
       throws InputGenerationException, InputIterationException, IOException {
     maxDiscoveryRound = 1;
-    repairExcluded = false;
+    repairErrors = false;
     UGuideDiscovery ud = new UGuideDiscovery(params.cleanDataPath, params.changesPath,
         params.dirtyDataPath, params.excludedLinesPath, params.sampledDataPath, params.fullDCsPath,
         params.dcsPathForDCMiner, params.evidencesPath, params.topKDCsPath,
@@ -410,5 +411,16 @@ public class UGDTest {
         params.excludedDCsPath, params.headerPath, params.csvResultPath,
         params.correlationByUserPath);
     ud.guidedDiscovery();
+  }
+
+  /**
+   * Test user guided detection.
+   *
+   */
+  @Test
+  public void testUGuide() {
+    String[] args = "-r 1 -u EXCLUDE -g DYNAMIC".split(" ");
+    int exitCode = new CommandLine(new UGDRunner()).execute(args);
+    log.debug("ExitCode = {}", exitCode);
   }
 }

@@ -28,12 +28,12 @@ public class DCsQuestion {
   private final Map<String, Double> columnsCorrScoreMap;
   private final int minLenOfDC;
   private final double succinctFactor;
-  private final DCsQStrategy strategy;
+  private final DCQStrategy strategy;
   private final int budget;
 
   public DCsQuestion(NTreeSearch gtTree, Set<DenialConstraint> testDCs,
       Set<DCViolation> vios, Map<String, Double> columnsCorrScoreMap, int minLenOfDC,
-      double succinctFactor, DCsQStrategy strategy, int budget) {
+      double succinctFactor, DCQStrategy strategy, int budget) {
     this.gtTree = gtTree;
     this.testDCs = testDCs;
     this.vios = vios;

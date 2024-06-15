@@ -3,7 +3,7 @@ package edu.fudan.algorithms.uguide;
 /**
  * @author Lingfeng
  */
-public enum DCsQStrategy {
+public enum DCQStrategy {
   /**
    * Rank dc by combined score of succinctness and correlation, violations size.
    */

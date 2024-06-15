@@ -1,7 +1,7 @@
 package edu.fudan.conf;
 
 import edu.fudan.algorithms.uguide.CellQStrategy;
-import edu.fudan.algorithms.uguide.DCsQStrategy;
+import edu.fudan.algorithms.uguide.DCQStrategy;
 import edu.fudan.algorithms.uguide.TupleQStrategy;
 
 /**
@@ -48,22 +48,22 @@ public class DefaultConf {
   // Questions(CellQ TupleQ DCsQ)
   public static int maxDiscoveryRound = 50;
   public static Integer[] questionsConf = new Integer[]{1, 1, 1};
-  public static boolean repairExcluded = true;
+  public static boolean repairErrors = true;
   public static boolean debugDCVioMap = false;
   // CellQ
   public static int maxCellQuestionBudget = 100;
-  public static CellQStrategy cellQStrategy = CellQStrategy.VIO_AND_CONF;
+  public static CellQStrategy defCellQStrategy = CellQStrategy.VIO_AND_CONF;
   public static double delta = 0.1;
   public static boolean canBreakEarly = false;
   public static double excludeLinePercent = 0.1;
   // TupleQ
   public static int maxTupleQuestionBudget = 100;
-  public static TupleQStrategy tupleQStrategy = TupleQStrategy.VIOLATIONS_PRIOR;
+  public static TupleQStrategy defTupleQStrategy = TupleQStrategy.VIOLATIONS_PRIOR;
   // DCsQ
   public static int maxDCQuestionBudget = 5;
   public static int minLenOfDC = 2;
   public static double succinctFactor = 0.5;
-  public static DCsQStrategy dCsQStrategy = DCsQStrategy.RANDOM_DC;
+  public static DCQStrategy defDCQStrategy = DCQStrategy.RANDOM_DC;
   // DCMiner
   // TODO: 慎用static final关键字，因为修改后需要重新mvn clean一下才生效
   public static String dcGeneratorConf = "Basic";  // Basic DCMiner
@@ -77,6 +77,9 @@ public class DefaultConf {
   public static String trainArgs = "--use_pretrain 1 --show_process 0";
   public static String predictArgs = "--ep_range 100_99";
 
+
+
+
   public static String getConfStr() {
     String s = String.format(
         "MaxDiscoveryRound=%s, MaxCellQuestionBudget=%s, MaxTupleQuestionBudget=%s, MaxDCQuestionBudget=%s, QuestionsConf=[%s;%s;%s]"
@@ -84,10 +87,12 @@ public class DefaultConf {
             + "\nDefaultErrorThreshold=%s, DynamicG1=%s, TopK=%s, "
             + "\nRepairExcluded=%s, CellQStrategy=%s, TupleQStrategy=%s, DCsQStrategy=%s"
             + "\nDelta=%s, MinLenOfDC=%s, SuccinctFactor=%s\n",
-        maxDiscoveryRound, maxCellQuestionBudget, maxTupleQuestionBudget, maxDCQuestionBudget, questionsConf[0], questionsConf[1], questionsConf[2],
-        minTopKOfCluster, minNumInCluster, topKOfCluster, numInCluster, addCounterExampleS, randomClusterS,
+        maxDiscoveryRound, maxCellQuestionBudget, maxTupleQuestionBudget, maxDCQuestionBudget,
+        questionsConf[0], questionsConf[1], questionsConf[2],
+        minTopKOfCluster, minNumInCluster, topKOfCluster, numInCluster, addCounterExampleS,
+        randomClusterS,
         defaultErrorThreshold, dynamicG1, topK,
-        repairExcluded, cellQStrategy, tupleQStrategy, dCsQStrategy,
+        repairErrors, defCellQStrategy, defTupleQStrategy, defDCQStrategy,
         delta, minLenOfDC, succinctFactor);
     return s;
   }

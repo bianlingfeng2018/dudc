@@ -1,6 +1,25 @@
 package edu.fudan.utils;
 
+import static edu.fudan.conf.DefaultConf.defCellQStrategy;
+import static edu.fudan.conf.DefaultConf.defDCQStrategy;
+import static edu.fudan.conf.DefaultConf.defTupleQStrategy;
+import static edu.fudan.conf.DefaultConf.dynamicG1;
+import static edu.fudan.conf.DefaultConf.maxDiscoveryRound;
+import static edu.fudan.conf.DefaultConf.randomClusterS;
+import static edu.fudan.conf.DefaultConf.repairErrors;
+import static edu.fudan.utils.GlobalConf.baseDir;
+import static edu.fudan.utils.GlobalConf.dsNames;
+
 import edu.fudan.algorithms.UGuideDiscovery;
+import edu.fudan.algorithms.uguide.CellQStrategy;
+import edu.fudan.algorithms.uguide.DCQStrategy;
+import edu.fudan.algorithms.uguide.DiscoveryAlgo;
+import edu.fudan.algorithms.uguide.G1Strategy;
+import edu.fudan.algorithms.uguide.SampleStrategy;
+import edu.fudan.algorithms.uguide.TupleQStrategy;
+import edu.fudan.algorithms.uguide.UpdateStrategy;
+import java.io.File;
+import java.util.concurrent.Callable;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -8,12 +27,6 @@ import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.Spec;
-
-import java.io.File;
-import java.util.concurrent.Callable;
-
-import static edu.fudan.utils.GlobalConf.baseDir;
-import static edu.fudan.utils.GlobalConf.dsNames;
 
 /**
  * @author Lingfeng
@@ -28,101 +41,56 @@ public class UGDRunner implements Callable<Integer> {
   @Option(names = {"-i", "--dataset"}, description = "The dataset index.")
   int dataset = 0;
 
+  @Option(names = {"-r", "--rounds"}, description = "Max rounds.")
+  int maxRound = 1;
+
   @Option(names = {"-u", "--update"}, description = "Update: EXCLUDE, REPAIR.")
-  Update update = Update.EXCLUDE;
+  UpdateStrategy updateStrategy = UpdateStrategy.EXCLUDE;
 
   @Option(names = {"-s", "--sample"}, description = "Sample: Random, Efficient.")
-  Sample sample = Sample.RANDOM;
+  SampleStrategy sampleStrategy = SampleStrategy.RANDOM;
 
   @Option(names = {"-a", "--discovery"}, description = "Approximate DC discovery method.")
-  Discovery discovery = Discovery.HYDRA;
+  DiscoveryAlgo discoveryAlgo = DiscoveryAlgo.HYDRA;
 
   @Option(names = {"-c", "--cell-question"}, description = "Cell question.")
-  CellQ cellQ = CellQ.RANDOM;
+  CellQStrategy cellQStrategy = CellQStrategy.RANDOM_CELL;
 
   @Option(names = {"-t", "--tuple-question"}, description = "Tuple question.")
-  TupleQ tupleQ = TupleQ.RANDOM;
+  TupleQStrategy tupleQStrategy = TupleQStrategy.RANDOM_TUPLE;
 
   @Option(names = {"-d", "--dc-question"}, description = "DC question.")
-  DCQ dcQ = DCQ.RANDOM;
+  DCQStrategy dcQStrategy = DCQStrategy.RANDOM_DC;
 
   @Option(names = {"-g", "--g1"}, description = "G1 used for approximate DC discovery.")
-  G1 g1 = G1.FIXED;
-
-  enum Update {
-    EXCLUDE, REPAIR
-  }
-
-  enum Sample {
-    RANDOM
-  }
-
-  enum Discovery {
-    HYDRA
-  }
-
-  enum CellQ {
-    RANDOM
-  }
-
-  enum TupleQ {
-    RANDOM
-  }
-
-  enum DCQ {
-    RANDOM
-  }
-
-  enum G1 {
-    FIXED, DYNAMIC
-  }
+  G1Strategy g1Strategy = G1Strategy.FIXED;
 
 
   @Override
   public Integer call() throws Exception {
     ParseResult pr = spec.commandLine().getParseResult();
 
-    StringBuilder sb = new StringBuilder();
-    for (OptionSpec option : spec.options()) {
-//      String name = option.longestName();
-//      System.out.printf("%s was specified: %s%n", name, pr.hasMatchedOption(option));
-//      System.out.printf("%s=%s (-1 means this option was not matched on command line)%n",
-//          name, pr.matchedOptionValue(name, -1));
-//      System.out.printf("%s=%s (arg value or default)%n", name, option.getValue());
-//      System.out.println();
-      Object value = option.getValue();
-      sb.append(option.longestName())
-          .append("=")
-          .append(value)
-          .append(",");
-    }
-    if (sb.length() > 0) {
-      sb.deleteCharAt(sb.length() - 1);
-    }
-    log.info("Args:{}", sb.toString());
+    maxDiscoveryRound = maxRound;
+    repairErrors = updateStrategy == UpdateStrategy.REPAIR;
+    randomClusterS = sampleStrategy == SampleStrategy.RANDOM;
+    defCellQStrategy = cellQStrategy;
+    defTupleQStrategy = tupleQStrategy;
+    defDCQStrategy = dcQStrategy;
+    dynamicG1 = g1Strategy == G1Strategy.DYNAMIC;
+
+    printArgs();
 
     UGDParams params = buildParams(dataset);
-    String cleanDataPath = "";
 
     log.info("The base dir is {}", new File(baseDir).getAbsolutePath());
     log.info("Executing algorithms...");
-    UGuideDiscovery ud = new UGuideDiscovery(cleanDataPath,
-        params.changesPath,
-        params.dirtyDataPath,
-        params.excludedLinesPath,
-        params.sampledDataPath,
-        params.fullDCsPath,
-        params.dcsPathForDCMiner,
-        params.evidencesPath,
-        params.topKDCsPath,
-        params.groundTruthDCsPath,
-        params.candidateDCsPath,
-        params.candidateTrueDCsPath,
-        params.excludedDCsPath,
-        params.headerPath,
-        params.csvResultPath,
+    UGuideDiscovery ud = new UGuideDiscovery(params.cleanDataPath, params.changesPath,
+        params.dirtyDataPath, params.excludedLinesPath, params.sampledDataPath, params.fullDCsPath,
+        params.dcsPathForDCMiner, params.evidencesPath, params.topKDCsPath,
+        params.groundTruthDCsPath, params.candidateDCsPath, params.candidateTrueDCsPath,
+        params.excludedDCsPath, params.headerPath, params.csvResultPath,
         params.correlationByUserPath);
-//    ud.guidedDiscovery();
+    ud.guidedDiscovery();
 
     log.info("Finished algorithms.");
     return 0;
@@ -148,5 +116,24 @@ public class UGDRunner implements Callable<Integer> {
     params.csvResultPath = baseDir + "/eval_error_detect_" + dsName + ".csv";
     params.correlationByUserPath = baseDir + "/model_ltr_eval_" + dsName + ".csv";
     return params;
+  }
+
+  private void printArgs() {
+    StringBuilder sb = new StringBuilder();
+    for (OptionSpec option : spec.options()) {
+//      String name = option.longestName();
+//      System.out.printf("%s was specified: %s%n", name, pr.hasMatchedOption(option));
+//      System.out.printf("%s=%s (-1 means this option was not matched on command line)%n",
+//          name, pr.matchedOptionValue(name, -1));
+//      System.out.printf("%s=%s (arg value or default)%n", name, option.getValue());
+//      System.out.println();
+      Object value = option.getValue();
+      sb.append(option.longestName()).append("=").append(value).append(",");
+    }
+    if (sb.length() > 0) {
+      sb.deleteCharAt(sb.length() - 1);
+    }
+    String s = sb.toString();
+    log.info("Args:{}", s);
   }
 }

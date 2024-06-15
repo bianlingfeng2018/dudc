@@ -2,8 +2,8 @@ package edu.fudan.algorithms;
 
 import static edu.fudan.conf.DefaultConf.addCounterExampleS;
 import static edu.fudan.conf.DefaultConf.canBreakEarly;
-import static edu.fudan.conf.DefaultConf.cellQStrategy;
-import static edu.fudan.conf.DefaultConf.dCsQStrategy;
+import static edu.fudan.conf.DefaultConf.defCellQStrategy;
+import static edu.fudan.conf.DefaultConf.defDCQStrategy;
 import static edu.fudan.conf.DefaultConf.dcGeneratorConf;
 import static edu.fudan.conf.DefaultConf.delta;
 import static edu.fudan.conf.DefaultConf.excludeLinePercent;
@@ -15,11 +15,11 @@ import static edu.fudan.conf.DefaultConf.minLenOfDC;
 import static edu.fudan.conf.DefaultConf.numInCluster;
 import static edu.fudan.conf.DefaultConf.questionsConf;
 import static edu.fudan.conf.DefaultConf.randomClusterS;
-import static edu.fudan.conf.DefaultConf.repairExcluded;
+import static edu.fudan.conf.DefaultConf.repairErrors;
 import static edu.fudan.conf.DefaultConf.succinctFactor;
 import static edu.fudan.conf.DefaultConf.topK;
 import static edu.fudan.conf.DefaultConf.topKOfCluster;
-import static edu.fudan.conf.DefaultConf.tupleQStrategy;
+import static edu.fudan.conf.DefaultConf.defTupleQStrategy;
 import static edu.fudan.utils.CorrelationUtil.readColumnCorrScoreMap;
 import static edu.fudan.utils.FileUtil.generateNewCopy;
 import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
@@ -113,7 +113,7 @@ public class UGuideDiscovery {
       round++;
       log.info("------ Round {} -------", round);
       // 修复
-      if (repairExcluded) {
+      if (repairErrors) {
         simRepairing();
       }
       // 采样
@@ -191,7 +191,7 @@ public class UGuideDiscovery {
     Set<DCViolation> currVios = evaluation.getCurrVios();
 
     DCsQuestion selector = new DCsQuestion(gtTree, currDCs, currVios, columnsCorrScoreMap,
-        minLenOfDC, succinctFactor, dCsQStrategy, maxDCQuestionBudget);
+        minLenOfDC, succinctFactor, defDCQStrategy, maxDCQuestionBudget);
 
     DCsQuestionResult result = selector.simulate();
 
@@ -226,7 +226,7 @@ public class UGuideDiscovery {
     // 在脏数据中，推荐一些元组让用户判断
     Set<Integer> errorLines = evaluation.getErrorLinesOfChanges();
     Set<DCViolation> currVios = evaluation.getCurrVios();
-    TupleQuestion selector = new TupleQuestion(errorLines, currVios, tupleQStrategy,
+    TupleQuestion selector = new TupleQuestion(errorLines, currVios, defTupleQStrategy,
         maxTupleQuestionBudget);
     TupleQuestionResult result = selector.simulate();
 
@@ -252,7 +252,7 @@ public class UGuideDiscovery {
     Set<DenialConstraint> currDCs = evaluation.getCurrDCs();
     Set<DCViolation> currVios = evaluation.getCurrVios();
     CellQuestionV2 selector = new CellQuestionV2(input, cellsOfChanges, currDCs, currVios,
-        maxCellQuestionBudget, delta, canBreakEarly, cellQStrategy, excludeLinePercent);
+        maxCellQuestionBudget, delta, canBreakEarly, defCellQStrategy, excludeLinePercent);
 
     CellQuestionResult result = selector.simulate();
     Set<DenialConstraint> falseDCs = result.getFalseDCs();
