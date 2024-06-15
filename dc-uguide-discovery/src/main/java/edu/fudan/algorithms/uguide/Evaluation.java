@@ -24,6 +24,7 @@ import edu.fudan.algorithms.DCViolationSet;
 import edu.fudan.algorithms.HydraDetector;
 import edu.fudan.algorithms.TupleSampler.SampleResult;
 import edu.fudan.utils.DCUtil;
+import edu.fudan.utils.EvaluateUtil;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -380,7 +381,14 @@ public class Evaluation {
         .filter(lineIndex -> this.excludedLines.contains(lineIndex)).collect(Collectors.toSet());
     long t5 = System.currentTimeMillis();
     log.debug("Eval 4 time = {}s", (t5 - t4) / 1000.0);
-    // 评价sample的error lines
+    // 评价P R F1
+    Double[] doubles = EvaluateUtil.eval(groundTruthDCs, trueDCs, groundTruthViolations,
+        trueViolations);
+    long t6 = System.currentTimeMillis();
+    log.debug("Eval 5 time = {}s", (t6 - t5) / 1000.0);
+    result.setPrecision(doubles[0]);
+    result.setRecall(doubles[1]);
+    result.setF1(doubles[2]);
     result.setExcludedLines(this.excludedLines.size());
     result.setExcludedLinesOfCellQ(this.excludedLinesInCellQ.size());
     result.setExcludedLinesOfTupleQ(this.excludedLinesInTupleQ.size());
@@ -531,6 +539,9 @@ public class Evaluation {
     private int excludedLinesOfDCsQ = 0;
     private int errorLinesInSample = 0;
     private int errorLinesInSampleAndExcluded = 0;
+    private double precision = 0.0;
+    private double recall = 0.0;
+    private double f1 = 0.0;
     private Map<DenialConstraint, Integer> candiDCViosMap = Maps.newHashMap();
   }
 }

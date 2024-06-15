@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static edu.fudan.conf.DefaultConf.minNum;
-import static edu.fudan.conf.DefaultConf.minTopK;
+import static edu.fudan.conf.DefaultConf.minNumInCluster;
+import static edu.fudan.conf.DefaultConf.minTopKOfCluster;
 import static edu.fudan.utils.FileUtil.getLinesWithHeader;
 
 /**
@@ -42,8 +42,8 @@ public class TupleSampler {
     Input input = new Input(actualGenerator.generateNewCopy());
     log.info("Sample input size: {}", input.getLineCount());
 
-    int k = Math.max(minTopK, topKOfCluster);
-    int n = Math.max(minNum, numInCluster);
+    int k = Math.max(minTopKOfCluster, topKOfCluster);
+    int n = Math.max(minNumInCluster, numInCluster);
     log.info("Sample parameters: k={}, n={}, skippedColumns={}, excludedLines={}, falseDCLinePairMap={}, addCounterExampleS={}, randomClusterS={}",
         k, n, skippedColumns == null ? null : skippedColumns.size(),
         falseDCLinePairMap == null ? null : falseDCLinePairMap.size(),

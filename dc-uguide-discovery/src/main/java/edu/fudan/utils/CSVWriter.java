@@ -1,14 +1,6 @@
 package edu.fudan.utils;
 
-import static edu.fudan.conf.DefaultConf.defaultErrorThreshold;
-import static edu.fudan.conf.DefaultConf.maxCellQuestionBudget;
-import static edu.fudan.conf.DefaultConf.maxDCQuestionBudget;
-import static edu.fudan.conf.DefaultConf.maxDiscoveryRound;
-import static edu.fudan.conf.DefaultConf.numInCluster;
-import static edu.fudan.conf.DefaultConf.maxTupleQuestionBudget;
-import static edu.fudan.conf.DefaultConf.questionsConf;
-import static edu.fudan.conf.DefaultConf.topK;
-import static edu.fudan.conf.DefaultConf.topKOfCluster;
+import static edu.fudan.conf.DefaultConf.getConfStr;
 
 import edu.fudan.algorithms.uguide.Evaluation.EvalResult;
 import java.io.FileWriter;
@@ -22,17 +14,19 @@ public class CSVWriter {
 
   public static void writeToFile(String fileName, List<EvalResult> evalResults) {
     try (FileWriter writer = new FileWriter(fileName)) {
-      String confStr = String.format(
-          "topK=%s\nmaxDiscoveryRound=%s\nmaxCellQuestionBudget=%s\nmaxTupleQuestionBudget=%s\nmaxDCQuestionBudget=%s\ntopKOfCluster=%s\nmaxInCluster=%s\ndefaultErrorThreshold=%s\nquestionsConf=[%s;%s;%s]\n",
-          topK, maxDiscoveryRound, maxCellQuestionBudget, maxTupleQuestionBudget,
-          maxDCQuestionBudget, topKOfCluster, numInCluster, defaultErrorThreshold,
-          questionsConf[0], questionsConf[1], questionsConf[2]);
-      String header = "Round,TrueVios,CandiVios,GTVios,TrueDCs,CandiDCs,GTDCs,CellsOfTrueVios,CellsOfTrueViosAndChanges,CellsOfChanges,CellQuestions,TupleQuestions,DCQuestions,excludedLines,excludedLinesOfCellQ,excludedLinesOfTupleQ,excludedLinesOfDCsQ,errorLinesInSample,errorLinesInSampleAndExcluded\n";
+      String confStr = getConfStr();
+      String header = "Round,P,R,F1,TrueVios,CandiVios,GTVios,TrueDCs,CandiDCs,GTDCs,CellsOfTrueVios,CellsOfTrueViosAndChanges,CellsOfChanges,CellQuestions,TupleQuestions,DCQuestions,excludedLines,excludedLinesOfCellQ,excludedLinesOfTupleQ,excludedLinesOfDCsQ,errorLinesInSample,errorLinesInSampleAndExcluded\n";
       writer.append(confStr);
       writer.append(header);
       for (int i = 0; i < evalResults.size(); i++) {
         EvalResult res = evalResults.get(i);
         writer.append(String.valueOf(i + 1));
+        writer.append(COMMA_DELIMITER);
+        writer.append(String.valueOf(res.getPrecision()));
+        writer.append(COMMA_DELIMITER);
+        writer.append(String.valueOf(res.getRecall()));
+        writer.append(COMMA_DELIMITER);
+        writer.append(String.valueOf(res.getF1()));
         writer.append(COMMA_DELIMITER);
         writer.append(String.valueOf(res.getViolationsTrue()));
         writer.append(COMMA_DELIMITER);

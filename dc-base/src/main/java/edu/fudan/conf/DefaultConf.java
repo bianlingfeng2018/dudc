@@ -9,22 +9,22 @@ import edu.fudan.algorithms.uguide.TupleQStrategy;
  */
 public class DefaultConf {
 
-  public static Boolean noCrossColumn = Boolean.TRUE;
-  public static double minimumSharedValue = 0.30d;
   /**
    * Top-k DCs discovered. Set k = Integer.MAX_VALUE if we want all discovered DCs.
    */
   public static int topK = 5;
   public static String defaultTable = "xxx";
+  public static Boolean noCrossColumn = Boolean.TRUE;
+  public static double minimumSharedValue = 0.30d;
   // Sample
   /**
    * Min top-k clusters. 2 ensure > and < exist.
    */
-  public static int minTopK = 2;
+  public static int minTopKOfCluster = 2;
   /**
    * Min number in cluster. 2 ensure = exists.
    */
-  public static int minNum = 2;
+  public static int minNumInCluster = 2;
   /**
    * Top-k clusters. Default is 5.
    */
@@ -34,7 +34,8 @@ public class DefaultConf {
    */
   public static int numInCluster = 3;
   /**
-   * If we use add-counter-example-sample, add at least 1 counter-example tuple pair (w.r.t the false DC and not in the excluded tuples) to sampled result.
+   * If we use add-counter-example-sample, add at least 1 counter-example tuple pair (w.r.t the
+   * false DC and not in the excluded tuples) to sampled result.
    */
   public static boolean addCounterExampleS = true;
   /**
@@ -47,8 +48,8 @@ public class DefaultConf {
   // Questions(CellQ TupleQ DCsQ)
   public static int maxDiscoveryRound = 50;
   public static Integer[] questionsConf = new Integer[]{1, 1, 1};
-  public static boolean debugDCVioMap = false;
   public static boolean repairExcluded = true;
+  public static boolean debugDCVioMap = false;
   // CellQ
   public static int maxCellQuestionBudget = 100;
   public static CellQStrategy cellQStrategy = CellQStrategy.VIO_AND_CONF;
@@ -56,13 +57,13 @@ public class DefaultConf {
   public static boolean canBreakEarly = false;
   public static double excludeLinePercent = 0.1;
   // TupleQ
-  public static TupleQStrategy tupleQStrategy = TupleQStrategy.VIOLATIONS_PRIOR;
   public static int maxTupleQuestionBudget = 100;
+  public static TupleQStrategy tupleQStrategy = TupleQStrategy.VIOLATIONS_PRIOR;
   // DCsQ
+  public static int maxDCQuestionBudget = 5;
   public static int minLenOfDC = 2;
   public static double succinctFactor = 0.5;
   public static DCsQStrategy dCsQStrategy = DCsQStrategy.RANDOM_DC;
-  public static int maxDCQuestionBudget = 5;
   // DCMiner
   // TODO: 慎用static final关键字，因为修改后需要重新mvn clean一下才生效
   public static String dcGeneratorConf = "Basic";  // Basic DCMiner
@@ -75,4 +76,19 @@ public class DefaultConf {
   public static String sharedArgs = "--train_version t_2024_3_4 --gpu_index 0 --k_i 0 --dataset_i 0 --use_sample 0 --BATCH_SIZE 32 --LR 0.0001 --num_episodes 2000 --buffer_size 10000 --factor_suc 0.5 --factor_div 0.5 --explore_eps_decay 0";
   public static String trainArgs = "--use_pretrain 1 --show_process 0";
   public static String predictArgs = "--ep_range 100_99";
+
+  public static String getConfStr() {
+    String s = String.format(
+        "MaxDiscoveryRound=%s, MaxCellQuestionBudget=%s, MaxTupleQuestionBudget=%s, MaxDCQuestionBudget=%s, QuestionsConf=[%s;%s;%s]"
+            + "\nMinTopKOfCluster=%s, MinNumInCluster=%s, TopKOfCluster=%s, MaxInCluster=%s, AddCounterExampleS=%s, RandomClusterS=%s"
+            + "\nDefaultErrorThreshold=%s, DynamicG1=%s, TopK=%s, "
+            + "\nRepairExcluded=%s, CellQStrategy=%s, TupleQStrategy=%s, DCsQStrategy=%s"
+            + "\nDelta=%s, MinLenOfDC=%s, SuccinctFactor=%s\n",
+        maxDiscoveryRound, maxCellQuestionBudget, maxTupleQuestionBudget, maxDCQuestionBudget, questionsConf[0], questionsConf[1], questionsConf[2],
+        minTopKOfCluster, minNumInCluster, topKOfCluster, numInCluster, addCounterExampleS, randomClusterS,
+        defaultErrorThreshold, dynamicG1, topK,
+        repairExcluded, cellQStrategy, tupleQStrategy, dCsQStrategy,
+        delta, minLenOfDC, succinctFactor);
+    return s;
+  }
 }
