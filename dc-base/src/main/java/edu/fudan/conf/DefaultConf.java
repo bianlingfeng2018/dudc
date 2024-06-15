@@ -48,7 +48,7 @@ public class DefaultConf {
   public static int maxDiscoveryRound = 50;
   public static Integer[] questionsConf = new Integer[]{1, 1, 1};
   public static boolean debugDCVioMap = false;
-  public static boolean repairExcluded = false;
+  public static boolean repairExcluded = true;
   // CellQ
   public static int maxCellQuestionBudget = 100;
   public static CellQStrategy cellQStrategy = CellQStrategy.VIO_AND_CONF;
