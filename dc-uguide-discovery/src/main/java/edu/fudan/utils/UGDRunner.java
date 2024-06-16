@@ -85,11 +85,11 @@ public class UGDRunner implements Callable<Integer> {
     log.info("The base dir is {}", new File(baseDir).getAbsolutePath());
     log.info("Executing algorithms...");
     UGuideDiscovery ud = new UGuideDiscovery(params.cleanDataPath, params.changesPath,
-        params.dirtyDataPath, params.excludedLinesPath, params.sampledDataPath, params.fullDCsPath,
-        params.dcsPathForDCMiner, params.evidencesPath, params.topKDCsPath,
-        params.groundTruthDCsPath, params.candidateDCsPath, params.candidateTrueDCsPath,
-        params.excludedDCsPath, params.headerPath, params.csvResultPath,
-        params.correlationByUserPath);
+        params.dirtyDataPath, params.dirtyDataUnrepairedPath, params.excludedLinesPath,
+        params.sampledDataPath, params.fullDCsPath, params.dcsPathForDCMiner, params.evidencesPath,
+        params.topKDCsPath, params.groundTruthDCsPath, params.candidateDCsPath,
+        params.candidateTrueDCsPath, params.excludedDCsPath, params.headerPath,
+        params.csvResultPath, params.correlationByUserPath);
     ud.guidedDiscovery();
 
     log.info("Finished algorithms.");
@@ -103,6 +103,7 @@ public class UGDRunner implements Callable<Integer> {
     params.changesPath = baseDir + "/preprocessed_" + dsName + "_changes.csv";
     params.cleanDataPath = baseDir + "/preprocessed_" + dsName + ".csv";
     params.dirtyDataPath = baseDir + "/preprocessed_" + dsName + "_dirty.csv";
+    params.dirtyDataUnrepairedPath = baseDir + "/preprocessed_" + dsName + "_dirty_unrepaired.csv";
     params.excludedLinesPath = baseDir + "/preprocessed_" + dsName + "_dirty_excluded.csv";
     params.sampledDataPath = baseDir + "/preprocessed_" + dsName + "_dirty_sample.csv";
     params.groundTruthDCsPath = baseDir + "/dcs_ground_" + dsName + ".txt";

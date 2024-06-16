@@ -10,11 +10,14 @@ import lombok.Getter;
 public class DirtyDS {
 
   private final String dataPath;
+  private final String dataUnrepairedPath;
   private final String excludedLinesPath;
   private final String headerPath;
 
-  public DirtyDS(String dataPath, String excludedLinesPath, String headerPath) {
+  public DirtyDS(String dataPath, String dataUnrepairedPath, String excludedLinesPath,
+      String headerPath) {
     this.dataPath = dataPath;
+    this.dataUnrepairedPath = dataUnrepairedPath;
     this.excludedLinesPath = excludedLinesPath;
     this.headerPath = headerPath;
   }

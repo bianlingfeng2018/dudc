@@ -7,7 +7,9 @@ import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.paritions.LinePair;
 import de.hpi.naumann.dc.predicates.sets.PredicateSetFactory;
 import edu.fudan.algorithms.DCViolation;
+import edu.fudan.algorithms.HydraDetector;
 import edu.fudan.transformat.DCFormatUtil;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,15 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class EvaluateUtil {
+
+  public static Double[] eval(Set<DenialConstraint> gtDCs, Set<DenialConstraint> discDCs,
+      String dataPath) {
+    Set<DCViolation> vGT = new HydraDetector(dataPath, new HashSet<>(gtDCs)).detect().getViosSet();
+    Set<DCViolation> vDisc = new HydraDetector(dataPath, new HashSet<>(discDCs)).detect()
+        .getViosSet();
+    log.debug("VGT={}, VDisc={}", vGT.size(), vDisc.size());
+    return eval(new HashSet<>(gtDCs), new HashSet<>(discDCs), vGT, vDisc);
+  }
 
   public static Double[] eval(Set<DenialConstraint> gtDCs, Set<DenialConstraint> discDCs,
       Set<DCViolation> vGT, Set<DCViolation> vDisc) {
@@ -156,6 +167,7 @@ public class EvaluateUtil {
     result[0] = precision;
     result[1] = recall;
     result[2] = f1;
+    log.debug("Precision = {}, Recall = {}, F1 = {}", result[0], result[1], result[2]);
     return result;
   }
 

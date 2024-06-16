@@ -403,23 +403,23 @@ public class UGDTest {
   public void testOneRoundUGuide()
       throws InputGenerationException, InputIterationException, IOException {
     maxDiscoveryRound = 1;
-    repairErrors = true;
+    repairErrors = false;
     UGuideDiscovery ud = new UGuideDiscovery(params.cleanDataPath, params.changesPath,
-        params.dirtyDataPath, params.excludedLinesPath, params.sampledDataPath, params.fullDCsPath,
-        params.dcsPathForDCMiner, params.evidencesPath, params.topKDCsPath,
-        params.groundTruthDCsPath, params.candidateDCsPath, params.candidateTrueDCsPath,
-        params.excludedDCsPath, params.headerPath, params.csvResultPath,
-        params.correlationByUserPath);
+        params.dirtyDataPath, params.dirtyDataUnrepairedPath, params.excludedLinesPath,
+        params.sampledDataPath, params.fullDCsPath, params.dcsPathForDCMiner, params.evidencesPath,
+        params.topKDCsPath, params.groundTruthDCsPath, params.candidateDCsPath,
+        params.candidateTrueDCsPath, params.excludedDCsPath, params.headerPath,
+        params.csvResultPath, params.correlationByUserPath);
     ud.guidedDiscovery();
   }
 
   /**
    * Test user guided detection.
-   *
    */
   @Test
   public void testUGuide() {
-    String[] args = "-i 0 -r 50 -u REPAIR -s EFFICIENT -a HYDRA -c VIO_AND_CONF -t VIOLATIONS_PRIOR -d SUC_COR_VIOS -g DYNAMIC".split(" ");
+    String[] args = "-i 0 -r 50 -u REPAIR -s EFFICIENT -a HYDRA -c VIO_AND_CONF -t VIOLATIONS_PRIOR -d SUC_COR_VIOS -g DYNAMIC".split(
+        " ");
     int exitCode = new CommandLine(new UGDRunner()).execute(args);
     log.debug("ExitCode = {}", exitCode);
   }

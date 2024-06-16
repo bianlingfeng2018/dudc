@@ -2,9 +2,10 @@ package edu.fudan.algorithms;
 
 import static edu.fudan.conf.DefaultConf.addCounterExampleS;
 import static edu.fudan.conf.DefaultConf.canBreakEarly;
+import static edu.fudan.conf.DefaultConf.dcGeneratorConf;
 import static edu.fudan.conf.DefaultConf.defCellQStrategy;
 import static edu.fudan.conf.DefaultConf.defDCQStrategy;
-import static edu.fudan.conf.DefaultConf.dcGeneratorConf;
+import static edu.fudan.conf.DefaultConf.defTupleQStrategy;
 import static edu.fudan.conf.DefaultConf.delta;
 import static edu.fudan.conf.DefaultConf.excludeLinePercent;
 import static edu.fudan.conf.DefaultConf.maxCellQuestionBudget;
@@ -19,7 +20,6 @@ import static edu.fudan.conf.DefaultConf.repairErrors;
 import static edu.fudan.conf.DefaultConf.succinctFactor;
 import static edu.fudan.conf.DefaultConf.topK;
 import static edu.fudan.conf.DefaultConf.topKOfCluster;
-import static edu.fudan.conf.DefaultConf.defTupleQStrategy;
 import static edu.fudan.utils.CorrelationUtil.readColumnCorrScoreMap;
 import static edu.fudan.utils.FileUtil.generateNewCopy;
 import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
@@ -87,12 +87,13 @@ public class UGuideDiscovery {
   private final Map<String, Double> columnsCorrScoreMap;
 
   public UGuideDiscovery(String cleanDataPath, String changesPath, String dirtyDataPath,
-      String excludedLinesPath, String sampledDataPath, String fullDCsPath,
-      String dcsPathForDCMiner, String evidencesPath, String topKDCsPath,
+      String dirtyDataUnrepairedPath, String excludedLinesPath, String sampledDataPath,
+      String fullDCsPath, String dcsPathForDCMiner, String evidencesPath, String topKDCsPath,
       String groundTruthDCsPath, String candidateDCsPath, String trueDCsPath, String visitedDCsPath,
       String headerPath, String csvResultPath, String correlationByUserPath) throws IOException {
     this.cleanDS = new CleanDS(cleanDataPath, headerPath, changesPath);
-    this.dirtyDS = new DirtyDS(dirtyDataPath, excludedLinesPath, headerPath);
+    this.dirtyDS = new DirtyDS(dirtyDataPath, dirtyDataUnrepairedPath, excludedLinesPath,
+        headerPath);
     this.sampleDS = new SampleDS(sampledDataPath, headerPath);
     this.candidateDCs = new CandidateDCs(fullDCsPath, dcsPathForDCMiner, evidencesPath,
         topKDCsPath);
@@ -155,12 +156,12 @@ public class UGuideDiscovery {
 
   private boolean canProcess(int round) {
     if (round >= maxDiscoveryRound) {
-      log.info("Reach max round");
+      log.info("Can no longer process, because it reach max round!!!");
       return false;
     }
     if (evaluation.allTrueViolationsFound()) {
-      log.info("All changes covered!!!");
-//      return false;
+      log.info("Can no longer process, because all TrueViolations found!!!");
+      return false;
     }
     return true;
   }

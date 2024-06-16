@@ -382,8 +382,7 @@ public class Evaluation {
     long t5 = System.currentTimeMillis();
     log.debug("Eval 4 time = {}s", (t5 - t4) / 1000.0);
     // 评价P R F1
-    Double[] doubles = EvaluateUtil.eval(groundTruthDCs, trueDCs, groundTruthViolations,
-        trueViolations);
+    Double[] doubles = EvaluateUtil.eval(groundTruthDCs, trueDCs, dirtyDS.getDataUnrepairedPath());
     long t6 = System.currentTimeMillis();
     log.debug("Eval 5 time = {}s", (t6 - t5) / 1000.0);
     result.setPrecision(doubles[0]);
@@ -432,23 +431,15 @@ public class Evaluation {
   }
 
   public boolean allTrueViolationsFound() {
-    // TODO: 如何判断所有冲突已经找到？或者找到冲突的召回率和准确率如何定义？
-//    boolean b = trueDCsMoreThanGroundTruthDCs();
-//    boolean b = trueViosMoreThanGroundTruthVios();
-    boolean b = this.cellsOfTrueVios.containsAll(this.cellsOfChanges);
-    return b;
-  }
-
-  private boolean trueViosMoreThanGroundTruthVios() {
-    // TODO: 目前有可能trueViolations数量大于groundTruthViolations，是因为同一个tuplePair可能违反多个规则，所以冲突之间可能有元组对的重合
-    boolean b = this.trueViolations.size() == this.groundTruthViolations.size();
-    return b;
-  }
-
-  private boolean trueDCsMoreThanGroundTruthDCs() {
-    // TODO: 目前有可能trueDCs数量大于gtDCs，是因为impliedDC也算真规则
-    boolean b = this.trueDCs.size() >= this.groundTruthDCs.size();
-    return b;
+    // 用Recall判断所有真冲突是否都找到，其他方式都不妥：
+    // 1.用trueDCs数量判断。有可能trueDCs数量大于gtDCs，是因为impliedDC也算真规则。
+    // 2.用trueViolations判断。有可能trueViolations数量大于groundTruthViolations，是因为多个前者可能映射到同一个后者。
+    if (evalResults.isEmpty()) {
+      return false;
+    }
+    EvalResult lastRes = this.evalResults.get(evalResults.size() - 1);
+    double recall = lastRes.getRecall();
+    return recall == 1.0;
   }
 
   public Set<DCViolation> genCellQuestionsFromCurrState(int maxQueryBudget) {
