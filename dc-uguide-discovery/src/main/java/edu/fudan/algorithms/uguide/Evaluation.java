@@ -323,6 +323,7 @@ public class Evaluation {
 
   public EvalResult evaluate() {
     EvalResult result = new EvalResult();
+    result.setCurrG1(this.errorThreshold);
     if (dynamicG1 && this.lastCandiDCsSize == this.candidateDCs.size()) {
       // TODO: 当candiDC数量没有增加时，即本轮top-k规则全部被判定为falseDC，此时g1需要更严格，即更小
       //  另外，增加对比实验证明，调整g1一定需要数据能变得更干净为前提，即可以排除脏元组，否则效果会打折扣
@@ -533,6 +534,7 @@ public class Evaluation {
     private double precision = 0.0;
     private double recall = 0.0;
     private double f1 = 0.0;
+    private double currG1 = 0.0;
     private Map<DenialConstraint, Integer> candiDCViosMap = Maps.newHashMap();
   }
 }
