@@ -16,12 +16,15 @@ import static edu.fudan.utils.DCUtil.loadChanges;
 import static edu.fudan.utils.DCUtil.printDCVioMap;
 import static edu.fudan.utils.FileUtil.generateNewCopy;
 import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
+import static edu.fudan.utils.G1Util.generateSubLists;
 
 import ch.javasoft.bitset.search.NTreeSearch;
 import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.input.Input;
 import de.hpi.naumann.dc.paritions.LinePair;
+import de.hpi.naumann.dc.predicates.Predicate;
+import de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import de.hpi.naumann.dc.predicates.sets.PredicateSetFactory;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
@@ -390,6 +393,48 @@ public class UGDTest {
     generator.setEvidencePath(evidencePath);
     Set<DenialConstraint> genDCs = generator.generateDCs();
     log.info("GenDCs size = {}", genDCs.size());
+  }
+
+  /**
+   * Test calculate g1 range of dc.
+   */
+  @Test
+  public void testG1Range() {
+    String dsPath = "../data/ds_dirty.txt";
+    String headerPath = "../data/header.txt";
+    String gtDCsPath = "../data/dc_gt.txt";
+    List<DenialConstraint> gtDCs = DCLoader.load(headerPath, gtDCsPath);
+    DenialConstraint dc = gtDCs.get(0);
+
+    // Violations of dc
+    int size = new HydraDetector(dsPath, Sets.newHashSet(dc)).detect().size();
+    log.debug("Vios of dc = {},{}", size, DCFormatUtil.convertDC2String(dc));
+
+    // Violations of subDC
+    int subSizeMin = Integer.MAX_VALUE;
+    DenialConstraint subDCMin = null;
+    ArrayList<Predicate> list = new ArrayList<>();
+    for (Predicate predicate : dc.getPredicateSet()) {
+      list.add(predicate);
+    }
+    List<List<Predicate>> lists = generateSubLists(list);
+    for (List<Predicate> predicates : lists) {
+      // SubDC
+      PredicateBitSet ps = new PredicateBitSet();
+      for (Predicate predicate : predicates) {
+        ps.add(predicate);
+      }
+      DenialConstraint subDC = new DenialConstraint(ps);
+      int subSize = new HydraDetector(dsPath, Sets.newHashSet(subDC)).detect().size();
+      log.debug("Size = {}", subSize);
+
+      if (subSize < subSizeMin) {
+        subSizeMin = subSize;
+        subDCMin = subDC;
+      }
+    }
+    log.debug("Vios of subDC min = {},{}", subSizeMin, DCFormatUtil.convertDC2String(subDCMin));
+
   }
 
   /**
