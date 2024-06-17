@@ -1,5 +1,6 @@
 package edu.fudan;
 
+import static edu.fudan.algorithms.DCLoader.loadHeader;
 import static edu.fudan.conf.DefaultConf.canBreakEarly;
 import static edu.fudan.conf.DefaultConf.delta;
 import static edu.fudan.conf.DefaultConf.excludeLinePercent;
@@ -48,6 +49,7 @@ import edu.fudan.algorithms.uguide.TupleQuestion;
 import edu.fudan.algorithms.uguide.TupleQuestionResult;
 import edu.fudan.transformat.DCFormatUtil;
 import edu.fudan.utils.FileUtil;
+import edu.fudan.utils.G1RangeResult;
 import edu.fudan.utils.UGDParams;
 import edu.fudan.utils.UGDRunner;
 import java.io.File;
@@ -382,7 +384,7 @@ public class UGDTest {
     // 90 * 1.00 = 90.0 --- 90 violations (max=38) ×
     // 90 * 0.24 = 21.6 --- 22 violations (max=38) √ not(t1.Abbr!=t2.Abbr) ×
     // 90 * 0.17 = 15.3 --- 16 violations (max=38) √ not(t1.Abbr=t2.Abbr) √ 因为不会同时生成 not(t1.Abbr!=t2.Abbr) 和 not(t1.Abbr=t2.Abbr)，所以选产生冲突少（覆盖证据集多）的作为规则而生成，即后者
-    double g1 = 0.0;
+    double g1 = 0.012;
     String fullDCsPath = "../data/dc_full.txt";
     String topKDCsPath = "../data/dc_top_k.txt";
     String evidencePath = "../data/evidence.txt";
@@ -404,13 +406,35 @@ public class UGDTest {
     String headerPath = "../data/header.txt";
     String gtDCsPath = "../data/dc_gt.txt";
     List<DenialConstraint> gtDCs = DCLoader.load(headerPath, gtDCsPath);
-    DenialConstraint dc = gtDCs.get(0);
 
-    // Violations of dc
+    List<G1RangeResult> result = new ArrayList<>();
+    for (DenialConstraint dc : gtDCs) {
+      G1RangeResult rr = calculateG1Range(headerPath, dsPath, dc);
+      result.add(rr);
+    }
+
+    log.debug("Result size = {}", result.size());
+    for (G1RangeResult rr : result) {
+      log.debug("G1RangeResult = [{},{}), dc = {}", rr.getRange()[0], rr.getRange()[1],
+          rr.getConstraint());
+    }
+  }
+
+  private G1RangeResult calculateG1Range(String headerPath, String dsPath,
+      DenialConstraint dc) {
+    Double[] doubles = new Double[2];
+    // Size1
+    String excludeEvi = buildExcludeEvi(headerPath);
+    DenialConstraint excludeDC = DCFormatUtil.convertString2DC(excludeEvi, loadHeader(headerPath));
+    int excludeSize = new HydraDetector(dsPath, Sets.newHashSet(excludeDC)).detect().size();
+    log.debug("ExcludeSize = {}, dc = {}", excludeSize, DCFormatUtil.convertDC2String(excludeDC));
+
+    // Size2
     int size = new HydraDetector(dsPath, Sets.newHashSet(dc)).detect().size();
-    log.debug("Vios of dc = {},{}", size, DCFormatUtil.convertDC2String(dc));
+    String dcStr = DCFormatUtil.convertDC2String(dc);
+    log.debug("Size = {}, dc = {}", size, dcStr);
 
-    // Violations of subDC
+    // Size3
     int subSizeMin = Integer.MAX_VALUE;
     DenialConstraint subDCMin = null;
     ArrayList<Predicate> list = new ArrayList<>();
@@ -426,15 +450,43 @@ public class UGDTest {
       }
       DenialConstraint subDC = new DenialConstraint(ps);
       int subSize = new HydraDetector(dsPath, Sets.newHashSet(subDC)).detect().size();
-      log.debug("Size = {}", subSize);
+      log.debug("SubSize = {}, dc = {}", subSize, DCFormatUtil.convertDC2String(subDC));
 
       if (subSize < subSizeMin) {
         subSizeMin = subSize;
         subDCMin = subDC;
       }
     }
-    log.debug("Vios of subDC min = {},{}", subSizeMin, DCFormatUtil.convertDC2String(subDCMin));
+    log.debug("SubSizeMin = {}, dc = {}", subSizeMin, DCFormatUtil.convertDC2String(subDCMin));
+    Input input = generateNewCopy(dsPath);
+    int lineCount = input.getLineCount();
+    log.debug("LineCount = {}", lineCount);
 
+    // Size2
+    int low = size >= excludeSize ? (size - excludeSize) : size;
+    // Size1 Size3
+    int high = subSizeMin >= excludeSize ? (subSizeMin - excludeSize) : subSizeMin;
+    // Important!!!
+    // In hydra, if g1*combinations = 1.x, then it will allow 2 violations.
+    // So we need revise low high before calculating g1.
+    int lowRev = Math.max(0, low - 1);
+    int highRev = Math.max(0, high - 1);
+    log.debug("Low = {}, High = {}, LowRev = {}, HighRev = {}", low, high, lowRev, highRev);
+    // Size4
+    int combinations = lineCount * (lineCount - 1);
+    log.debug("Tuple pairs combinations = {}", combinations);
+
+    double leftG1 = lowRev / (double) combinations;
+    double rightG1 = highRev / (double) combinations;
+    log.debug("LeftG1 = {}, RightG1 = {}", leftG1, rightG1);
+    doubles[0] = leftG1;
+    doubles[1] = rightG1;
+    return new G1RangeResult(doubles, dcStr);
+  }
+
+  private String buildExcludeEvi(String headerPath) {
+    String header = loadHeader(headerPath);
+    return "not(t1.Abbr!=t2.Abbr^t1.City!=t2.City^t1.Year!=t2.Year)";
   }
 
   /**
