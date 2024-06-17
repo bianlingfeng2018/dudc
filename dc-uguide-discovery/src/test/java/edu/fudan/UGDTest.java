@@ -17,10 +17,12 @@ import static edu.fudan.utils.DCUtil.loadChanges;
 import static edu.fudan.utils.DCUtil.printDCVioMap;
 import static edu.fudan.utils.FileUtil.generateNewCopy;
 import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
+import static edu.fudan.utils.FileUtil.writeListLinesToFile;
 import static edu.fudan.utils.G1Util.calculateG1Range;
 import static edu.fudan.utils.G1Util.generateSubLists;
 
 import ch.javasoft.bitset.search.NTreeSearch;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.input.Input;
@@ -360,13 +362,26 @@ public class UGDTest {
     //  当规则属性都没有错误时，g1=0
     //  当规则检测无冲突时，g1=0
     //  当前规则的g1 <= 合理的g1 < 减一个谓词的所有泛化规则的g1的最小值
-    String dsPath = "../data/ds_dirty.txt";
-    String headerPath = "../data/header.txt";
-    String gtDCsPath = "../data/dc_gt.txt";
-    List<DenialConstraint> gtDCs = DCLoader.load(headerPath, gtDCsPath);
+//    String dsPath = "../data/ds_dirty.txt";
+//    String headerPath = "../data/header.txt";
+//    String gtDCsPath = "../data/dc_gt.txt";
+//    String fullDCsPath = "../data/dc_full.txt";
+//    String topKDCsPath = "../data/dc_top_k.txt";
+//    String evidencePath = "../data/evidence.txt";
+    String dsPath = params.dirtyDataPath;
+    String headerPath = params.headerPath;
+    String gtDCsPath = params.groundTruthDCsPath;
+    String fullDCsPath = params.fullDCsPath;
+    String topKDCsPath = params.topKDCsPath;
+    String evidencePath = params.evidencesPath;
+    double g1 = 0.01;
+    log.debug("Discover dcs using g1 = {}.", g1);
 
-    log.debug("Detect violations by gtDCs.");
+    List<DenialConstraint> gtDCs = DCLoader.load(headerPath, gtDCsPath);
+    log.debug("Load dcs = {}", gtDCs.size());
+
     DCViolationSet vios = new HydraDetector(dsPath, new HashSet<>(gtDCs)).detect();
+    log.debug("Detect violations = {}", vios.size());
 
     // not(t1.A=t2.A^t1.B!=t2.B)->4
     printDCVioMap(vios);
@@ -385,11 +400,6 @@ public class UGDTest {
     // 90 * 1.00 = 90.0 --- 90 violations (max=38) ×
     // 90 * 0.24 = 21.6 --- 22 violations (max=38) √ not(t1.Abbr!=t2.Abbr) ×
     // 90 * 0.17 = 15.3 --- 16 violations (max=38) √ not(t1.Abbr=t2.Abbr) √ 因为不会同时生成 not(t1.Abbr!=t2.Abbr) 和 not(t1.Abbr=t2.Abbr)，所以选产生冲突少（覆盖证据集多）的作为规则而生成，即后者
-    double g1 = 0.012;
-    String fullDCsPath = "../data/dc_full.txt";
-    String topKDCsPath = "../data/dc_top_k.txt";
-    String evidencePath = "../data/evidence.txt";
-    log.debug("Discover dcs using g1 = {}.", g1);
     BasicDCGenerator generator = new BasicDCGenerator(dsPath, fullDCsPath, topKDCsPath, headerPath,
         new HashSet<>(), g1, Integer.MAX_VALUE);
 
@@ -409,19 +419,22 @@ public class UGDTest {
     String dsPath = params.dirtyDataUnrepairedPath;
     String headerPath = params.headerPath;
     String gtDCsPath = params.groundTruthDCsPath;
+    String g1RangeResPath = "./data/g1_range_result_hospital.csv";
     List<DenialConstraint> gtDCs = DCLoader.load(headerPath, gtDCsPath);
 
     List<G1RangeResult> result = new ArrayList<>();
     for (DenialConstraint dc : gtDCs) {
-      G1RangeResult rr = calculateG1Range(headerPath, dsPath, dc);
+      G1RangeResult rr = calculateG1Range(headerPath, dsPath, dc, false);
       result.add(rr);
     }
 
     log.debug("Result size = {}", result.size());
+    List<List<String>> resultLines = new ArrayList<>();
     for (G1RangeResult rr : result) {
-      log.debug("G1RangeResult = [{},{}), dc = {}", rr.getRange()[0], rr.getRange()[1],
-          rr.getConstraint());
+      resultLines.add(Lists.newArrayList(rr.toString()));
+      log.debug("{}", rr);
     }
+    writeListLinesToFile(resultLines, new File(g1RangeResPath));
   }
 
   /**

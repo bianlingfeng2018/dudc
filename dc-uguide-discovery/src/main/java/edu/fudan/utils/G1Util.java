@@ -8,6 +8,7 @@ import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.input.Input;
 import de.hpi.naumann.dc.predicates.Predicate;
 import de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
+import de.metanome.algorithm_integration.Operator;
 import edu.fudan.algorithms.HydraDetector;
 import edu.fudan.transformat.DCFormatUtil;
 import java.util.ArrayList;
@@ -18,13 +19,17 @@ import lombok.extern.slf4j.Slf4j;
 public class G1Util {
 
   public static G1RangeResult calculateG1Range(String headerPath, String dsPath,
-      DenialConstraint dc) {
+      DenialConstraint dc, boolean excludeNegEvi) {
     Double[] doubles = new Double[2];
     // Size1
-    String excludeEvi = buildExcludeEvi(headerPath);
-    DenialConstraint excludeDC = DCFormatUtil.convertString2DC(excludeEvi, loadHeader(headerPath));
-    int excludeSize = new HydraDetector(dsPath, Sets.newHashSet(excludeDC)).detect().size();
-    log.debug("ExcludeSize = {}, dc = {}", excludeSize, DCFormatUtil.convertDC2String(excludeDC));
+    int excludeSize = Integer.MAX_VALUE;
+    if (excludeNegEvi) {
+      String excludeEvi = buildExcludeEvi(headerPath);
+      DenialConstraint excludeDC = DCFormatUtil.convertString2DC(excludeEvi,
+          loadHeader(headerPath));
+      excludeSize = new HydraDetector(dsPath, Sets.newHashSet(excludeDC)).detect().size();
+      log.debug("ExcludeSize = {}, dc = {}", excludeSize, DCFormatUtil.convertDC2String(excludeDC));
+    }
 
     // Size2
     int size = new HydraDetector(dsPath, Sets.newHashSet(dc)).detect().size();
@@ -40,6 +45,12 @@ public class G1Util {
     }
     List<List<Predicate>> lists = generateSubLists(list);
     for (List<Predicate> predicates : lists) {
+      //
+      if (allNeg(predicates)) {
+        log.debug("All neg predicates, skip...");
+        continue;
+      }
+
       // SubDC
       PredicateBitSet ps = new PredicateBitSet();
       for (Predicate predicate : predicates) {
@@ -79,6 +90,16 @@ public class G1Util {
     doubles[0] = leftG1;
     doubles[1] = rightG1;
     return new G1RangeResult(doubles, dcStr);
+  }
+
+  private static boolean allNeg(List<Predicate> predicates) {
+    for (Predicate predicate : predicates) {
+      Operator op = predicate.getOperator();
+      if (op != Operator.UNEQUAL) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private static String buildExcludeEvi(String headerPath) {
