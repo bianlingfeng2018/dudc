@@ -374,7 +374,7 @@ public class UGDTest {
     String fullDCsPath = params.fullDCsPath;
     String topKDCsPath = params.topKDCsPath;
     String evidencePath = params.evidencesPath;
-    double g1 = 0.01;
+    double g1 = 0.0023;
     log.debug("Discover dcs using g1 = {}.", g1);
 
     List<DenialConstraint> gtDCs = DCLoader.load(headerPath, gtDCsPath);
@@ -416,7 +416,7 @@ public class UGDTest {
 //    String dsPath = "../data/ds_dirty.txt";
 //    String headerPath = "../data/header.txt";
 //    String gtDCsPath = "../data/dc_gt.txt";
-    String dsPath = params.dirtyDataUnrepairedPath;
+    String dsPath = params.dirtyDataPath;
     String headerPath = params.headerPath;
     String gtDCsPath = params.groundTruthDCsPath;
     String g1RangeResPath = "./data/g1_range_result_hospital.csv";
