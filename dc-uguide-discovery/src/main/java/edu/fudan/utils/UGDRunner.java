@@ -7,8 +7,8 @@ import static edu.fudan.conf.DefaultConf.dynamicG1;
 import static edu.fudan.conf.DefaultConf.maxDiscoveryRound;
 import static edu.fudan.conf.DefaultConf.randomClusterS;
 import static edu.fudan.conf.DefaultConf.repairErrors;
-import static edu.fudan.utils.GlobalConf.baseDir;
-import static edu.fudan.utils.GlobalConf.dsNames;
+import static edu.fudan.conf.GlobalConf.baseDir;
+import static edu.fudan.conf.GlobalConf.dsNames;
 
 import edu.fudan.algorithms.UGuideDiscovery;
 import edu.fudan.algorithms.uguide.CellQStrategy;

@@ -1,6 +1,7 @@
 package edu.fudan.algorithms.uguide;
 
 import static edu.fudan.algorithms.uguide.Strategy.getRandomElements;
+import static edu.fudan.conf.DefaultConf.decreaseFactor;
 import static edu.fudan.conf.DefaultConf.defaultErrorThreshold;
 import static edu.fudan.conf.DefaultConf.dynamicG1;
 import static edu.fudan.utils.DCUtil.genLineChangesMap;
@@ -25,7 +26,6 @@ import edu.fudan.algorithms.TupleSampler.SampleResult;
 import edu.fudan.utils.DCUtil;
 import edu.fudan.utils.EvaluateUtil;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -96,7 +96,7 @@ public class Evaluation {
    * Ture DCs(part of candidate DCs)
    */
   @Getter
-  private final Set<DenialConstraint> trueDCs = Sets.newHashSet();
+  private final Set<DenialConstraint> candiTrueDCs = Sets.newHashSet();
 
   /**
    * Candidate DCs. It can be updated individually or when candidate violations change.
@@ -140,10 +140,19 @@ public class Evaluation {
   private Set<Integer> errorLinesInSample = Sets.newHashSet();
   private Set<Integer> errorLinesInSampleAndExcluded = Sets.newHashSet();
   private Set<TCell> cellsOfChangesUnrepaired = Sets.newHashSet();
+  /**
+   * Accumulated cells of true violations.
+   */
+  private Set<TCell> cellsOfTrueVios = Sets.newHashSet();
+  /**
+   * Accumulated cells of true violations and changes, i.e. the discovered round truth errors.
+   */
+  private Set<TCell> cellsOfTrueViosAndChanges = Sets.newHashSet();
+  /**
+   * Cells of changes in current round, i.e. the remaining ground truth errors.
+   */
   @Getter
   private Set<TCell> cellsOfChanges = Sets.newHashSet();
-  private Set<TCell> cellsOfTrueVios = Sets.newHashSet();
-  private Set<TCell> cellsOfTrueViosAndChanges = Sets.newHashSet();
   @Setter
   private Set<Integer> excludedLinesInCellQ = Sets.newHashSet();
   @Setter
@@ -302,8 +311,7 @@ public class Evaluation {
     // 当前g1
     result.setCurrG1(this.errorThreshold);
     if (dynamicG1 && this.lastCandiDCsSize == this.candidateDCs.size()) {
-      double factor = 0.87;  // 0.87是0.001~0.0001分成50次降低得来的
-      decreaseG1(factor);
+      decreaseG1(decreaseFactor);
     }
     // g1从大到小的范围内发现的candiDC都当作真DC，兼顾了反例多的(g1可以更松)和反例少(g1需要更严格)的规则
     // g1的本质是：不覆盖错误的元组对，同时也可能不覆盖一些反例
@@ -312,12 +320,11 @@ public class Evaluation {
     // 还有一个吹点，就是容错能力更强，比如一开始设定了一个不太好的g1（偏大的）？
     this.lastCandiDCsSize = this.candidateDCs.size();
     String unrepairedPath = dirtyDS.getDataUnrepairedPath();
-    String dirtyPath = this.dirtyDS.getDataPath();
     // 真规则
     long t1 = System.currentTimeMillis();
     for (DenialConstraint candiDC : this.candidateDCs) {
       if (isTrueDC(candiDC)) {
-        this.trueDCs.add(candiDC);
+        this.candiTrueDCs.add(candiDC);
       }
     }
     long t2 = System.currentTimeMillis();
@@ -325,12 +332,15 @@ public class Evaluation {
     // 计算已发现规则的冲突
     Set<DCViolation> vDisc = new HydraDetector(unrepairedPath, new HashSet<>(candidateDCs)).detect()
         .getViosSet();
+    Set<DCViolation> vDiscTrue = new HydraDetector(unrepairedPath,
+        new HashSet<>(candiTrueDCs)).detect().getViosSet();
     long t3 = System.currentTimeMillis();
     log.debug("Eval 2 time = {}s", (t3 - t2) / 1000.0);
     // 评价error cells发现个数
-    this.cellsOfTrueVios = getCellsOfViolations(vDisc, generateNewCopy(dirtyPath));
-    this.cellsOfTrueViosAndChanges = this.cellsOfTrueVios.stream()
-        .filter(tc -> this.cellsOfChanges.contains(tc)).collect(Collectors.toSet());
+    Set<TCell> cellsOfTrueVios = getCellsOfViolations(vDiscTrue, generateNewCopy(unrepairedPath));
+    this.cellsOfTrueVios = cellsOfTrueVios;
+    this.cellsOfTrueViosAndChanges = cellsOfTrueVios.stream()
+        .filter(tc -> this.cellsOfChangesUnrepaired.contains(tc)).collect(Collectors.toSet());
     long t4 = System.currentTimeMillis();
     log.debug("Eval 3 time = {}s", (t4 - t3) / 1000.0);
     // 评价sample中已排除的错误元组数量
@@ -339,7 +349,7 @@ public class Evaluation {
     long t5 = System.currentTimeMillis();
     log.debug("Eval 4 time = {}s", (t5 - t4) / 1000.0);
     // 评价P R F1
-    Double[] doubles = EvaluateUtil.eval(groundTruthDCs, candidateDCs, this.groundTruthVios, vDisc);
+    Double[] doubles = EvaluateUtil.eval(groundTruthDCs, candidateDCs, groundTruthVios, vDisc);
     long t6 = System.currentTimeMillis();
     log.debug("Eval 5 time = {}s", (t6 - t5) / 1000.0);
     result.setPrecision(doubles[0]);
@@ -351,7 +361,7 @@ public class Evaluation {
     result.setExcludedLinesOfDCsQ(this.excludedLinesInDCsQ.size());
     result.setErrorLinesInSample(this.errorLinesInSample.size());
     result.setErrorLinesInSampleAndExcluded(this.errorLinesInSampleAndExcluded.size());
-    result.setDCsTrue(this.trueDCs.size());
+    result.setDCsTrue(this.candiTrueDCs.size());
     result.setDCsCandidate(this.candidateDCs.size());
     result.setDCsGroundTruth(this.groundTruthDCs.size());
     result.setQuestionsCell(this.cellBudgetUsed);

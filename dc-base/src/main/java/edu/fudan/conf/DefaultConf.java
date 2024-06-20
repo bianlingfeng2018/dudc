@@ -43,8 +43,10 @@ public class DefaultConf {
    */
   public static boolean randomClusterS = false;
   // ADC
-  public static double defaultErrorThreshold = 0.02;
+  public static double defaultErrorThreshold = 0.001;
   public static boolean dynamicG1 = true;
+  // 0.87是0.001~0.0001分成50次降低得来的
+  public static double decreaseFactor = 0.87;
   // Questions(CellQ TupleQ DCsQ)
   public static int maxDiscoveryRound = 50;
   public static Integer[] questionsConf = new Integer[]{1, 1, 1};

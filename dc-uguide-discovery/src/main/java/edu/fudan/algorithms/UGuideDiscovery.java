@@ -3,6 +3,7 @@ package edu.fudan.algorithms;
 import static edu.fudan.conf.DefaultConf.addCounterExampleS;
 import static edu.fudan.conf.DefaultConf.canBreakEarly;
 import static edu.fudan.conf.DefaultConf.dcGeneratorConf;
+import static edu.fudan.conf.DefaultConf.decreaseFactor;
 import static edu.fudan.conf.DefaultConf.defCellQStrategy;
 import static edu.fudan.conf.DefaultConf.defDCQStrategy;
 import static edu.fudan.conf.DefaultConf.defTupleQStrategy;
@@ -127,7 +128,7 @@ public class UGuideDiscovery {
           log.debug("DCs size is less than top-{}, decrease g1 and continue.", topK);
           evaluation.evaluateCopyOfLast();
           persistResult();
-          evaluation.decreaseG1(0.5);
+          evaluation.decreaseG1(decreaseFactor);
           continue;
         } else {
           log.debug("DCs size is less than top-{}, decrease g1 and break.", topK);
@@ -158,7 +159,7 @@ public class UGuideDiscovery {
 
   private void printFinalDCsAndViolations() {
     log.debug("PrintFinalDCsAndViolations:");
-    Set<DenialConstraint> trueDCs = evaluation.getTrueDCs();
+    Set<DenialConstraint> trueDCs = evaluation.getCandiTrueDCs();
     DCViolationSet violations = new HydraDetector(this.dirtyDS.getDataPath(), trueDCs).detect();
     log.debug("TrueDCs={}, violations={}", trueDCs.size(), violations.size());
   }
@@ -185,7 +186,7 @@ public class UGuideDiscovery {
     log.info("CandidateDCsPath={}", candidateDCsPath);
     log.info("VisitedDCsPath={}", visitedDCsPath);
     log.info("ExcludedLinesPath={}", excludedLinesPath);
-    persistDCs(evaluation.getTrueDCs(), trueDCsPath);
+    persistDCs(evaluation.getCandiTrueDCs(), trueDCsPath);
     persistDCs(evaluation.getCandidateDCs(), candidateDCsPath);
     persistDCs(evaluation.getVisitedDCs(), visitedDCsPath);
     persistExcludedLines(dirtyDS.getDataPath(), evaluation.getExcludedLines(), excludedLinesPath);
