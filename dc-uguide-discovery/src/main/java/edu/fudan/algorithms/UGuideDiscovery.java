@@ -7,6 +7,7 @@ import static edu.fudan.conf.DefaultConf.defCellQStrategy;
 import static edu.fudan.conf.DefaultConf.defDCQStrategy;
 import static edu.fudan.conf.DefaultConf.defTupleQStrategy;
 import static edu.fudan.conf.DefaultConf.delta;
+import static edu.fudan.conf.DefaultConf.dynamicG1;
 import static edu.fudan.conf.DefaultConf.excludeLinePercent;
 import static edu.fudan.conf.DefaultConf.maxCellQuestionBudget;
 import static edu.fudan.conf.DefaultConf.maxDCQuestionBudget;
@@ -122,8 +123,16 @@ public class UGuideDiscovery {
       // 发现规则
       discoveryDCs();
       if (this.dcsLessThanK) {
-        log.debug("Break early");
-        break;
+        if (dynamicG1) {
+          log.debug("DCs size is less than top-{}, decrease g1 and continue.", topK);
+          evaluation.evaluateCopyOfLast();
+          persistResult();
+          evaluation.decreaseG1(0.5);
+          continue;
+        } else {
+          log.debug("DCs size is less than top-{}, decrease g1 and break.", topK);
+          break;
+        }
       }
       // 检测冲突
       detect();
@@ -257,6 +266,12 @@ public class UGuideDiscovery {
 
     CellQuestionResult result = selector.simulate();
     Set<DenialConstraint> falseDCs = result.getFalseDCs();
+    // Add counterexample from falseVios.
+    Set<DCViolation> falseVios = result.getFalseVios();
+    for (DCViolation vio : falseVios) {
+      DenialConstraint dc = vio.getDenialConstraintsNoData().get(0);
+      evaluation.addCounterExampleToMap(dc, vio);
+    }
     int budgetUsed = result.getBudgetUsed();
     log.info("CellQuestions/MaxCellQuestionBudget/CurrViosSize={}/{}/{}", budgetUsed,
         maxCellQuestionBudget, currVios.size());
@@ -270,12 +285,6 @@ public class UGuideDiscovery {
     log.info("====== 6.Evaluate the true violations and false violations ======");
     EvalResult result = evaluation.evaluate();
     // 打印结果信息
-    // 最终的candiDCs及其对应的冲突个数信息
-    Map<DenialConstraint, Integer> candiDCViosMap = result.getCandiDCViosMap();
-    log.info("CandiDCViosMap: {}", candiDCViosMap.keySet().size());
-    for (DenialConstraint dc : candiDCViosMap.keySet()) {
-      log.debug("{}: {}", DCFormatUtil.convertDC2String(dc), candiDCViosMap.get(dc));
-    }
     // 排除的元组信息
     // TODO: 当本轮发现的规则没有冲突时（可能是因为规则过拟合或者规则与注入错误无关），
     //  ExcludedLines(CellQ)为零，这样数据无法继续变得更干净，下一轮可能还是相同的结果，这样效率较低。
@@ -284,8 +293,8 @@ public class UGuideDiscovery {
     log.info("ExcludedLinesOfCellQ/OfTupleQ/OfDCsQ/ExcludedLines = {}/{}/{}/{}",
         result.getExcludedLinesOfCellQ(), result.getExcludedLinesOfTupleQ(),
         result.getExcludedLinesOfDCsQ(), result.getExcludedLines());
-    log.info("TrueVios/CandiVios/GTVios = {}/{}/{}", result.getViolationsTrue(),
-        result.getViolationsCandidate(), result.getViolationsGroundTruth());
+    log.info("Precision/Recall/F-measure = {}/{}/{}", result.getPrecision(), result.getRecall(),
+        result.getF1());
     log.info("TrueDCs/CandiDCs/GTDCs = {}/{}/{}", result.getDCsTrue(), result.getDCsCandidate(),
         result.getDCsGroundTruth());
     log.info("CellsOfTrueViosAndChanges/CellsOfTrueVios/CellsOfChanges = {}/{}/{}",
@@ -327,11 +336,11 @@ public class UGuideDiscovery {
     if (excludedLines.size() != 0) {
       throw new RuntimeException("Illegal excludedLines size");
     }
-    Map<DenialConstraint, Set<LinePair>> falseDCLinePairMap = evaluation.getFalseDCLinePairMap();
+    Map<DenialConstraint, Set<LinePair>> falseVioLinePairMap = evaluation.getFalseVioLinePairMap();
     log.info("====== 2.Sample from dirty data ======");
 
     SampleResult sampleResult = new TupleSampler().sample(new File(dirtyDS.getDataPath()),
-        topKOfCluster, numInCluster, null, true, excludedLines, falseDCLinePairMap,
+        topKOfCluster, numInCluster, null, true, excludedLines, falseVioLinePairMap,
         addCounterExampleS, randomClusterS);
     String samplePath = sampleDS.getDataPath();
     log.debug("Write to file: {}", samplePath);

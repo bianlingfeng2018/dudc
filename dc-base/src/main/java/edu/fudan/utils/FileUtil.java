@@ -81,7 +81,7 @@ public class FileUtil {
       if (out.delete()) {
         log.debug("File deleted: {}", out);
       } else {
-        log.debug("File deleted failed");
+        throw new RuntimeException("File deleted failed");
       }
     }
     // 创建新文件
@@ -89,10 +89,10 @@ public class FileUtil {
       if (out.createNewFile()) {
         log.debug("File created: {}", out);
       } else {
-        log.debug("File created failed");
+        throw new RuntimeException("File created failed");
       }
     } catch (IOException e) {
-      log.debug("File created error: {}", e.getMessage());
+      throw new RuntimeException(e);
     }
     // 写入文件
     BufferedWriter bw = null;

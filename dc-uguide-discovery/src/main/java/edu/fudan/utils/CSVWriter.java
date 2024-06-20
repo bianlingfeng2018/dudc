@@ -15,7 +15,7 @@ public class CSVWriter {
   public static void writeToFile(String fileName, List<EvalResult> evalResults) {
     try (FileWriter writer = new FileWriter(fileName)) {
       String confStr = getConfStr();
-      String header = "Round,P,R,F1,CurrG1,TrueVios,CandiVios,GTVios,TrueDCs,CandiDCs,GTDCs,CellsOfTrueVios,CellsOfTrueViosAndChanges,CellsOfChanges,CellQuestions,TupleQuestions,DCQuestions,excludedLines,excludedLinesOfCellQ,excludedLinesOfTupleQ,excludedLinesOfDCsQ,errorLinesInSample,errorLinesInSampleAndExcluded\n";
+      String header = "Round,P,R,F1,CurrG1,TrueDCs,CandiDCs,GTDCs,CellsOfTrueVios,CellsOfTrueViosAndChanges,CellsOfChanges,CellsOfChangesUnrepaired,CellQuestions,TupleQuestions,DCQuestions,excludedLines,excludedLinesOfCellQ,excludedLinesOfTupleQ,excludedLinesOfDCsQ,errorLinesInSample,errorLinesInSampleAndExcluded\n";
       writer.append(confStr);
       writer.append(header);
       for (int i = 0; i < evalResults.size(); i++) {
@@ -30,12 +30,6 @@ public class CSVWriter {
         writer.append(COMMA_DELIMITER);
         writer.append(String.valueOf(res.getCurrG1()));
         writer.append(COMMA_DELIMITER);
-        writer.append(String.valueOf(res.getViolationsTrue()));
-        writer.append(COMMA_DELIMITER);
-        writer.append(String.valueOf(res.getViolationsCandidate()));
-        writer.append(COMMA_DELIMITER);
-        writer.append(String.valueOf(res.getViolationsGroundTruth()));
-        writer.append(COMMA_DELIMITER);
         writer.append(String.valueOf(res.getDCsTrue()));
         writer.append(COMMA_DELIMITER);
         writer.append(String.valueOf(res.getDCsCandidate()));
@@ -47,6 +41,8 @@ public class CSVWriter {
         writer.append(String.valueOf(res.getCellsOfTrueViosAndChanges()));
         writer.append(COMMA_DELIMITER);
         writer.append(String.valueOf(res.getCellsOfChanges()));
+        writer.append(COMMA_DELIMITER);
+        writer.append(String.valueOf(res.getCellsOfChangesUnrepaired()));
         writer.append(COMMA_DELIMITER);
         writer.append(String.valueOf(res.getQuestionsCell()));
         writer.append(COMMA_DELIMITER);

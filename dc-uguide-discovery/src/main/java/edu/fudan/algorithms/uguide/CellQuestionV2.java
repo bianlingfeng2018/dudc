@@ -286,7 +286,7 @@ public class CellQuestionV2 {
 //    List<Integer> randomExcludedLines = getRandomElements(excludedLines, num);
 //    log.debug("RandomExcludedLines = {}, {} of {}", randomExcludedLines.size(), excludeLinePercent,
 //        excludedLines.size());
-    return new CellQuestionResult(falseDCs, selectedCells.size());
+    return new CellQuestionResult(falseDCs, falseVios, selectedCells.size());
   }
 
   private void addToDCViosMap(DCViolation vio, DenialConstraint dc,

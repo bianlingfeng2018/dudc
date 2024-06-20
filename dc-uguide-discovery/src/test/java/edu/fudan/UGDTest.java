@@ -374,7 +374,7 @@ public class UGDTest {
     String fullDCsPath = params.fullDCsPath;
     String topKDCsPath = params.topKDCsPath;
     String evidencePath = params.evidencesPath;
-    double g1 = 0.0023;
+    double g1 = 0.0027;
     log.debug("Discover dcs using g1 = {}.", g1);
 
     List<DenialConstraint> gtDCs = DCLoader.load(headerPath, gtDCsPath);

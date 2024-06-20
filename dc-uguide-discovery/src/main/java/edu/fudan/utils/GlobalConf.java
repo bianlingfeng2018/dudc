@@ -8,5 +8,5 @@ public class GlobalConf {
   /**
    * The base directory.
    */
-  public static String baseDir = "data";
+  public static String baseDir = "D:/paper/dc_user_guided_detection/experiment/data";
 }

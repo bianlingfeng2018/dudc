@@ -43,7 +43,7 @@ public class DefaultConf {
    */
   public static boolean randomClusterS = false;
   // ADC
-  public static double defaultErrorThreshold = 0.001;
+  public static double defaultErrorThreshold = 0.02;
   public static boolean dynamicG1 = true;
   // Questions(CellQ TupleQ DCsQ)
   public static int maxDiscoveryRound = 50;

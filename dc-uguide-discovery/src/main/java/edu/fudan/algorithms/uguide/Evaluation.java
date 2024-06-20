@@ -1,7 +1,6 @@
 package edu.fudan.algorithms.uguide;
 
 import static edu.fudan.algorithms.uguide.Strategy.getRandomElements;
-import static edu.fudan.conf.DefaultConf.debugDCVioMap;
 import static edu.fudan.conf.DefaultConf.defaultErrorThreshold;
 import static edu.fudan.conf.DefaultConf.dynamicG1;
 import static edu.fudan.utils.DCUtil.genLineChangesMap;
@@ -83,17 +82,7 @@ public class Evaluation {
   /**
    * Total violations wrt ground truth DCs.
    */
-  private Set<DCViolation> groundTruthViolations = Sets.newHashSet();
-
-  /**
-   * True violations.
-   */
-  private final Set<DCViolation> trueViolations = Sets.newHashSet();
-
-  /**
-   * Candidate violations.
-   */
-  private final Set<DCViolation> candidateViolations = Sets.newHashSet();
+  private Set<DCViolation> groundTruthVios = Sets.newHashSet();
 
   /**
    * Ground truth DCs which hold on clean data. Violations wrt ground truth DCs are true
@@ -142,7 +131,7 @@ public class Evaluation {
    * 假规则及冲突元组对，冲突元组对作为这个假规则的候选反例，用于优化采样
    */
   @Getter
-  private final Map<DenialConstraint, Set<LinePair>> falseDCLinePairMap = Maps.newHashMap();
+  private final Map<DenialConstraint, Set<LinePair>> falseVioLinePairMap = Maps.newHashMap();
   private int cellBudgetUsed = 0;
   private int dcBudgetUsed = 0;
   private int tupleBudgetUsed = 0;
@@ -150,6 +139,7 @@ public class Evaluation {
   private Set<Integer> errorLinesOfChanges = Sets.newHashSet();
   private Set<Integer> errorLinesInSample = Sets.newHashSet();
   private Set<Integer> errorLinesInSampleAndExcluded = Sets.newHashSet();
+  private Set<TCell> cellsOfChangesUnrepaired = Sets.newHashSet();
   @Getter
   private Set<TCell> cellsOfChanges = Sets.newHashSet();
   private Set<TCell> cellsOfTrueVios = Sets.newHashSet();
@@ -215,10 +205,10 @@ public class Evaluation {
       throw new RuntimeException("No vios of gtDCs on dirty data");
     }
     // 设定GroundTruth
-    this.groundTruthViolations = viosOnDirty.getViosSet();
+    this.groundTruthVios = viosOnDirty.getViosSet();
     this.groundTruthDCs.addAll(dcList);
     log.info("GroundTruthDCsSize={}, ViosSize={}", this.groundTruthDCs.size(),
-        this.groundTruthViolations.size());
+        this.groundTruthVios.size());
     for (DenialConstraint gtDC : this.groundTruthDCs) {
       this.gtTree.add(PredicateSetFactory.create(gtDC.getPredicateSet()).getBitset());
     }
@@ -226,6 +216,8 @@ public class Evaluation {
     List<TChange> changes = loadChanges(this.cleanDS.getChangesPath());
     log.info("Changes: {}", changes.size());
     this.changes = changes;
+    // 设定固定不变的、最初的cells of changes
+    this.cellsOfChangesUnrepaired = DCUtil.getCellsOfChanges(this.changes);
     this.updateChanges();
     // 设定errorThreshold
     this.errorThreshold = defaultErrorThreshold;
@@ -248,53 +240,32 @@ public class Evaluation {
       for (DenialConstraint falseDC : falseDCs) {
         this.candidateDCs.remove(falseDC);
       }
-      // TODO: FalseDC对应的冲突的元组都是这个falseDC的反例，但是其中可能有脏元组
-      //  目前仅将不是脏元组的反例加入采样中，一方面让采样保持干净，一方面增加反例更快发现真规则
-      //  目前判断脏元组只有TupleQ可以确定一部分
-      //  有可能所有的反例都是脏元组，这会导致一部分规则会因为采样总是缺少反例而没办法发现（错误率较低，规则较短时会好一些）
-      //  本质上是排除脏元组的同时会减少反例，这是互相矛盾的，我们目前无法兼顾。
-      // 删除和DC相关的冲突
-      Iterator<DCViolation> it = this.candidateViolations.iterator();
-      while (it.hasNext()) {
-        DCViolation vio = it.next();
-        List<DenialConstraint> dcs = vio.getDenialConstraintsNoData();
-        if (dcs.size() != 1) {
-          throw new RuntimeException("Illegal dcs size");
-        }
-        DenialConstraint dc = dcs.get(0);
-        LinePair linePair = vio.getLinePair();
-        if (falseDCs.contains(dc)) {
-          it.remove();
-          // 记录规则和候选反例，用于优化采样
-          if (falseDCLinePairMap.containsKey(dc)) {
-            falseDCLinePairMap.get(dc).add(linePair);
-          } else {
-            falseDCLinePairMap.put(dc, Sets.newHashSet(linePair));
-          }
-        }
-      }
-    }
-    if (newCandiVios != null) {
-      // 增加相关的冲突
-      this.candidateViolations.addAll(newCandiVios);
-      // 增加真冲突（增量增加，开销较小）
-      for (DCViolation candiVio : newCandiVios) {
-        for (DenialConstraint dc : candiVio.getDenialConstraintsNoData()) {
-          if (isTrueViolation(dc, candiVio.getLinePair())) {
-            this.trueViolations.add(candiVio);
-          }
-        }
-      }
-    }
-    if (falseViolations != null) {
-      // 删除相关的冲突
-      for (DCViolation vio : falseViolations) {
-        this.candidateViolations.remove(vio);
-      }
     }
     if (excludedLines != null) {
       // 增加需要排除的脏数据
       this.excludedLines.addAll(excludedLines);
+    }
+  }
+
+  /**
+   * The linePair of falseVio that determines falseDC is used as a counterexample to optimize
+   * sampling, that is, to increase the probability of sampling these tuples.
+   *
+   * @param dc  False DC
+   * @param vio False violation
+   */
+  public void addCounterExampleToMap(DenialConstraint dc, DCViolation vio) {
+    // TODO: FalseDC对应的冲突的元组都是这个falseDC的反例，但是其中可能有脏元组
+    //  目前仅将不是脏元组的反例加入采样中，一方面让采样保持干净，一方面增加反例更快发现真规则
+    //  目前判断脏元组只有TupleQ可以确定一部分
+    //  有可能所有的反例都是脏元组，这会导致一部分规则会因为采样总是缺少反例而没办法发现（错误率较低，规则较短时会好一些）
+    //  本质上是排除脏元组的同时会减少反例，这是互相矛盾的，我们目前无法兼顾。因此，修复脏元组可能比排除脏元组更好？
+    //  然而CellQ可以通过确认元组对是干净来确认falseDC，这种情况下，元组一定是干净的反例。
+    LinePair linePair = vio.getLinePair();
+    if (falseVioLinePairMap.containsKey(dc)) {
+      falseVioLinePairMap.get(dc).add(linePair);
+    } else {
+      falseVioLinePairMap.put(dc, Sets.newHashSet(linePair));
     }
   }
 
@@ -321,18 +292,18 @@ public class Evaluation {
     this.tupleBudgetUsed += numb;
   }
 
+  public void evaluateCopyOfLast() {
+    EvalResult res = evalResults.get(evalResults.size() - 1);
+    evalResults.add(res);
+  }
+
   public EvalResult evaluate() {
     EvalResult result = new EvalResult();
+    // 当前g1
     result.setCurrG1(this.errorThreshold);
     if (dynamicG1 && this.lastCandiDCsSize == this.candidateDCs.size()) {
-      // TODO: 当candiDC数量没有增加时，即本轮top-k规则全部被判定为falseDC，此时g1需要更严格，即更小
-      //  另外，增加对比实验证明，调整g1一定需要数据能变得更干净为前提，即可以排除脏元组，否则效果会打折扣
-      //  调整g1后，之前candiDC有些就不成立，目前我们不对已经发现的candiDC做更改，因为新的g1发现的规则也不一定是对的
-      //  调整g1后，如果仍然缺少反例，可能是反例没有被采样到，也可能是反例被排除脏元组时去掉了，因此目前我们不通过增大采样窗口来增加反例
       double factor = 0.87;  // 0.87是0.001~0.0001分成50次降低得来的
-      double newErrorThreshold = this.errorThreshold * factor;
-      log.debug("ErrorThreshold change from {} to {}", this.errorThreshold, newErrorThreshold);
-      this.errorThreshold = newErrorThreshold;
+      decreaseG1(factor);
     }
     // g1从大到小的范围内发现的candiDC都当作真DC，兼顾了反例多的(g1可以更松)和反例少(g1需要更严格)的规则
     // g1的本质是：不覆盖错误的元组对，同时也可能不覆盖一些反例
@@ -340,7 +311,9 @@ public class Evaluation {
     // 2.当不覆盖的错误不够时，发现的规则就是TooSpecific的假规则
     // 还有一个吹点，就是容错能力更强，比如一开始设定了一个不太好的g1（偏大的）？
     this.lastCandiDCsSize = this.candidateDCs.size();
-    // 评价真规则和假规则个数
+    String unrepairedPath = dirtyDS.getDataUnrepairedPath();
+    String dirtyPath = this.dirtyDS.getDataPath();
+    // 真规则
     long t1 = System.currentTimeMillis();
     for (DenialConstraint candiDC : this.candidateDCs) {
       if (isTrueDC(candiDC)) {
@@ -349,30 +322,13 @@ public class Evaluation {
     }
     long t2 = System.currentTimeMillis();
     log.debug("Eval 1 time = {}s", (t2 - t1) / 1000);
-    // 测试时，评价最终的候选规则及其关联的冲突个数
-    Map<DenialConstraint, Integer> candiDCViosMap = Maps.newHashMap();
-    if (debugDCVioMap) {
-      for (DenialConstraint candiDC : this.candidateDCs) {
-        candiDCViosMap.put(candiDC, 0);
-      }
-      for (DCViolation candiVio : this.candidateViolations) {
-        List<DenialConstraint> dcs = candiVio.getDenialConstraintsNoData();
-        if (dcs.size() != 1) {
-          throw new RuntimeException("Illegal dcs size");
-        }
-        DenialConstraint dc = dcs.get(0);
-        Integer cnt = candiDCViosMap.get(dc);
-        if (cnt == null) {
-          throw new RuntimeException("No candiDC found for a candiVio!!!");
-        }
-        candiDCViosMap.put(dc, cnt + 1);
-      }
-    }
+    // 计算已发现规则的冲突
+    Set<DCViolation> vDisc = new HydraDetector(unrepairedPath, new HashSet<>(candidateDCs)).detect()
+        .getViosSet();
     long t3 = System.currentTimeMillis();
     log.debug("Eval 2 time = {}s", (t3 - t2) / 1000.0);
     // 评价error cells发现个数
-    this.cellsOfTrueVios = getCellsOfViolations(this.trueViolations,
-        generateNewCopy(this.dirtyDS.getDataPath()));
+    this.cellsOfTrueVios = getCellsOfViolations(vDisc, generateNewCopy(dirtyPath));
     this.cellsOfTrueViosAndChanges = this.cellsOfTrueVios.stream()
         .filter(tc -> this.cellsOfChanges.contains(tc)).collect(Collectors.toSet());
     long t4 = System.currentTimeMillis();
@@ -383,7 +339,7 @@ public class Evaluation {
     long t5 = System.currentTimeMillis();
     log.debug("Eval 4 time = {}s", (t5 - t4) / 1000.0);
     // 评价P R F1
-    Double[] doubles = EvaluateUtil.eval(groundTruthDCs, trueDCs, dirtyDS.getDataUnrepairedPath());
+    Double[] doubles = EvaluateUtil.eval(groundTruthDCs, candidateDCs, this.groundTruthVios, vDisc);
     long t6 = System.currentTimeMillis();
     log.debug("Eval 5 time = {}s", (t6 - t5) / 1000.0);
     result.setPrecision(doubles[0]);
@@ -398,18 +354,25 @@ public class Evaluation {
     result.setDCsTrue(this.trueDCs.size());
     result.setDCsCandidate(this.candidateDCs.size());
     result.setDCsGroundTruth(this.groundTruthDCs.size());
-    result.setViolationsTrue(this.trueViolations.size());
-    result.setViolationsCandidate(this.candidateViolations.size());
-    result.setViolationsGroundTruth(this.groundTruthViolations.size());
     result.setQuestionsCell(this.cellBudgetUsed);
     result.setQuestionsTuple(this.tupleBudgetUsed);
     result.setQuestionsDC(this.dcBudgetUsed);
     result.setCellsOfChanges(this.cellsOfChanges.size());
     result.setCellsOfTrueVios(this.cellsOfTrueVios.size());
     result.setCellsOfTrueViosAndChanges(this.cellsOfTrueViosAndChanges.size());
-    result.setCandiDCViosMap(candiDCViosMap);
+    result.setCellsOfChangesUnrepaired(this.cellsOfChangesUnrepaired.size());
     this.evalResults.add(result);
     return result;
+  }
+
+  public void decreaseG1(double factor) {
+    // TODO: 当candiDC数量没有增加时，即本轮top-k规则全部被判定为falseDC，此时g1需要更严格，即更小
+    //  另外，增加对比实验证明，调整g1一定需要数据能变得更干净为前提，即可以排除脏元组，否则效果会打折扣
+    //  调整g1后，之前candiDC有些就不成立，目前我们不对已经发现的candiDC做更改，因为新的g1发现的规则也不一定是对的
+    //  调整g1后，如果仍然缺少反例，可能是反例没有被采样到，也可能是反例被排除脏元组时去掉了，因此目前我们不通过增大采样窗口来增加反例
+    double newErrorThreshold = this.errorThreshold * factor;
+    log.debug("ErrorThreshold change from {} to {}", this.errorThreshold, newErrorThreshold);
+    this.errorThreshold = newErrorThreshold;
   }
 
   public void updateSampleResult(SampleResult sampleResult) {
@@ -487,8 +450,7 @@ public class Evaluation {
   /**
    * 更新changes，如果excludedLines被修复，则对应的change也应当删除
    */
-  public void updateChangesByExcludedLines()
-      throws InputGenerationException, FileNotFoundException {
+  public void updateChangesByExcludedLines() {
     Iterator<TChange> it = this.changes.iterator();
     while (it.hasNext()) {
       TChange next = it.next();
@@ -513,9 +475,6 @@ public class Evaluation {
   @Setter
   public class EvalResult {
 
-    private int violationsTrue = 0;
-    private int violationsCandidate = 0;
-    private int violationsGroundTruth = 0;
     private int DCsTrue = 0;
     private int DCsCandidate = 0;
     private int DCsGroundTruth = 0;
@@ -523,6 +482,7 @@ public class Evaluation {
     private int QuestionsTuple = 0;
     private int QuestionsDC = 0;
     private int cellsOfChanges = 0;
+    private int cellsOfChangesUnrepaired = 0;
     private int cellsOfTrueVios = 0;
     private int cellsOfTrueViosAndChanges = 0;
     private int excludedLines = 0;
@@ -535,6 +495,5 @@ public class Evaluation {
     private double recall = 0.0;
     private double f1 = 0.0;
     private double currG1 = 0.0;
-    private Map<DenialConstraint, Integer> candiDCViosMap = Maps.newHashMap();
   }
 }
