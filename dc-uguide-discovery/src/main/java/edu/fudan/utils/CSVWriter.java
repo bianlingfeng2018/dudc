@@ -65,6 +65,17 @@ public class CSVWriter {
         writer.append(String.valueOf(res.getErrorLinesInSampleAndExcluded()));
         writer.append(NEW_LINE_SEPARATOR);
       }
+      // Persist g1 ranges of each round
+      writer.append(NEW_LINE_SEPARATOR);
+      for (EvalResult res : evalResults) {
+        List<G1RangeResult> g1Ranges = res.getG1Ranges();
+        for (G1RangeResult g1Range : g1Ranges) {
+          writer.append(g1Range.toString());
+          writer.append(NEW_LINE_SEPARATOR);
+        }
+        writer.append(NEW_LINE_SEPARATOR);
+        writer.append(NEW_LINE_SEPARATOR);
+      }
     } catch (IOException e) {
       e.printStackTrace();
     }

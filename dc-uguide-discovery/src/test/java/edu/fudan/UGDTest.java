@@ -1,6 +1,5 @@
 package edu.fudan;
 
-import static edu.fudan.algorithms.DCLoader.loadHeader;
 import static edu.fudan.conf.DefaultConf.canBreakEarly;
 import static edu.fudan.conf.DefaultConf.delta;
 import static edu.fudan.conf.DefaultConf.excludeLinePercent;
@@ -17,18 +16,14 @@ import static edu.fudan.utils.DCUtil.loadChanges;
 import static edu.fudan.utils.DCUtil.printDCVioMap;
 import static edu.fudan.utils.FileUtil.generateNewCopy;
 import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
-import static edu.fudan.utils.FileUtil.writeListLinesToFile;
-import static edu.fudan.utils.G1Util.calculateG1Range;
-import static edu.fudan.utils.G1Util.generateSubLists;
+import static edu.fudan.utils.FileUtil.writeStringLinesToFile;
+import static edu.fudan.utils.G1Util.calculateG1Ranges;
 
 import ch.javasoft.bitset.search.NTreeSearch;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.input.Input;
 import de.hpi.naumann.dc.paritions.LinePair;
-import de.hpi.naumann.dc.predicates.Predicate;
-import de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import de.hpi.naumann.dc.predicates.sets.PredicateSetFactory;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
@@ -419,22 +414,17 @@ public class UGDTest {
     String dsPath = params.dirtyDataPath;
     String headerPath = params.headerPath;
     String gtDCsPath = params.groundTruthDCsPath;
-    String g1RangeResPath = "./data/g1_range_result_hospital.csv";
+    String g1RangeResPath = params.g1RangeResPath;
     List<DenialConstraint> gtDCs = DCLoader.load(headerPath, gtDCsPath);
-
-    List<G1RangeResult> result = new ArrayList<>();
-    for (DenialConstraint dc : gtDCs) {
-      G1RangeResult rr = calculateG1Range(headerPath, dsPath, dc, false);
-      result.add(rr);
-    }
-
+    List<G1RangeResult> result = calculateG1Ranges(headerPath, dsPath, new HashSet<>(gtDCs));
     log.debug("Result size = {}", result.size());
-    List<List<String>> resultLines = new ArrayList<>();
+
+    List<String> resultLines = new ArrayList<>();
     for (G1RangeResult rr : result) {
-      resultLines.add(Lists.newArrayList(rr.toString()));
+      resultLines.add(rr.toString());
       log.debug("{}", rr);
     }
-    writeListLinesToFile(resultLines, new File(g1RangeResPath));
+    writeStringLinesToFile(resultLines, new File(g1RangeResPath));
   }
 
   /**
@@ -447,7 +437,7 @@ public class UGDTest {
   @Test
   public void testOneRoundUGuide()
       throws InputGenerationException, InputIterationException, IOException {
-    maxDiscoveryRound = 1;
+    maxDiscoveryRound = 2;
     repairErrors = false;
     UGuideDiscovery ud = new UGuideDiscovery(params.cleanDataPath, params.changesPath,
         params.dirtyDataPath, params.dirtyDataUnrepairedPath, params.excludedLinesPath,

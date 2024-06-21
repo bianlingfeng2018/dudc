@@ -1,6 +1,7 @@
 package edu.fudan.algorithms.uguide;
 
 import static edu.fudan.algorithms.uguide.Strategy.getRandomElements;
+import static edu.fudan.conf.DefaultConf.calG1Snapshot;
 import static edu.fudan.conf.DefaultConf.decreaseFactor;
 import static edu.fudan.conf.DefaultConf.defaultErrorThreshold;
 import static edu.fudan.conf.DefaultConf.dynamicG1;
@@ -9,6 +10,7 @@ import static edu.fudan.utils.DCUtil.getCellsOfViolations;
 import static edu.fudan.utils.DCUtil.getErrorLinesContainingChanges;
 import static edu.fudan.utils.DCUtil.loadChanges;
 import static edu.fudan.utils.FileUtil.generateNewCopy;
+import static edu.fudan.utils.G1Util.calculateG1Ranges;
 
 import ch.javasoft.bitset.search.NTreeSearch;
 import com.google.common.collect.Lists;
@@ -25,6 +27,7 @@ import edu.fudan.algorithms.HydraDetector;
 import edu.fudan.algorithms.TupleSampler.SampleResult;
 import edu.fudan.utils.DCUtil;
 import edu.fudan.utils.EvaluateUtil;
+import edu.fudan.utils.G1RangeResult;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -352,6 +355,14 @@ public class Evaluation {
     Double[] doubles = EvaluateUtil.eval(groundTruthDCs, candidateDCs, groundTruthVios, vDisc);
     long t6 = System.currentTimeMillis();
     log.debug("Eval 5 time = {}s", (t6 - t5) / 1000.0);
+    // 制作g1关于gtDCs分布图的快照
+    List<G1RangeResult> g1Ranges = Lists.newArrayList();
+    if (calG1Snapshot) {
+      g1Ranges = calculateG1Ranges(dirtyDS.getHeaderPath(),
+          dirtyDS.getDataPath(), groundTruthDCs);
+      long t7 = System.currentTimeMillis();
+      log.debug("Eval 6 time = {}s", (t7 - t6) / 1000.0);
+    }
     result.setPrecision(doubles[0]);
     result.setRecall(doubles[1]);
     result.setF1(doubles[2]);
@@ -371,6 +382,7 @@ public class Evaluation {
     result.setCellsOfTrueVios(this.cellsOfTrueVios.size());
     result.setCellsOfTrueViosAndChanges(this.cellsOfTrueViosAndChanges.size());
     result.setCellsOfChangesUnrepaired(this.cellsOfChangesUnrepaired.size());
+    result.setG1Ranges(g1Ranges);
     this.evalResults.add(result);
     return result;
   }
@@ -505,5 +517,6 @@ public class Evaluation {
     private double recall = 0.0;
     private double f1 = 0.0;
     private double currG1 = 0.0;
+    private List<G1RangeResult> g1Ranges = new ArrayList<>();
   }
 }

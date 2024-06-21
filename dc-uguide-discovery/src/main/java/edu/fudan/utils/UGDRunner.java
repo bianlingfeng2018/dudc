@@ -116,6 +116,7 @@ public class UGDRunner implements Callable<Integer> {
     params.excludedDCsPath = baseDir + "/dcs_excluded_" + dsName + ".txt";
     params.csvResultPath = baseDir + "/eval_error_detect_" + dsName + ".csv";
     params.correlationByUserPath = baseDir + "/model_ltr_eval_" + dsName + ".csv";
+    params.g1RangeResPath = baseDir + "/g1_range_result_" + dsName + ".csv";
     return params;
   }
 

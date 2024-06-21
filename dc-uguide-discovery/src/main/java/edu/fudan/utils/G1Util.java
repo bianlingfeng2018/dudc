@@ -12,12 +12,40 @@ import de.metanome.algorithm_integration.Operator;
 import edu.fudan.algorithms.HydraDetector;
 import edu.fudan.transformat.DCFormatUtil;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class G1Util {
 
+  public static List<G1RangeResult> calculateG1Ranges(String headerPath, String dsPath,
+      Set<DenialConstraint> dcs) {
+    log.debug("Calculate g1 ranges of {} dcs", dcs.size());
+    ArrayList<DenialConstraint> dcList = new ArrayList<>(dcs);
+    // 防止每次顺序不一样
+    dcList.sort(Comparator.comparing(dc -> DCFormatUtil.convertDC2String(dc)));
+    List<G1RangeResult> result = new ArrayList<>();
+    for (DenialConstraint dc : dcList) {
+      G1RangeResult rr = calculateG1Range(headerPath, dsPath, dc, false);
+      result.add(rr);
+    }
+    return result;
+  }
+
+  /**
+   * Calculate g1 range for each dc.
+   *
+   * @param headerPath    Header file path
+   * @param dsPath        Dataset file path
+   * @param dc            DC
+   * @param excludeNegEvi If we should exclude the evidence which consists entirely of unequal
+   *                      predicates, e.g., not(xxx!=xxx^xxx!=xxx^xxx!=xxx)
+   * @return G1 range result
+   */
   public static G1RangeResult calculateG1Range(String headerPath, String dsPath,
       DenialConstraint dc, boolean excludeNegEvi) {
     Double[] doubles = new Double[2];
@@ -28,16 +56,18 @@ public class G1Util {
       DenialConstraint excludeDC = DCFormatUtil.convertString2DC(excludeEvi,
           loadHeader(headerPath));
       excludeSize = new HydraDetector(dsPath, Sets.newHashSet(excludeDC)).detect().size();
-      log.debug("ExcludeSize = {}, dc = {}", excludeSize, DCFormatUtil.convertDC2String(excludeDC));
+//      log.debug("ExcludeSize = {}, dc = {}", excludeSize, DCFormatUtil.convertDC2String(excludeDC));
     }
 
     // Size2
     int size = new HydraDetector(dsPath, Sets.newHashSet(dc)).detect().size();
     String dcStr = DCFormatUtil.convertDC2String(dc);
-    log.debug("Size = {}, dc = {}", size, dcStr);
+//    log.debug("Size = {}, dc = {}", size, dcStr);
 
     // Size3
     int subSizeMin = Integer.MAX_VALUE;
+    // 共享索引，加速计算过程
+    Map<DenialConstraint, Integer> subDCSizeMap = new HashMap<>();
     DenialConstraint subDCMin = null;
     ArrayList<Predicate> list = new ArrayList<>();
     for (Predicate predicate : dc.getPredicateSet()) {
@@ -47,7 +77,7 @@ public class G1Util {
     for (List<Predicate> predicates : lists) {
       //
       if (allNeg(predicates)) {
-        log.debug("All neg predicates, skip...");
+//        log.debug("All neg predicates, skip...");
         continue;
       }
 
@@ -57,18 +87,25 @@ public class G1Util {
         ps.add(predicate);
       }
       DenialConstraint subDC = new DenialConstraint(ps);
-      int subSize = new HydraDetector(dsPath, Sets.newHashSet(subDC)).detect().size();
-      log.debug("SubSize = {}, dc = {}", subSize, DCFormatUtil.convertDC2String(subDC));
+
+      int subSize = 0;
+      if (subDCSizeMap.containsKey(subDC)) {
+        subSize = subDCSizeMap.get(subDC);
+      } else {
+        subSize = new HydraDetector(dsPath, Sets.newHashSet(subDC)).detect().size();
+        subDCSizeMap.put(subDC, subSize);
+      }
+//      log.debug("SubSize = {}, dc = {}", subSize, DCFormatUtil.convertDC2String(subDC));
 
       if (subSize < subSizeMin) {
         subSizeMin = subSize;
         subDCMin = subDC;
       }
     }
-    log.debug("SubSizeMin = {}, dc = {}", subSizeMin, DCFormatUtil.convertDC2String(subDCMin));
+//    log.debug("SubSizeMin = {}, dc = {}", subSizeMin, DCFormatUtil.convertDC2String(subDCMin));
     Input input = generateNewCopy(dsPath);
     int lineCount = input.getLineCount();
-    log.debug("LineCount = {}", lineCount);
+//    log.debug("LineCount = {}", lineCount);
 
     // Size2
     int low = size >= excludeSize ? (size - excludeSize) : size;
@@ -79,14 +116,14 @@ public class G1Util {
     // So we need revise low high before calculating g1.
     int lowRev = Math.max(0, low - 1);
     int highRev = Math.max(0, high - 1);
-    log.debug("Low = {}, High = {}, LowRev = {}, HighRev = {}", low, high, lowRev, highRev);
+//    log.debug("Low = {}, High = {}, LowRev = {}, HighRev = {}", low, high, lowRev, highRev);
     // Size4
     int combinations = lineCount * (lineCount - 1);
-    log.debug("Tuple pairs combinations = {}", combinations);
+//    log.debug("Tuple pairs combinations = {}", combinations);
 
     double leftG1 = lowRev / (double) combinations;
     double rightG1 = highRev / (double) combinations;
-    log.debug("LeftG1 = {}, RightG1 = {}", leftG1, rightG1);
+//    log.debug("LeftG1 = {}, RightG1 = {}", leftG1, rightG1);
     doubles[0] = leftG1;
     doubles[1] = rightG1;
     return new G1RangeResult(doubles, dcStr);

@@ -21,4 +21,5 @@ public class UGDParams {
   public String headerPath;
   public String csvResultPath;
   public String correlationByUserPath;
+  public String g1RangeResPath;
 }

@@ -45,8 +45,9 @@ public class DefaultConf {
   // Sample
   public static boolean useSample = false;
   // ADC
-  public static double defaultErrorThreshold = 0.001;
+  public static double defaultErrorThreshold = 0.005;
   public static boolean dynamicG1 = true;
+  public static boolean calG1Snapshot = false;
   // 0.87是0.001~0.0001分成50次降低得来的
   public static double decreaseFactor = 0.87;
   // Questions(CellQ TupleQ DCsQ)
