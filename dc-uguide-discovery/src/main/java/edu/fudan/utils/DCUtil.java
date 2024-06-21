@@ -26,10 +26,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -54,9 +56,8 @@ public class DCUtil {
       String headerPath, Set<DenialConstraint> excludedDCs) {
     List<DenialConstraint> dcList = DCLoader.load(headerPath, inputDCsPath, excludedDCs);
     int excludeSize = excludedDCs == null ? 0 : excludedDCs.size();
-    dcList.sort((o1, o2) -> {
-      return Integer.compare(o1.getPredicateCount(), o2.getPredicateCount());
-    });
+    dcList.sort(Comparator.comparingInt((DenialConstraint dc) -> dc.getPredicateCount())
+        .thenComparing((DenialConstraint dc) -> DCFormatUtil.convertDC2String(dc)));  // 防止每次顺序不一样
     List<DenialConstraint> topKDCs = dcList.subList(0, Math.min(topK, dcList.size()));
     log.debug("Read dcs size = {}, excluded(visited) dcs size = {}, return topK dcs size = {}",
         dcList.size(), excludeSize, topKDCs.size());

@@ -34,6 +34,12 @@ import edu.fudan.utils.DCUtil;
 import edu.fudan.utils.UGDParams;
 import edu.fudan.utils.UGDRunner;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -316,4 +322,23 @@ public class UGDSimpleTest {
     log.debug("Example lingPair associated dcs = {}", next.size());
   }
 
+  @Test
+  public void testCopyFile() throws IOException {
+    String source = params.dirtyDataPath;
+    String target = params.sampledDataPath;
+    Files.copy(Paths.get(source), Paths.get(target), StandardCopyOption.REPLACE_EXISTING);
+    log.debug("File source = {}, target = {}", source, target);
+  }
+
+  @Test
+  public void testSortComparator() {
+    ArrayList<Integer> integers = new ArrayList<>();
+    integers.add(3);
+    integers.add(1);
+    integers.add(4);
+    integers.add(2);
+    log.debug("integers = {}", integers);
+    integers.sort(Comparator.naturalOrder());
+    log.debug("integers = {}", integers);
+  }
 }

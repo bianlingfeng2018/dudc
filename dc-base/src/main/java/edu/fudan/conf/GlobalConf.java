@@ -9,6 +9,6 @@ public class GlobalConf {
    * The base directory.
    */
 //  public static String baseDir = "/Users/benryoubon/IdeaProjects/dc_tools/data";
-//  public static String baseDir = "D:/paper/dc_user_guided_detection/experiment/data";
-  public static String baseDir = "/Users/benryoubon/Desktop/paper/dc_user_guided_detection/experiment/data";
+  public static String baseDir = "D:/paper/dc_user_guided_detection/experiment/data";
+//  public static String baseDir = "/Users/benryoubon/Desktop/paper/dc_user_guided_detection/experiment/data";
 }

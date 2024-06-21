@@ -22,6 +22,7 @@ import static edu.fudan.conf.DefaultConf.repairErrors;
 import static edu.fudan.conf.DefaultConf.succinctFactor;
 import static edu.fudan.conf.DefaultConf.topK;
 import static edu.fudan.conf.DefaultConf.topKOfCluster;
+import static edu.fudan.conf.DefaultConf.useSample;
 import static edu.fudan.utils.CorrelationUtil.readColumnCorrScoreMap;
 import static edu.fudan.utils.FileUtil.generateNewCopy;
 import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
@@ -56,6 +57,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -120,7 +124,11 @@ public class UGuideDiscovery {
         simRepairing();
       }
       // 采样
-      sample();
+      if (useSample) {
+        sample();
+      } else {
+        copyAsSample();
+      }
       // 发现规则
       discoveryDCs();
       if (this.dcsLessThanK) {
@@ -329,6 +337,12 @@ public class UGuideDiscovery {
     }
 
     evaluation.update(dcs, null, null, null, null);
+  }
+
+  private void copyAsSample() throws IOException {
+    log.info("====== 2.Copy dirty data as sample ======");
+    Files.copy(Paths.get(dirtyDS.getDataPath()), Paths.get(sampleDS.getDataPath()),
+        StandardCopyOption.REPLACE_EXISTING);
   }
 
   private void sample() throws InputGenerationException, IOException, InputIterationException {

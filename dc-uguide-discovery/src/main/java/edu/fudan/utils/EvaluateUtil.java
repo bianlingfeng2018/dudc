@@ -185,13 +185,14 @@ public class EvaluateUtil {
       int lpSizeGT = lpMap4GT.get(sGT).size();
       int lpSizeDisc = lpMap4Disc.get(sGT).size();
       // 所有真冲突数量（默认不重复） 大于等于 发现的不重复的
-      boolean b3 = lpSizeGT >= lpSizeDisc;
+      boolean b2 = lpSizeGT >= lpSizeDisc;
       // 所有真冲突数量（默认不重复） 等于 对应LinePairs大小
-      boolean b4 = lpSizeGT == integersGT[0];
+      boolean b3 = lpSizeGT == integersGT[0];
       // 所有发现的不重复的真冲突数量 等于 对应LinePairs大小
-      boolean b5 = lpSizeDisc == integersGT[1];
+      boolean b4 = lpSizeDisc == integersGT[1];
 
-      if (!b1 || !b3 || !b4 || !b5) {
+      if (!b1 || !b2 || !b3 || !b4) {
+        log.debug("b1 = {}, b2 = {}, b3 = {}, b4 = {}", b1, b2, b3, b4);
         throw new RuntimeException("Size relation error, b1-3-4-5");
       }
       allV2InGT = allV2InGT + integersGT[1];

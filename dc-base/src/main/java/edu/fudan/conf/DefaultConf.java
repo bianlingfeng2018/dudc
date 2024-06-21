@@ -42,6 +42,8 @@ public class DefaultConf {
    * If we use random-cluster-sample, random sample clusters.
    */
   public static boolean randomClusterS = false;
+  // Sample
+  public static boolean useSample = false;
   // ADC
   public static double defaultErrorThreshold = 0.001;
   public static boolean dynamicG1 = true;

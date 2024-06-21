@@ -124,7 +124,7 @@ public class UGDTest {
   @Test
   public void testDiscoveringDCs() {
     double g1 = 0.001;
-    int topK = 5;  // Integer.MAX_VALUE means get all DCs
+    int topK = Integer.MAX_VALUE;  // 5 / Integer.MAX_VALUE means get all DCs
 
     log.debug("Params = {}", params.toString());
     BasicDCGenerator generator = new BasicDCGenerator(params.sampledDataPath, params.fullDCsPath,
@@ -203,7 +203,7 @@ public class UGDTest {
     // 1.简洁性+相关性/简洁性+覆盖率(interesting)
     // 2.关联冲突个数，希望真冲突的个数越多越好
     int minLenOfDC = 2;
-    double succinctFactor = 0.5;
+    double succinctFactor = 1.0;
     int budget = 10;
     DCQStrategy strategy = DCQStrategy.SUC_COR;
     Set<DCViolation> vios = new HydraDetector(params.dirtyDataPath, params.topKDCsPath,

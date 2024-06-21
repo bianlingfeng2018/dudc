@@ -12,7 +12,6 @@ import edu.fudan.transformat.DCFormatUtil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -95,7 +94,7 @@ public class CellQuestionV2 {
     }
 
     // Start asking questions.
-    ArrayList<TCell> cellsList = new ArrayList<>(cells);
+    List<TCell> cellsList = new ArrayList<>(cells);
     Set<TCell> chosenFromCellList = Sets.newHashSet();
     Set<TCell> chosenFromPendingList = Sets.newHashSet();
     Set<TCell> selectedCells = Sets.newHashSet();
@@ -107,7 +106,7 @@ public class CellQuestionV2 {
     Set<DCViolation> trueVios = Sets.newHashSet();
     // If a cell is dirty, the corresponding violation is TURE violation.
     // But if a cell is clean, the corresponding violation needs to be further confirmed by adding other cells in that violation.
-    Set<TCell> pendingCells = Sets.newHashSet();
+    List<TCell> pendingCells = new ArrayList<>();
     log.debug("Iterating through cells...");
     for (int i = 0; i < budget; i++) {
       if ((i + 1) % 100 == 0) {
@@ -373,20 +372,20 @@ public class CellQuestionV2 {
     return results;
   }
 
-  private TCell randomChooseCell(ArrayList<TCell> cellsList) {
+  private TCell randomChooseCell(List<TCell> cellsList) {
     Collections.shuffle(cellsList);
     return cellsList.remove(0);
   }
 
-  private TCell chooseCell(ArrayList<TCell> cellsList, Map<TCell, Set<DenialConstraint>> cellDCsMap,
-      Map<DenialConstraint, Double> dcWeightMap, Set<TCell> pendingCells,
+  private TCell chooseCell(List<TCell> cellsList, Map<TCell, Set<DenialConstraint>> cellDCsMap,
+      Map<DenialConstraint, Double> dcWeightMap, List<TCell> pendingCells,
       Set<DenialConstraint> falseDCs, Set<TCell> chosenFromCellList,
       Set<TCell> chosenFromPendingList) {
     TCell selectedCell;
     if (!pendingCells.isEmpty()) {
-      Iterator<TCell> it = pendingCells.iterator();
-      selectedCell = it.next();
-      it.remove();
+      // 防止每次顺序不一样
+      pendingCells.sort(Comparator.comparing((TCell c) -> c.toString()));
+      selectedCell = pendingCells.remove(0);
       cellsList.remove(selectedCell);
       chosenFromPendingList.add(selectedCell);
     } else {
@@ -399,7 +398,7 @@ public class CellQuestionV2 {
 
   private void sortCells(List<TCell> cells, Map<TCell, Set<DenialConstraint>> cellDCsMap,
       Map<DenialConstraint, Double> dcWeightMap, Set<DenialConstraint> falseDCs) {
-    cells.sort(Comparator.comparingDouble(cell -> {
+    cells.sort(Comparator.comparingDouble((TCell cell) -> {
       Set<DenialConstraint> dcs = cellDCsMap.get(cell);
       double sum1 = 0.0;
       int cnt = 0;
@@ -413,7 +412,7 @@ public class CellQuestionV2 {
       }
       double w = sum1 / cnt;
       return w;
-    }));
+    }).thenComparing((TCell c) -> c.toString()));  // 防止每次顺序不一样
   }
 
 }

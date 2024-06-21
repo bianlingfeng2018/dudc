@@ -6,6 +6,7 @@ import ch.javasoft.bitset.search.NTreeSearch;
 import com.google.common.collect.Maps;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import edu.fudan.algorithms.DCViolation;
+import edu.fudan.transformat.DCFormatUtil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -31,9 +32,9 @@ public class DCsQuestion {
   private final DCQStrategy strategy;
   private final int budget;
 
-  public DCsQuestion(NTreeSearch gtTree, Set<DenialConstraint> testDCs,
-      Set<DCViolation> vios, Map<String, Double> columnsCorrScoreMap, int minLenOfDC,
-      double succinctFactor, DCQStrategy strategy, int budget) {
+  public DCsQuestion(NTreeSearch gtTree, Set<DenialConstraint> testDCs, Set<DCViolation> vios,
+      Map<String, Double> columnsCorrScoreMap, int minLenOfDC, double succinctFactor,
+      DCQStrategy strategy, int budget) {
     this.gtTree = gtTree;
     this.testDCs = testDCs;
     this.vios = vios;
@@ -77,11 +78,17 @@ public class DCsQuestion {
       case SUC_COR_VIOS:
         entries.sort(Comparator.comparingDouble(
                 (Entry<DenialConstraint, Integer> entry) -> -dcScoreUniformMap.get(entry.getKey()))
-            .thenComparingInt((Entry<DenialConstraint, Integer> entry) -> -entry.getValue()));
+            .thenComparingInt((Entry<DenialConstraint, Integer> entry) -> -entry.getValue())
+            .thenComparing(
+                (Entry<DenialConstraint, Integer> entry) -> DCFormatUtil.convertDC2String(
+                    entry.getKey())));  // 防止每次顺序不一样
         break;
       case SUC_COR:
         entries.sort(Comparator.comparingDouble(
-            (Entry<DenialConstraint, Integer> entry) -> -dcScoreUniformMap.get(entry.getKey())));
+                (Entry<DenialConstraint, Integer> entry) -> -dcScoreUniformMap.get(entry.getKey()))
+            .thenComparing(
+                (Entry<DenialConstraint, Integer> entry) -> DCFormatUtil.convertDC2String(
+                    entry.getKey())));  // 防止每次顺序不一样
         break;
       case RANDOM_DC:
         Collections.shuffle(entries);

@@ -85,14 +85,9 @@ public class BasicDCGenerator implements DCGenerator {
     for (de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint dc : dcs) {
       dcList.add(dc);
     }
-    dcList.sort(
-        new Comparator<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint>() {
-          @Override
-          public int compare(de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint o1,
-              de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint o2) {
-            return Integer.compare(o1.getPredicateCount(), o2.getPredicateCount());
-          }
-        });
+    dcList.sort(Comparator.comparingInt(
+            de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint::getPredicateCount)
+        .thenComparing(System::identityHashCode));
     return dcList;
   }
 

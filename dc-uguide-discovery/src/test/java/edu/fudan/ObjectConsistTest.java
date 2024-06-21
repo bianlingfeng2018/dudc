@@ -122,17 +122,23 @@ public class ObjectConsistTest {
     set1.add("A");
     set1.add("B");
     HashSet<String> set2 = new HashSet<>();
-    set2.add("D");
+    set2.add("A");
     HashSet<String> set3 = new HashSet<>();
-    set3.add("C");
+    set3.add("A");
     HashSet<String> set4 = new HashSet<>();
+    set4.add("A");
 
     HashMap<Integer, Set<String>> map = new HashMap<>();
-    map.put(0, set4);
-    map.put(1, set3);
-    map.put(2, set2);
+    map.put(1, set4);
+    map.put(0, set2);
+    map.put(2, set3);
     map.put(3, set1);
-    List<Integer> sortedLines = getSortedLines(map, null);
+    HashMap<Integer, Set<String>> mapVios = new HashMap<>();
+    mapVios.put(0, set2);
+    mapVios.put(1, set1);
+    mapVios.put(2, set2);
+    mapVios.put(3, set2);
+    List<Integer> sortedLines = getSortedLines(map, mapVios);
     // line = 3 1 2 0
     for (Integer line : sortedLines) {
       log.debug("line = {}", line);
