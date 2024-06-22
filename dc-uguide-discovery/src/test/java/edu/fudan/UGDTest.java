@@ -1,5 +1,6 @@
 package edu.fudan;
 
+import static edu.fudan.algorithms.DCLoader.loadHeader;
 import static edu.fudan.conf.DefaultConf.canBreakEarly;
 import static edu.fudan.conf.DefaultConf.delta;
 import static edu.fudan.conf.DefaultConf.excludeLinePercent;
@@ -369,7 +370,7 @@ public class UGDTest {
     String fullDCsPath = params.fullDCsPath;
     String topKDCsPath = params.topKDCsPath;
     String evidencePath = params.evidencesPath;
-    double g1 = 0.0027;
+    double g1 = 2.02E-04;
     log.debug("Discover dcs using g1 = {}.", g1);
 
     List<DenialConstraint> gtDCs = DCLoader.load(headerPath, gtDCsPath);
@@ -401,6 +402,11 @@ public class UGDTest {
     generator.setEvidencePath(evidencePath);
     Set<DenialConstraint> genDCs = generator.generateDCs();
     log.info("GenDCs size = {}", genDCs.size());
+
+    // 检查待发现DC是否已经被发现
+    String targetDCStr = "not(t1.City=t2.City^t1.CountyName!=t2.CountyName^t1.State=t2.State)";
+    DenialConstraint targetDC = DCFormatUtil.convertString2DC(targetDCStr, loadHeader(headerPath));
+    log.debug("TargetDC discovered = {}", genDCs.contains(targetDC));
   }
 
   /**
