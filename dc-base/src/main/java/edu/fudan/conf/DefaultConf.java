@@ -45,7 +45,7 @@ public class DefaultConf {
   // Sample
   public static boolean useSample = false;
   // ADC
-  public static double defaultErrorThreshold = 0.0003;
+  public static double defaultErrorThreshold = 0.000002;
   public static boolean dynamicG1 = true;
   public static boolean calG1Snapshot = false;
   // 0.87是0.001~0.0001分成50次降低得来的

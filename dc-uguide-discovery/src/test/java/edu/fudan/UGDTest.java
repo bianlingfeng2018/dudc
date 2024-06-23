@@ -76,7 +76,7 @@ public class UGDTest {
 
   @Before
   public void setUp() throws Exception {
-    int dsIndex = 0;
+    int dsIndex = 1;
     params = UGDRunner.buildParams(dsIndex);
   }
 
@@ -119,7 +119,7 @@ public class UGDTest {
    */
   @Test
   public void testDiscoveringDCs() {
-    double g1 = 0.001;
+    double g1 = 0.0;
     int topK = Integer.MAX_VALUE;  // 5 / Integer.MAX_VALUE means get all DCs
 
     log.debug("Params = {}", params.toString());
@@ -443,7 +443,7 @@ public class UGDTest {
   @Test
   public void testOneRoundUGuide()
       throws InputGenerationException, InputIterationException, IOException {
-    maxDiscoveryRound = 2;
+    maxDiscoveryRound = 1;
     repairErrors = false;
     UGuideDiscovery ud = new UGuideDiscovery(params.cleanDataPath, params.changesPath,
         params.dirtyDataPath, params.dirtyDataUnrepairedPath, params.excludedLinesPath,
@@ -459,7 +459,7 @@ public class UGDTest {
    */
   @Test
   public void testUGuide() {
-    String[] args = "-i 0 -r 50 -u REPAIR -s EFFICIENT -a HYDRA -c VIO_AND_CONF -t VIOLATIONS_PRIOR -d SUC_COR_VIOS -g DYNAMIC".split(
+    String[] args = "-i 1 -r 50 -u REPAIR -s EFFICIENT -a HYDRA -c VIO_AND_CONF -t VIOLATIONS_PRIOR -d SUC_COR_VIOS -g DYNAMIC".split(
         " ");
     int exitCode = new CommandLine(new UGDRunner()).execute(args);
     log.debug("ExitCode = {}", exitCode);
