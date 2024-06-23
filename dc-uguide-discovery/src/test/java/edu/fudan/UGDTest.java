@@ -4,10 +4,12 @@ import static edu.fudan.algorithms.DCLoader.loadHeader;
 import static edu.fudan.conf.DefaultConf.canBreakEarly;
 import static edu.fudan.conf.DefaultConf.delta;
 import static edu.fudan.conf.DefaultConf.excludeLinePercent;
+import static edu.fudan.conf.DefaultConf.maxDCQuestionBudget;
 import static edu.fudan.conf.DefaultConf.maxDiscoveryRound;
 import static edu.fudan.conf.DefaultConf.numInCluster;
 import static edu.fudan.conf.DefaultConf.repairErrors;
 import static edu.fudan.conf.DefaultConf.topKOfCluster;
+import static edu.fudan.conf.GlobalConf.baseDir;
 import static edu.fudan.utils.CorrelationUtil.readColumnCorrScoreMap;
 import static edu.fudan.utils.DCUtil.genLineChangesMap;
 import static edu.fudan.utils.DCUtil.getCellsOfChanges;
@@ -15,6 +17,7 @@ import static edu.fudan.utils.DCUtil.getCellsOfViolation;
 import static edu.fudan.utils.DCUtil.getErrorLinesContainingChanges;
 import static edu.fudan.utils.DCUtil.loadChanges;
 import static edu.fudan.utils.DCUtil.printDCVioMap;
+import static edu.fudan.utils.EvaluateUtil.eval;
 import static edu.fudan.utils.FileUtil.generateNewCopy;
 import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
 import static edu.fudan.utils.FileUtil.writeStringLinesToFile;
@@ -463,5 +466,43 @@ public class UGDTest {
         " ");
     int exitCode = new CommandLine(new UGDRunner()).execute(args);
     log.debug("ExitCode = {}", exitCode);
+  }
+
+  /**
+   * Test baseline detection.
+   */
+  @Test
+  public void testBaseLine() {
+    String out = baseDir + "/baseline_stock.csv";
+    // 发现全部规则
+    double g1 = 1E-06;
+    int dcBudget = maxDCQuestionBudget;
+    int round = maxDiscoveryRound;
+    BasicDCGenerator generator = new BasicDCGenerator(params.dirtyDataPath, params.fullDCsPath,
+        params.topKDCsPath, params.headerPath, new HashSet<>(), g1, Integer.MAX_VALUE);
+    generator.generateDCs();
+    // 按照user guided detection的规则budget设置，从少到多取出规则，并评价这些规则的准确率
+    List<DenialConstraint> gtDCs = DCLoader.load(params.headerPath, params.groundTruthDCsPath);
+    List<DenialConstraint> dcList = DCLoader.load(params.headerPath, params.fullDCsPath);
+    List<String> resultLines = new ArrayList<>();
+
+    int lastK = 0;
+    for (int i = 0; i < round; i++) {
+      int k = (i + 1) * dcBudget;
+      List<DenialConstraint> kDCs = dcList.subList(0, Math.min(k, dcList.size()));
+      int currK = kDCs.size();
+      if (currK == lastK) {
+        break;
+      }
+      lastK = currK;
+      // 评价k个规则的P R F1
+      log.debug("Evaluate gtDCs = {}, kDCs = {}", gtDCs.size(), kDCs.size());
+      Double[] result = eval(new HashSet<>(gtDCs), new HashSet<>(kDCs),
+          params.dirtyDataUnrepairedPath);
+      log.debug("Precision={}, Recall={}, F-measure={}", result[0], result[1], result[2]);
+      String line = result[0] + "," + result[1] + "," + result[2];
+      resultLines.add(line);
+    }
+    writeStringLinesToFile(resultLines, new File(out));
   }
 }
