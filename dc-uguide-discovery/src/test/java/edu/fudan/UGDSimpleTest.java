@@ -180,40 +180,6 @@ public class UGDSimpleTest {
   }
 
   /**
-   * Test all errors can be found by dcs.
-   */
-  @Test
-  public void testAllErrorsFound() {
-    // 对于BART注入错误，元组id(TupleOID)从1开始
-    // 对于Hydra检测冲突，行号line(LinePair)从0开始
-    List<TChange> changes = loadChanges(params.changesPath);
-    Set<TCell> cellsOfChanges = getCellsOfChanges(changes);
-    log.info("CellsOfChanges: {}, {}", cellsOfChanges.size(), cellsOfChanges.stream().findAny());
-
-    // 检测冲突
-    DCViolationSet vioSetOfGroundTruthDCs = new HydraDetector(params.dirtyDataPath,
-        params.groundTruthDCsPath, params.headerPath).detect();
-    DCViolationSet vioSetOfTrueDCs = new HydraDetector(params.dirtyDataPath,
-        params.candidateTrueDCsPath, params.headerPath).detect();
-    Input di = generateNewCopy(params.dirtyDataPath);
-
-    // 转换成Cell
-    Set<TCell> cellsGroundTruth = getCellsOfViolations(vioSetOfGroundTruthDCs.getViosSet(), di);
-    Set<TCell> cellsTrue = getCellsOfViolations(vioSetOfTrueDCs.getViosSet(), di);
-    log.info("CellsGroundTruth: {}, {}", cellsGroundTruth.size(),
-        cellsGroundTruth.stream().findAny());
-    log.info("CellsTrue: {}, {}", cellsTrue.size(), cellsTrue.stream().findAny());
-
-    // 所有错误都能被发现
-    assertTrue(cellsGroundTruth.containsAll(cellsOfChanges));
-    assertTrue(cellsTrue.containsAll(cellsOfChanges));
-
-    // 打印Cell样例
-    cellsGroundTruth.stream().findAny().ifPresent(tCell -> log.info("Example1: {}", tCell));
-    cellsTrue.stream().findAny().ifPresent(tCell -> log.info("Example2: {}", tCell));
-  }
-
-  /**
    * Test changed lines and excluded lines.
    */
   @Test

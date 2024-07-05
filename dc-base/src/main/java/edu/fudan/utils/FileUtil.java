@@ -175,7 +175,17 @@ public class FileUtil {
     lines.add(columnNames);
     int lineIndex = 0;
     while (ri.hasNext()) {
-      List<String> line = ri.next();
+      List<String> lineRi = ri.next();
+      // TODO: 读入csv文件后，ri用null表示空值，这里需要替换为""
+      List<String> line = Lists.newArrayList();
+      for (String c : lineRi) {
+        if (c== null || c.equals("null")) {
+          line.add("");
+        } else {
+          line.add(c);
+        }
+      }
+
       if (excludedLines.contains(lineIndex)) {
         // 修复行
         List<String> newLine = repairedLine(lineIndex, line, lineChangesMap);

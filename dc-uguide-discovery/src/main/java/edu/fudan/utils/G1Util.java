@@ -75,7 +75,7 @@ public class G1Util {
     }
     List<List<Predicate>> lists = generateSubLists(list);
     for (List<Predicate> predicates : lists) {
-      //
+      // TODO: add-hoc trick to prevent expensive validation, need to be improved later...
       if (allNeg(predicates)) {
 //        log.debug("All neg predicates, skip...");
         continue;

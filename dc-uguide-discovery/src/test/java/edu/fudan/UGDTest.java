@@ -1,6 +1,5 @@
 package edu.fudan;
 
-import static edu.fudan.algorithms.DCLoader.loadHeader;
 import static edu.fudan.conf.DefaultConf.canBreakEarly;
 import static edu.fudan.conf.DefaultConf.delta;
 import static edu.fudan.conf.DefaultConf.excludeLinePercent;
@@ -14,6 +13,7 @@ import static edu.fudan.utils.CorrelationUtil.readColumnCorrScoreMap;
 import static edu.fudan.utils.DCUtil.genLineChangesMap;
 import static edu.fudan.utils.DCUtil.getCellsOfChanges;
 import static edu.fudan.utils.DCUtil.getCellsOfViolation;
+import static edu.fudan.utils.DCUtil.getCellsOfViolations;
 import static edu.fudan.utils.DCUtil.getErrorLinesContainingChanges;
 import static edu.fudan.utils.DCUtil.loadChanges;
 import static edu.fudan.utils.DCUtil.printDCVioMap;
@@ -22,6 +22,7 @@ import static edu.fudan.utils.FileUtil.generateNewCopy;
 import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
 import static edu.fudan.utils.FileUtil.writeStringLinesToFile;
 import static edu.fudan.utils.G1Util.calculateG1Ranges;
+import static org.junit.Assert.assertTrue;
 
 import ch.javasoft.bitset.search.NTreeSearch;
 import com.google.common.collect.Sets;
@@ -79,7 +80,7 @@ public class UGDTest {
 
   @Before
   public void setUp() throws Exception {
-    int dsIndex = 1;
+    int dsIndex = 6;
     params = UGDRunner.buildParams(dsIndex);
   }
 
@@ -361,19 +362,19 @@ public class UGDTest {
     //  当规则属性都没有错误时，g1=0
     //  当规则检测无冲突时，g1=0
     //  当前规则的g1 <= 合理的g1 < 减一个谓词的所有泛化规则的g1的最小值
-//    String dsPath = "../data/ds_dirty.txt";
-//    String headerPath = "../data/header.txt";
-//    String gtDCsPath = "../data/dc_gt.txt";
-//    String fullDCsPath = "../data/dc_full.txt";
-//    String topKDCsPath = "../data/dc_top_k.txt";
-//    String evidencePath = "../data/evidence.txt";
-    String dsPath = params.dirtyDataPath;
-    String headerPath = params.headerPath;
-    String gtDCsPath = params.groundTruthDCsPath;
-    String fullDCsPath = params.fullDCsPath;
-    String topKDCsPath = params.topKDCsPath;
-    String evidencePath = params.evidencesPath;
-    double g1 = 2.02E-04;
+    String dsPath = "../data/ds_dirty.txt";
+    String headerPath = "../data/header.txt";
+    String gtDCsPath = "../data/dc_gt.txt";
+    String fullDCsPath = "../data/dc_full.txt";
+    String topKDCsPath = "../data/dc_top_k.txt";
+    String evidencePath = "../data/evidence.txt";
+//    String dsPath = params.dirtyDataPath;
+//    String headerPath = params.headerPath;
+//    String gtDCsPath = params.groundTruthDCsPath;
+//    String fullDCsPath = params.fullDCsPath;
+//    String topKDCsPath = params.topKDCsPath;
+//    String evidencePath = params.evidencesPath;
+    double g1 = 0.188;
     log.debug("Discover dcs using g1 = {}.", g1);
 
     List<DenialConstraint> gtDCs = DCLoader.load(headerPath, gtDCsPath);
@@ -407,9 +408,9 @@ public class UGDTest {
     log.info("GenDCs size = {}", genDCs.size());
 
     // 检查待发现DC是否已经被发现
-    String targetDCStr = "not(t1.City=t2.City^t1.CountyName!=t2.CountyName^t1.State=t2.State)";
-    DenialConstraint targetDC = DCFormatUtil.convertString2DC(targetDCStr, loadHeader(headerPath));
-    log.debug("TargetDC discovered = {}", genDCs.contains(targetDC));
+    for (DenialConstraint dc : gtDCs) {
+      log.debug("{} is discovered: {}", DCFormatUtil.convertDC2String(dc), genDCs.contains(dc));
+    }
   }
 
   /**
@@ -462,7 +463,7 @@ public class UGDTest {
    */
   @Test
   public void testUGuide() {
-    String[] args = "-i 1 -r 50 -u REPAIR -s EFFICIENT -a HYDRA -c VIO_AND_CONF -t VIOLATIONS_PRIOR -d SUC_COR_VIOS -g DYNAMIC".split(
+    String[] args = "-i 3 -r 50 -u REPAIR -s EFFICIENT -a HYDRA -c VIO_AND_CONF -t VIOLATIONS_PRIOR -d SUC_COR_VIOS -g DYNAMIC".split(
         " ");
     int exitCode = new CommandLine(new UGDRunner()).execute(args);
     log.debug("ExitCode = {}", exitCode);
@@ -505,4 +506,31 @@ public class UGDTest {
     }
     writeStringLinesToFile(resultLines, new File(out));
   }
+
+
+  /**
+   * Test that all errors (i.e. changes) can be recognized by dcs. 例如用于判断真实数据集的手工规则是否合理。
+   */
+  @Test
+  public void testAllErrorsFound() {
+    // 对于BART注入错误，元组id(TupleOID)从1开始
+    // 对于Hydra检测冲突，行号line(LinePair)从0开始
+    List<TChange> changes = loadChanges(params.changesPath);
+    Set<TCell> cellsOfChanges = getCellsOfChanges(changes);
+    log.debug("CellsOfChanges = {}, example = {}", cellsOfChanges.size(),
+        cellsOfChanges.stream().findAny());
+
+    // 检测冲突
+    DCViolationSet vios = new HydraDetector(params.dirtyDataPath, params.groundTruthDCsPath,
+        params.headerPath).detect();
+    Input di = generateNewCopy(params.dirtyDataPath);
+
+    // 转换成Cell
+    Set<TCell> cellsOfVios = getCellsOfViolations(vios.getViosSet(), di);
+    log.info("CellsOfVios = {}, example = {}", cellsOfVios.size(), cellsOfVios.stream().findAny());
+
+    // 所有错误都能被发现
+    assertTrue(cellsOfVios.containsAll(cellsOfChanges));
+  }
+
 }
