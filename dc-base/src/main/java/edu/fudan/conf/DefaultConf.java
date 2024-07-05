@@ -12,7 +12,7 @@ public class DefaultConf {
   /**
    * Top-k DCs discovered. Set k = Integer.MAX_VALUE if we want all discovered DCs.
    */
-  public static int topK = 5;
+  public static int topK = 20;
   public static String defaultTable = "xxx";
   public static Boolean noCrossColumn = Boolean.TRUE;
   public static double minimumSharedValue = 0.30d;
@@ -45,7 +45,7 @@ public class DefaultConf {
   // Sample
   public static boolean useSample = false;
   // ADC
-  public static double defaultErrorThreshold = 0.01;
+  public static double defaultErrorThreshold = 0.001;
   public static boolean dynamicG1 = true;
   public static boolean calG1Snapshot = false;
   // 0.87是0.001~0.0001分成50次降低得来的

@@ -169,6 +169,27 @@ public class Evaluation {
   private List<EvalResult> evalResults = Lists.newArrayList();
   @Getter
   private final String csvResultPath;
+  @Setter
+  @Getter
+  private long du1 = 0L;
+  @Setter
+  @Getter
+  private long du2 = 0L;
+  @Setter
+  @Getter
+  private long du3 = 0L;
+  @Setter
+  @Getter
+  private long du4 = 0L;
+  @Setter
+  @Getter
+  private long du5 = 0L;
+  @Setter
+  @Getter
+  private long du6 = 0L;
+  @Setter
+  @Getter
+  private long du7 = 0L;
   /**
    * 记录上次candiDC个数
    */
@@ -358,8 +379,7 @@ public class Evaluation {
     // 制作g1关于gtDCs分布图的快照
     List<G1RangeResult> g1Ranges = Lists.newArrayList();
     if (calG1Snapshot) {
-      g1Ranges = calculateG1Ranges(dirtyDS.getHeaderPath(),
-          dirtyDS.getDataPath(), groundTruthDCs);
+      g1Ranges = calculateG1Ranges(dirtyDS.getHeaderPath(), dirtyDS.getDataPath(), groundTruthDCs);
       long t7 = System.currentTimeMillis();
       log.debug("Eval 6 time = {}s", (t7 - t6) / 1000.0);
     }
@@ -383,6 +403,14 @@ public class Evaluation {
     result.setCellsOfTrueViosAndChanges(this.cellsOfTrueViosAndChanges.size());
     result.setCellsOfChangesUnrepaired(this.cellsOfChangesUnrepaired.size());
     result.setG1Ranges(g1Ranges);
+    // 每个步骤的时间统计
+    result.setDu1(du1);
+    result.setDu2(du2);
+    result.setDu3(du3);
+    result.setDu4(du4);
+    result.setDu5(du5);
+    result.setDu6(du6);
+    result.setDu7(du7);
     this.evalResults.add(result);
     return result;
   }
@@ -518,5 +546,12 @@ public class Evaluation {
     private double f1 = 0.0;
     private double currG1 = 0.0;
     private List<G1RangeResult> g1Ranges = new ArrayList<>();
+    private long du1 = 0L;
+    private long du2 = 0L;
+    private long du3 = 0L;
+    private long du4 = 0L;
+    private long du5 = 0L;
+    private long du6 = 0L;
+    private long du7 = 0L;
   }
 }

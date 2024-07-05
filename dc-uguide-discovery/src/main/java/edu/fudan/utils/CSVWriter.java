@@ -15,7 +15,7 @@ public class CSVWriter {
   public static void writeToFile(String fileName, List<EvalResult> evalResults) {
     try (FileWriter writer = new FileWriter(fileName)) {
       String confStr = getConfStr();
-      String header = "Round,P,R,F1,CurrG1,TrueDCs,CandiDCs,GTDCs,CellsOfTrueVios,CellsOfTrueViosAndChanges,CellsOfChanges,CellsOfChangesUnrepaired,CellQuestions,TupleQuestions,DCQuestions,excludedLines,excludedLinesOfCellQ,excludedLinesOfTupleQ,excludedLinesOfDCsQ,errorLinesInSample,errorLinesInSampleAndExcluded\n";
+      String header = "Round,P,R,F1,CurrG1,TrueDCs,CandiDCs,GTDCs,CellsOfTrueVios,CellsOfTrueViosAndChanges,CellsOfChanges,CellsOfChangesUnrepaired,CellQuestions,TupleQuestions,DCQuestions,excludedLines,excludedLinesOfCellQ,excludedLinesOfTupleQ,excludedLinesOfDCsQ,errorLinesInSample,errorLinesInSampleAndExcluded,repairDu,sampleDu,discDu,detectDu,cellQDu,tupleQDu,DCQDu\n";
       writer.append(confStr);
       writer.append(header);
       for (int i = 0; i < evalResults.size(); i++) {
@@ -63,6 +63,23 @@ public class CSVWriter {
         writer.append(String.valueOf(res.getErrorLinesInSample()));
         writer.append(COMMA_DELIMITER);
         writer.append(String.valueOf(res.getErrorLinesInSampleAndExcluded()));
+        writer.append(COMMA_DELIMITER);
+
+        writer.append(String.valueOf(res.getDu1() / 1000.0));
+        writer.append(COMMA_DELIMITER);
+        writer.append(String.valueOf(res.getDu2() / 1000.0));
+        writer.append(COMMA_DELIMITER);
+        writer.append(String.valueOf(res.getDu3() / 1000.0));
+        writer.append(COMMA_DELIMITER);
+        writer.append(String.valueOf(res.getDu4() / 1000.0));
+        writer.append(COMMA_DELIMITER);
+        writer.append(String.valueOf(res.getDu5() / 1000.0));
+        writer.append(COMMA_DELIMITER);
+        writer.append(String.valueOf(res.getDu6() / 1000.0));
+        writer.append(COMMA_DELIMITER);
+        writer.append(String.valueOf(res.getDu7() / 1000.0));
+        writer.append(COMMA_DELIMITER);
+
         writer.append(NEW_LINE_SEPARATOR);
       }
       // Persist g1 ranges of each round

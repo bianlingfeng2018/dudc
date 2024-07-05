@@ -80,7 +80,7 @@ public class UGDTest {
 
   @Before
   public void setUp() throws Exception {
-    int dsIndex = 6;
+    int dsIndex = 0;
     params = UGDRunner.buildParams(dsIndex);
   }
 

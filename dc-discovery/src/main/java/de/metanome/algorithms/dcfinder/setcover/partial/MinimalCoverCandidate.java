@@ -177,6 +177,8 @@ public class MinimalCoverCandidate {
 			pOrder.add(p);
 		}
 
+		// TODO: 在目前的覆盖方式下，互相矛盾的两个规则只能取其一，因此即便g1设置正确，也有可能无法发现真规则；
+		//  后续需要改进覆盖的方式，例如增加覆盖的多样性，或者允许互相矛盾的两个规则出现。
 		pOrder.sort(new Comparator<Predicate>() {
 			@Override
 			public int compare(Predicate o1, Predicate o2) {

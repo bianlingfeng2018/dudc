@@ -120,16 +120,25 @@ public class UGuideDiscovery {
       round++;
       log.info("------ Round {} -------", round);
       // 修复
+      long t1 = System.currentTimeMillis();
       if (repairErrors) {
         simRepairing();
       }
       // 采样
+      long t2 = System.currentTimeMillis();
+      long du1 = t2 - t1;
+      log.debug("DU1: {}", du1);
+      evaluation.setDu1(du1);
       if (useSample) {
         sample();
       } else {
         copyAsSample();
       }
       // 发现规则
+      long t3 = System.currentTimeMillis();
+      long du2 = t3 - t2;
+      log.debug("DU2: {}", du2);
+      evaluation.setDu2(du2);
       discoveryDCs();
       if (this.dcsLessThanK) {
         if (dynamicG1) {
@@ -144,18 +153,38 @@ public class UGuideDiscovery {
         }
       }
       // 检测冲突
+      long t4 = System.currentTimeMillis();
+      long du3 = t4 - t3;
+      log.debug("DU3: {}", du3);
+      evaluation.setDu3(du3);
       detect();
       // 多轮提问
+      long t5 = System.currentTimeMillis();
+      long du4 = t5 - t4;
+      log.debug("DU4: {}", du4);
+      evaluation.setDu4(du4);
       if (questionsConf[0] == 1) {
         askCellQuestion();
       }
+      long t6 = System.currentTimeMillis();
+      long du5 = t6 - t5;
+      log.debug("DU5: {}", du5);
+      evaluation.setDu5(du5);
       if (questionsConf[1] == 1) {
         askTupleQuestion();
       }
+      long t7 = System.currentTimeMillis();
+      long du6 = t7 - t6;
+      log.debug("DU6: {}", du6);
+      evaluation.setDu6(du6);
       if (questionsConf[2] == 1) {
         askDCQuestion();
       }
       // 评价真冲突/假冲突
+      long t8 = System.currentTimeMillis();
+      long du7 = t8 - t7;
+      log.debug("DU7: {}", du7);
+      evaluation.setDu7(du7);
       evaluate();
       // 输出结果
       persistResult();
