@@ -1,5 +1,6 @@
 package edu.fudan.algorithms.uguide;
 
+import static edu.fudan.conf.DefaultConf.trueDCConfThreshold;
 import static edu.fudan.utils.DCUtil.getCellsOfViolation;
 
 import com.google.common.collect.Maps;
@@ -263,13 +264,16 @@ public class CellQuestionV2 {
       Double conf = e.getValue();
 
       // 直接加入可能的真DC
-      log.debug("{} -> {}(Added to possible trueDCs)", DCFormatUtil.convertDC2String(dc), conf);
-      possibleTrueDCs.add(dc);
+//      log.debug("{} -> {}(Directly added to possible trueDCs)", DCFormatUtil.convertDC2String(dc), conf);
+//      possibleTrueDCs.add(dc);
       // 置信度高的加入真DC
-//      if (conf > 0.0) {
-//        log.debug("{} -> {}(Added to possible trueDCs)", DCFormatUtil.convertDC2String(dc), conf);
-//        possibleTrueDCs.add(dc);
-//      } else {
+      if (conf >= trueDCConfThreshold) {
+        log.debug("{} -> {}(Conf > {}, added to possible trueDCs)", DCFormatUtil.convertDC2String(dc), conf,
+            trueDCConfThreshold);
+        possibleTrueDCs.add(dc);
+      }
+//      else {
+//        // 置信度低的先待定
 //        log.debug("{} -> {}(Added to falseDCs)", DCFormatUtil.convertDC2String(dc), conf);
 //        falseDCs.add(dc);
 //      }
@@ -285,7 +289,7 @@ public class CellQuestionV2 {
 //    List<Integer> randomExcludedLines = getRandomElements(excludedLines, num);
 //    log.debug("RandomExcludedLines = {}, {} of {}", randomExcludedLines.size(), excludeLinePercent,
 //        excludedLines.size());
-    return new CellQuestionResult(falseDCs, falseVios, selectedCells.size());
+    return new CellQuestionResult(falseDCs, possibleTrueDCs, falseVios, selectedCells.size());
   }
 
   private void addToDCViosMap(DCViolation vio, DenialConstraint dc,

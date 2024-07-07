@@ -102,7 +102,7 @@ public class Evaluation {
   private final Set<DenialConstraint> candiTrueDCs = Sets.newHashSet();
 
   /**
-   * Candidate DCs. It can be updated individually or when candidate violations change.
+   * Candidate dcs. We think they are true dcs.
    */
   @Getter
   private final Set<DenialConstraint> candidateDCs = Sets.newHashSet();
@@ -258,18 +258,26 @@ public class Evaluation {
     this.clearVisitedDCs();
   }
 
-  public void update(Set<DenialConstraint> newCandiDCs, Set<DenialConstraint> falseDCs,
-      Set<DCViolation> newCandiVios, Set<DCViolation> falseViolations, Set<Integer> excludedLines) {
+  public void update(Set<DenialConstraint> newDiscDCs, Set<DenialConstraint> falseDCs,
+      Set<DenialConstraint> possTrueDCs, Set<DCViolation> newDiscVios,
+      Set<DCViolation> falseViolations, Set<Integer> excludedLines,
+      Set<DenialConstraint> visitedDCs) {
     // 更新当前状态
-    updateCurrState(newCandiDCs, newCandiVios);
-    if (newCandiDCs != null) {
+    updateCurrState(newDiscDCs, newDiscVios);
+    // TODO: 用发现的所有规则作为candiDC，先纳入尽可能多的真规则（如果g1合理，则可以纳入所有真规则），
+    //  然后逐步排除假规则，直到达到最大轮数。FD那篇文章思路也是这样的！！！
+//    if (possTrueDCs != null) {
+    if (newDiscDCs != null) {
       // 增加候选规则
-      this.candidateDCs.addAll(newCandiDCs);
-      // 记录已经访问过的DC
-      this.visitedDCs.addAll(newCandiDCs);
+      this.candidateDCs.addAll(newDiscDCs);
+    }
+    if (visitedDCs != null) {
+      // 排除已经确认过的dc
+      this.visitedDCs.addAll(visitedDCs);
     }
     if (falseDCs != null) {
       // 减少假阳性规则
+      // TODO: DCQ可以逐步排除假规则
       for (DenialConstraint falseDC : falseDCs) {
         this.candidateDCs.remove(falseDC);
       }
@@ -323,11 +331,6 @@ public class Evaluation {
 
   public void addTupleBudget(int numb) {
     this.tupleBudgetUsed += numb;
-  }
-
-  public void evaluateCopyOfLast() {
-    EvalResult res = evalResults.get(evalResults.size() - 1);
-    evalResults.add(res);
   }
 
   public EvalResult evaluate() {

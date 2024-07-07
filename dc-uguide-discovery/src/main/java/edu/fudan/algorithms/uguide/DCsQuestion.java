@@ -76,19 +76,24 @@ public class DCsQuestion {
     // 2.冲突数量多的在前
     switch (strategy) {
       case SUC_COR_VIOS:
+        // 打分低的在前
+        // 冲突多的在前面
+        // 按字典序，防止每次顺序不一样
         entries.sort(Comparator.comparingDouble(
-                (Entry<DenialConstraint, Integer> entry) -> -dcScoreUniformMap.get(entry.getKey()))
+                (Entry<DenialConstraint, Integer> entry) -> dcScoreUniformMap.get(entry.getKey()))
             .thenComparingInt((Entry<DenialConstraint, Integer> entry) -> -entry.getValue())
             .thenComparing(
                 (Entry<DenialConstraint, Integer> entry) -> DCFormatUtil.convertDC2String(
-                    entry.getKey())));  // 防止每次顺序不一样
+                    entry.getKey())));
         break;
       case SUC_COR:
+        // 打分低的在前
+        // 按字典序，防止每次顺序不一样
         entries.sort(Comparator.comparingDouble(
-                (Entry<DenialConstraint, Integer> entry) -> -dcScoreUniformMap.get(entry.getKey()))
+                (Entry<DenialConstraint, Integer> entry) -> dcScoreUniformMap.get(entry.getKey()))
             .thenComparing(
                 (Entry<DenialConstraint, Integer> entry) -> DCFormatUtil.convertDC2String(
-                    entry.getKey())));  // 防止每次顺序不一样
+                    entry.getKey())));
         break;
       case RANDOM_DC:
         Collections.shuffle(entries);
@@ -107,6 +112,9 @@ public class DCsQuestion {
       DenialConstraint dc = e.getKey();
       Integer viosSize = e.getValue();
       // Simulate checking if it is true dc!!!
+      // TODO: Here true dc means useful dc.
+      //  Useful dc: 1.All true violations and can be inferred by gtDCs.
+      //  Unuseful dc: 1.No violations; 2.Any false violations; 3.All true violations but can not be inferred by gtDCs.
       if (isTrueDC(dc, gtTree)) {
         trueDCs.add(dc);
         // True violations size
@@ -118,7 +126,8 @@ public class DCsQuestion {
 
     int budgetUsed = subList.size();
     double trueDCRate = (double) trueDCs.size() / budgetUsed;
-
+    double falseDCRate = (double) falseDCs.size() / budgetUsed;
+    log.debug("TrueDCRate = {}, falseDCRate = {}", trueDCRate, falseDCRate);
     return new DCsQuestionResult(falseDCs, trueDCs, trueDCRate, totalViosSize, budgetUsed);
   }
 

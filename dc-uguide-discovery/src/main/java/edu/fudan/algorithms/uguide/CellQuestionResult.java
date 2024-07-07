@@ -11,6 +11,7 @@ import lombok.Getter;
 public class CellQuestionResult {
 
   private Set<DenialConstraint> falseDCs;
+  private Set<DenialConstraint> possibleTrueDCs;
   private Set<DCViolation> falseVios;
   private int budgetUsed;
 

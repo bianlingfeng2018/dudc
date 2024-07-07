@@ -12,7 +12,7 @@ public class DefaultConf {
   /**
    * Top-k DCs discovered. Set k = Integer.MAX_VALUE if we want all discovered DCs.
    */
-  public static int topK = 20;
+  public static int topK = Integer.MAX_VALUE;
   public static String defaultTable = "xxx";
   public static Boolean noCrossColumn = Boolean.TRUE;
   public static double minimumSharedValue = 0.30d;
@@ -45,6 +45,7 @@ public class DefaultConf {
   // Sample
   public static boolean useSample = false;
   // ADC
+  public static int maxDCLen = 4;
   public static double defaultErrorThreshold = 0.001;
   public static boolean dynamicG1 = true;
   public static boolean calG1Snapshot = false;
@@ -61,6 +62,7 @@ public class DefaultConf {
   public static double delta = 0.1;
   public static boolean canBreakEarly = false;
   public static double excludeLinePercent = 0.1;
+  public static double trueDCConfThreshold = 0.5;
   // TupleQ
   public static int maxTupleQuestionBudget = 100;
   public static TupleQStrategy defTupleQStrategy = TupleQStrategy.VIOLATIONS_PRIOR;
@@ -87,17 +89,19 @@ public class DefaultConf {
 
   public static String getConfStr() {
     String s = String.format(
-        "MaxDiscoveryRound=%s, MaxCellQuestionBudget=%s, MaxTupleQuestionBudget=%s, MaxDCQuestionBudget=%s, QuestionsConf=[%s;%s;%s]"
+        "UseSample=%s,"
+            + "\nMaxDiscoveryRound=%s, MaxCellQuestionBudget=%s, MaxTupleQuestionBudget=%s, MaxDCQuestionBudget=%s, QuestionsConf=[%s;%s;%s]"
             + "\nMinTopKOfCluster=%s, MinNumInCluster=%s, TopKOfCluster=%s, MaxInCluster=%s, AddCounterExampleS=%s, RandomClusterS=%s"
             + "\nDefaultErrorThreshold=%s, DynamicG1=%s, TopK=%s, "
-            + "\nRepairExcluded=%s, CellQStrategy=%s, TupleQStrategy=%s, DCsQStrategy=%s"
+            + "\nRepairExcluded=%s, TrueDCConfThreshold=%s, CellQStrategy=%s, TupleQStrategy=%s, DCsQStrategy=%s"
             + "\nDelta=%s, MinLenOfDC=%s, SuccinctFactor=%s\n",
+        useSample,
         maxDiscoveryRound, maxCellQuestionBudget, maxTupleQuestionBudget, maxDCQuestionBudget,
         questionsConf[0], questionsConf[1], questionsConf[2],
         minTopKOfCluster, minNumInCluster, topKOfCluster, numInCluster, addCounterExampleS,
         randomClusterS,
         defaultErrorThreshold, dynamicG1, topK,
-        repairErrors, defCellQStrategy, defTupleQStrategy, defDCQStrategy,
+        repairErrors, trueDCConfThreshold, defCellQStrategy, defTupleQStrategy, defDCQStrategy,
         delta, minLenOfDC, succinctFactor);
     return s;
   }

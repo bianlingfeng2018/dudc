@@ -53,14 +53,25 @@ public class DCUtil {
    * @return
    */
   public static List<DenialConstraint> generateTopKDCs(int topK, String inputDCsPath,
-      String headerPath, Set<DenialConstraint> excludedDCs) {
-    List<DenialConstraint> dcList = DCLoader.load(headerPath, inputDCsPath, excludedDCs);
+      String headerPath, Set<DenialConstraint> excludedDCs, int maxLen) {
+    List<DenialConstraint> loaded = DCLoader.load(headerPath, inputDCsPath, excludedDCs);
+    List<DenialConstraint> filtered = null;
+    if (maxLen > 0) {
+      filtered = loaded.stream().filter(dc -> dc.getPredicateCount() <= maxLen)
+          .collect(Collectors.toList());
+    } else {
+      filtered = loaded;
+    }
+    // 谓词数量少的在前面
+    // 按字典序，防止每次顺序不一样
+    filtered.sort(Comparator.comparingInt((DenialConstraint dc) -> dc.getPredicateCount())
+        .thenComparing((DenialConstraint dc) -> DCFormatUtil.convertDC2String(dc)));
+    List<DenialConstraint> topKDCs = filtered.subList(0, Math.min(topK, filtered.size()));
+
     int excludeSize = excludedDCs == null ? 0 : excludedDCs.size();
-    dcList.sort(Comparator.comparingInt((DenialConstraint dc) -> dc.getPredicateCount())
-        .thenComparing((DenialConstraint dc) -> DCFormatUtil.convertDC2String(dc)));  // 防止每次顺序不一样
-    List<DenialConstraint> topKDCs = dcList.subList(0, Math.min(topK, dcList.size()));
-    log.debug("Read dcs size = {}, excluded(visited) dcs size = {}, return topK dcs size = {}",
-        dcList.size(), excludeSize, topKDCs.size());
+    log.debug(
+        "Loaded dcs(after excluding) = {}, excluded(visited) dcs = {}, filtered dcs = {}, return topK dcs size = {}",
+        loaded.size(), excludeSize, filtered.size(), topKDCs.size());
     return topKDCs;
   }
 

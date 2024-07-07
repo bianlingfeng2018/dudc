@@ -1,5 +1,6 @@
 package edu.fudan.algorithms;
 
+import static edu.fudan.conf.DefaultConf.maxDCLen;
 import static edu.fudan.utils.DCUtil.convertDCFinderDC2Str;
 
 import com.google.common.collect.Lists;
@@ -58,8 +59,9 @@ public class BasicDCGenerator implements DCGenerator {
       throw new RuntimeException(e);
     }
     // 取前k个规则
+    // TODO: 删除特别长的规则，否则检测冲突的时间会很长
     List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(this.topK, this.fullDCsPath,
-        this.headerPath, this.excludeDCs);
+        this.headerPath, this.excludeDCs, maxDCLen);
     if (topKDCsPath != null) {
       DCUtil.persistTopKDCs(topKDCs, this.topKDCsPath);
     }

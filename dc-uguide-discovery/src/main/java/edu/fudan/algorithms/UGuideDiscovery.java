@@ -84,9 +84,9 @@ public class UGuideDiscovery {
   // 评价
   private final Evaluation evaluation;
   /**
-   * When dcs size is less than k, end loop.
+   * When discovered dcs size is 0.
    */
-  private boolean dcsLessThanK = false;
+  private boolean noMoreDiscDCs = false;
   /**
    * The correlation score map.
    */
@@ -140,17 +140,23 @@ public class UGuideDiscovery {
       log.debug("DU2: {}", du2);
       evaluation.setDu2(du2);
       discoveryDCs();
-      if (this.dcsLessThanK) {
-        if (dynamicG1) {
-          log.debug("DCs size is less than top-{}, decrease g1 and continue.", topK);
-          evaluation.evaluateCopyOfLast();
-          persistResult();
-          evaluation.decreaseG1(decreaseFactor);
-          continue;
-        } else {
-          log.debug("DCs size is less than top-{}, decrease g1 and break.", topK);
+      if (this.noMoreDiscDCs) {
+        if (!dynamicG1) {
+          log.debug("NoMoreDiscDCs and we use fixed g1, just break!!!");
           break;
         }
+        if (evaluation.allTrueViolationsFound()) {
+          log.debug("NoMoreDiscDCs and allTrueViolationsFound, just break!!!");
+          break;
+        }
+        // 没有更多DC了，在动态g1的设定下，且真规则还未找全，才考虑变化g1
+        log.debug("NoMoreDiscDCs, decrease g1 and continue!!!");
+//          evaluation.decreaseG1(decreaseFactor);  // 已经在evaluate中自动判断candiDC未变从而减小g1
+        evaluation.evaluate();
+        persistResult();
+        // 更新g1后继续循环
+        this.noMoreDiscDCs = false;
+        continue;
       }
       // 检测冲突
       long t4 = System.currentTimeMillis();
@@ -207,8 +213,9 @@ public class UGuideDiscovery {
       return false;
     }
     if (evaluation.allTrueViolationsFound()) {
-      log.info("Can no longer process, because all TrueViolations found!!!");
-      return false;
+      // 此时recall为1.0了，但是precision还能继续提高，例如DCQ可以继续排除假规则。
+      log.info("All TrueViolations found!!!");
+//      return false;
     }
     return true;
   }
@@ -248,6 +255,10 @@ public class UGuideDiscovery {
         maxDCQuestionBudget, evaluation.getCurrDCs().size());
     evaluation.addDCBudget(budgetUsed);
     Set<DenialConstraint> falseDCs = result.getFalseDCs();
+    Set<DenialConstraint> trueDCs = result.getTrueDCs();
+    HashSet<DenialConstraint> visitedDCs = new HashSet<>();
+    visitedDCs.addAll(falseDCs);
+    visitedDCs.addAll(trueDCs);
 //    // 排除真DC在脏数据上的冲突元组
 //    Set<Integer> excludedLinesInDCsQ = Sets.newHashSet();
 //    DCViolationSet vios = new HydraDetector(evaluation.getDirtyDS().getDataPath(), trueDCs).detect();
@@ -266,7 +277,7 @@ public class UGuideDiscovery {
 //    log.debug("ExcludedLinesInDCsQRandom before {}, after {}", sizeBefore, sizeAfter);
 //    evaluation.setExcludedLinesInDCsQ(excludedLinesInDCsQRandom);
     // TODO: DCsQ排除暂时仅排除假DC
-    evaluation.update(null, falseDCs, null, null, null);
+    evaluation.update(null, falseDCs, trueDCs, null, null, null, visitedDCs);
   }
 
   private void askTupleQuestion() {
@@ -287,7 +298,7 @@ public class UGuideDiscovery {
     evaluation.addTupleBudget(budgetUsed);
     log.info("FalseTuples(excludedLinesInDirty): {}", excludedLines.size());
     log.debug("TupleQuestion exclude : {}", excludedLines);
-    evaluation.update(null, null, null, null, excludedLines);
+    evaluation.update(null, null, null, null, null, excludedLines, null);
   }
 
   private void askCellQuestion() {
@@ -304,6 +315,11 @@ public class UGuideDiscovery {
 
     CellQuestionResult result = selector.simulate();
     Set<DenialConstraint> falseDCs = result.getFalseDCs();
+    Set<DenialConstraint> possibleTrueDCs = result.getPossibleTrueDCs();
+    HashSet<DenialConstraint> visitedDCs = new HashSet<>();
+    visitedDCs.addAll(falseDCs);
+    // TODO: PossibleTrueDCs并不确定，如果作为visitedDC，可能会降低准确率。
+//    visitedDCs.addAll(possibleTrueDCs);
     // Add counterexample from falseVios.
     Set<DCViolation> falseVios = result.getFalseVios();
     for (DCViolation vio : falseVios) {
@@ -316,7 +332,7 @@ public class UGuideDiscovery {
     evaluation.addCellBudget(budgetUsed);
     // TODO: 这里效率待优化
     // TODO: CellQ目前仅排除假规则
-    evaluation.update(null, falseDCs, null, null, null);
+    evaluation.update(null, falseDCs, possibleTrueDCs, null, null, null, visitedDCs);
   }
 
   private void evaluate() {
@@ -349,7 +365,7 @@ public class UGuideDiscovery {
     Set<DCViolation> violations = vios.getViosSet();
     log.info("Violations = {}", violations.size());
 
-    evaluation.update(null, null, violations, null, null);
+    evaluation.update(null, null, null, violations, null, null, null);
   }
 
   private void discoveryDCs() {
@@ -358,14 +374,12 @@ public class UGuideDiscovery {
     DCGenerator generator = getGenerator(dcGeneratorConf, topK);
     Set<DenialConstraint> dcs = generator.generateDCs();
 
-    if (dcs.size() != topK) {
-//      throw new RuntimeException(String.format("Discovery DCs size is not %s: %s",
-//          topK, dcs.size()));
-      // 提前结束
-      this.dcsLessThanK = true;
+    if (dcs.size() == 0) {
+      this.noMoreDiscDCs = true;
     }
 
-    evaluation.update(dcs, null, null, null, null);
+    // 把新发现的规则作为candiDC
+    evaluation.update(dcs, null, null, null, null, null, null);
   }
 
   private void copyAsSample() throws IOException {

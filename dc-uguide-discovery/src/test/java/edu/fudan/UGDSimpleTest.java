@@ -93,7 +93,7 @@ public class UGDSimpleTest {
   @Test
   public void testGenTopKDCs() {
     List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(5, params.fullDCsPath,
-        params.headerPath, null);
+        params.headerPath, null, -1);
     DCUtil.persistTopKDCs(topKDCs, params.topKDCsPath);
   }
 

@@ -463,7 +463,7 @@ public class UGDTest {
    */
   @Test
   public void testUGuide() {
-    String[] args = "-i 3 -r 50 -u REPAIR -s EFFICIENT -a HYDRA -c VIO_AND_CONF -t VIOLATIONS_PRIOR -d SUC_COR_VIOS -g DYNAMIC".split(
+    String[] args = "-i 0 -r 50 -u REPAIR -s EFFICIENT -a HYDRA -c VIO_AND_CONF -t VIOLATIONS_PRIOR -d SUC_COR_VIOS -g DYNAMIC".split(
         " ");
     int exitCode = new CommandLine(new UGDRunner()).execute(args);
     log.debug("ExitCode = {}", exitCode);

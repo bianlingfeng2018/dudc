@@ -88,7 +88,7 @@ public class CellQuestionV1 {
       log.debug("{}", DCFormatUtil.convertDC2String(dc));
     }
 
-    return new CellQuestionResult(falseDCs, falseVios, selectedVios.size());
+    return new CellQuestionResult(falseDCs, trueDCs, falseVios, selectedVios.size());
   }
 
 }
