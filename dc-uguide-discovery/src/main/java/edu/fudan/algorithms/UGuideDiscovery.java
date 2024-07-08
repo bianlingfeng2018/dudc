@@ -213,6 +213,11 @@ public class UGuideDiscovery {
       return false;
     }
     if (evaluation.allTrueViolationsFound()) {
+      if (evaluation.noFalseViolations()) {
+        // P=R=F1=1.0
+        log.info("All TrueViolations found and no FalseViolations!!!");
+        return false;
+      }
       // 此时recall为1.0了，但是precision还能继续提高，例如DCQ可以继续排除假规则。
       log.info("All TrueViolations found!!!");
 //      return false;

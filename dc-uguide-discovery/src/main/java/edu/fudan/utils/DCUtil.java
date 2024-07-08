@@ -106,7 +106,7 @@ public class DCUtil {
       br.readLine();
       String line;
       while ((line = br.readLine()) != null) {
-        String[] split = line.split(",");
+        String[] split = line.split(",", -1);  // limit=-1保留最后一个逗号后面的空字符串
         String cellIdentifier = split[0];
         String[] oidAttr = cellIdentifier.split("\\.");
         int oid = Integer.parseInt(oidAttr[0]);

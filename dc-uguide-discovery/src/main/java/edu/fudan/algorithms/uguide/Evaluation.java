@@ -459,6 +459,15 @@ public class Evaluation {
     return recall == 1.0;
   }
 
+  public boolean noFalseViolations() {
+    if (evalResults.isEmpty()) {
+      return false;
+    }
+    EvalResult lastRes = this.evalResults.get(evalResults.size() - 1);
+    double precision = lastRes.getPrecision();
+    return precision == 1.0;
+  }
+
   public Set<DCViolation> genCellQuestionsFromCurrState(int maxQueryBudget) {
     List<DCViolation> chosenVios = getRandomElements(this.currVios, maxQueryBudget);
     return new HashSet<>(chosenVios);

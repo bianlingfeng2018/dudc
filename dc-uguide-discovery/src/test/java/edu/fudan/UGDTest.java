@@ -9,6 +9,7 @@ import static edu.fudan.conf.DefaultConf.numInCluster;
 import static edu.fudan.conf.DefaultConf.repairErrors;
 import static edu.fudan.conf.DefaultConf.topKOfCluster;
 import static edu.fudan.conf.GlobalConf.baseDir;
+import static edu.fudan.conf.GlobalConf.dsNames;
 import static edu.fudan.utils.CorrelationUtil.readColumnCorrScoreMap;
 import static edu.fudan.utils.DCUtil.genLineChangesMap;
 import static edu.fudan.utils.DCUtil.getCellsOfChanges;
@@ -58,6 +59,7 @@ import edu.fudan.utils.UGDRunner;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -80,7 +82,7 @@ public class UGDTest {
 
   @Before
   public void setUp() throws Exception {
-    int dsIndex = 0;
+    int dsIndex = Arrays.asList(dsNames).indexOf("airport");
     params = UGDRunner.buildParams(dsIndex);
   }
 
@@ -127,7 +129,7 @@ public class UGDTest {
     int topK = Integer.MAX_VALUE;  // 5 / Integer.MAX_VALUE means get all DCs
 
     log.debug("Params = {}", params.toString());
-    BasicDCGenerator generator = new BasicDCGenerator(params.sampledDataPath, params.fullDCsPath,
+    BasicDCGenerator generator = new BasicDCGenerator(params.cleanDataPath, params.fullDCsPath,
         params.topKDCsPath, params.headerPath, new HashSet<>(), g1, topK);
 
     Set<DenialConstraint> dcs = generator.generateDCs();
@@ -139,7 +141,7 @@ public class UGDTest {
    */
   @Test
   public void testDetectViolations() {
-    DCViolationSet vios = new HydraDetector(params.dirtyDataPath, params.topKDCsPath,
+    DCViolationSet vios = new HydraDetector(params.cleanDataPath, params.groundTruthDCsPath,
         params.headerPath).detect();
     log.debug("Vios size={}", vios.size());
 

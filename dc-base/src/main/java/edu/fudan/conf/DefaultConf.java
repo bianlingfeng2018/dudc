@@ -85,24 +85,18 @@ public class DefaultConf {
   public static String predictArgs = "--ep_range 100_99";
 
 
-
-
   public static String getConfStr() {
     String s = String.format(
-        "UseSample=%s,"
-            + "\nMaxDiscoveryRound=%s, MaxCellQuestionBudget=%s, MaxTupleQuestionBudget=%s, MaxDCQuestionBudget=%s, QuestionsConf=[%s;%s;%s]"
+        "UseSample=%s, MaxDiscoveryRound=%s, MaxCellQuestionBudget=%s, MaxTupleQuestionBudget=%s, MaxDCQuestionBudget=%s, QuestionsConf=[%s;%s;%s]"
             + "\nMinTopKOfCluster=%s, MinNumInCluster=%s, TopKOfCluster=%s, MaxInCluster=%s, AddCounterExampleS=%s, RandomClusterS=%s"
-            + "\nDefaultErrorThreshold=%s, DynamicG1=%s, TopK=%s, "
+            + "\nDefaultErrorThreshold=%s, DynamicG1=%s, DecreaseFactor=%s, TopK=%s, "
             + "\nRepairExcluded=%s, TrueDCConfThreshold=%s, CellQStrategy=%s, TupleQStrategy=%s, DCsQStrategy=%s"
-            + "\nDelta=%s, MinLenOfDC=%s, SuccinctFactor=%s\n",
-        useSample,
-        maxDiscoveryRound, maxCellQuestionBudget, maxTupleQuestionBudget, maxDCQuestionBudget,
-        questionsConf[0], questionsConf[1], questionsConf[2],
-        minTopKOfCluster, minNumInCluster, topKOfCluster, numInCluster, addCounterExampleS,
-        randomClusterS,
-        defaultErrorThreshold, dynamicG1, topK,
-        repairErrors, trueDCConfThreshold, defCellQStrategy, defTupleQStrategy, defDCQStrategy,
-        delta, minLenOfDC, succinctFactor);
+            + "\nDelta=%s, MinLenOfDC=%s, SuccinctFactor=%s\n", useSample, maxDiscoveryRound,
+        maxCellQuestionBudget, maxTupleQuestionBudget, maxDCQuestionBudget, questionsConf[0],
+        questionsConf[1], questionsConf[2], minTopKOfCluster, minNumInCluster, topKOfCluster,
+        numInCluster, addCounterExampleS, randomClusterS, defaultErrorThreshold, dynamicG1,
+        decreaseFactor, topK, repairErrors, trueDCConfThreshold, defCellQStrategy,
+        defTupleQStrategy, defDCQStrategy, delta, minLenOfDC, succinctFactor);
     return s;
   }
 }

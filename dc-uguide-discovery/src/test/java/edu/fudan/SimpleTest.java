@@ -64,4 +64,14 @@ public class SimpleTest {
       log.debug("next: {}", next);
     }
   }
+
+  @Test
+  public void testSplit2() {
+//    String line = "a,,b";
+    String line = "a,b,";
+//    String[] split = line.split(",");
+    String[] split = line.split(",", -1);
+    log.debug("{}", split[2]);
+    log.debug("split: {}", split.length);
+  }
 }
