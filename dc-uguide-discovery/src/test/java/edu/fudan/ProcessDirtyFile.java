@@ -14,8 +14,11 @@ public class ProcessDirtyFile {
 
   public static void main(String[] args) {
 //    String originFile = "D:\\MyFile\\gitee\\dc_miner\\data\\preprocessed_data\\preprocessed_stock_dirty.csv";
-    String originFile = "D:\\MyFile\\gitee\\dc_miner\\data\\preprocessed_data\\preprocessed_stock_changes.csv";
-    String tmpFile = "D:\\MyFile\\gitee\\dc_miner\\data\\preprocessed_data\\preprocessed_stock_tmp.csv";
+//    String originFile = "D:\\MyFile\\gitee\\dc_miner\\data\\preprocessed_data\\preprocessed_stock_changes.csv";
+//    String tmpFile = "D:\\MyFile\\gitee\\dc_miner\\data\\preprocessed_data\\preprocessed_stock_tmp.csv";
+//    String originFile = "D:\\MyFile\\gitee\\dc_miner\\data\\preprocessed_data\\preprocessed_tax_changes.csv";
+    String originFile = "D:\\MyFile\\gitee\\dc_miner\\data\\preprocessed_data\\preprocessed_tax_dirty.csv";
+    String tmpFile = "D:\\MyFile\\gitee\\dc_miner\\data\\preprocessed_data\\preprocessed_tax_tmp.csv";
     try {
       // 读取原文件
       File inputFile = new File(originFile);

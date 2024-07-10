@@ -80,6 +80,14 @@ public class G1Util {
 //        log.debug("All neg predicates, skip...");
         continue;
       }
+//      if (hasNeg(predicates)) {  // 有不等谓词，计算较慢
+//        log.debug("Has unequal predicates, skip...");
+//        continue;
+//      }
+//      if (hasNoEqual(predicates)) {  // 没有相等谓词，计算较慢
+//        log.debug("Has no equal predicates, skip...");
+//        continue;
+//      }
 
       // SubDC
       PredicateBitSet ps = new PredicateBitSet();
@@ -133,6 +141,26 @@ public class G1Util {
     for (Predicate predicate : predicates) {
       Operator op = predicate.getOperator();
       if (op != Operator.UNEQUAL) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean hasNeg(List<Predicate> predicates) {
+    for (Predicate predicate : predicates) {
+      Operator op = predicate.getOperator();
+      if (op == Operator.UNEQUAL) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean hasNoEqual(List<Predicate> predicates) {
+    for (Predicate predicate : predicates) {
+      Operator op = predicate.getOperator();
+      if (op == Operator.EQUAL) {
         return false;
       }
     }

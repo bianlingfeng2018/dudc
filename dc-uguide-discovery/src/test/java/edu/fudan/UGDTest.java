@@ -82,7 +82,7 @@ public class UGDTest {
 
   @Before
   public void setUp() throws Exception {
-    int dsIndex = Arrays.asList(dsNames).indexOf("airport");
+    int dsIndex = Arrays.asList(dsNames).indexOf("hospital");
     params = UGDRunner.buildParams(dsIndex);
   }
 
@@ -476,9 +476,10 @@ public class UGDTest {
    */
   @Test
   public void testBaseLine() {
-    String out = baseDir + "/baseline_stock.csv";
+//    String out = baseDir + "/baseline_stock.csv";
+    String out = baseDir + "/baseline_hospital.csv";
     // 发现全部规则
-    double g1 = 1E-06;
+    double g1 = 5E-6;
     int dcBudget = maxDCQuestionBudget;
     int round = maxDiscoveryRound;
     BasicDCGenerator generator = new BasicDCGenerator(params.dirtyDataPath, params.fullDCsPath,
@@ -495,6 +496,7 @@ public class UGDTest {
       List<DenialConstraint> kDCs = dcList.subList(0, Math.min(k, dcList.size()));
       int currK = kDCs.size();
       if (currK == lastK) {
+        log.debug("No more dcs, just break!!!");
         break;
       }
       lastK = currK;

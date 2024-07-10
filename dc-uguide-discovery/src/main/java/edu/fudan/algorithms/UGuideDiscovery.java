@@ -60,6 +60,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -152,7 +153,7 @@ public class UGuideDiscovery {
         // 没有更多DC了，在动态g1的设定下，且真规则还未找全，才考虑变化g1
         log.debug("NoMoreDiscDCs, decrease g1 and continue!!!");
 //          evaluation.decreaseG1(decreaseFactor);  // 已经在evaluate中自动判断candiDC未变从而减小g1
-        evaluation.evaluate();
+        evaluate();
         persistResult();
         // 更新g1后继续循环
         this.noMoreDiscDCs = false;
@@ -369,8 +370,11 @@ public class UGuideDiscovery {
         evaluation.getCurrDCs()).detect();
     Set<DCViolation> violations = vios.getViosSet();
     log.info("Violations = {}", violations.size());
+    // TODO: 这里设定冲突数量上线，以节省后续提问时间
+    List<DCViolation> subList = new ArrayList<>(violations).subList(0,
+        Math.min(violations.size(), 100000));
 
-    evaluation.update(null, null, null, violations, null, null, null);
+    evaluation.update(null, null, null, new HashSet<>(subList), null, null, null);
   }
 
   private void discoveryDCs() {

@@ -280,6 +280,14 @@ public class Evaluation {
       // TODO: DCQ可以逐步排除假规则
       for (DenialConstraint falseDC : falseDCs) {
         this.candidateDCs.remove(falseDC);
+        // TODO: 加强版的排除假规则，即可以推断出假规则的规则也要排除
+        for (DenialConstraint candiDC : candidateDCs) {
+          NTreeSearch tmpTree = new NTreeSearch();
+          tmpTree.add(PredicateSetFactory.create(candiDC.getPredicateSet()).getBitset());
+          if (falseDC.isImpliedBy(tmpTree)) {
+            candidateDCs.remove(candiDC);
+          }
+        }
       }
     }
     if (excludedLines != null) {
