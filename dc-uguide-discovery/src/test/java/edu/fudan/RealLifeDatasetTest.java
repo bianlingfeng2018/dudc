@@ -19,8 +19,8 @@ public class RealLifeDatasetTest {
 
   @Test
   public void testGenerateChanges() {
-    String cleanPath = "../data/rayyan/clean.csv";
-    String dirtyPath = "../data/rayyan/dirty.csv";
+    String cleanPath = "../data/rayyan/preprocessed_rayyan.csv";
+    String dirtyPath = "../data/rayyan/preprocessed_rayyan_dirty.csv";
     String outPath = "../data/rayyan/preprocessed_rayyan_changes.csv";
 //    String cleanPath = "../data/flights/clean.csv";
 //    String dirtyPath = "../data/flights/dirty.csv";

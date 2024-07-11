@@ -247,8 +247,9 @@ public class UGDSimpleTest {
   @Test
   public void testDCMinimize() {
     // 测试准备注入错误的20条DCs已经是最小化的、没有重复的。
-    String dcsPath = "../data/dcs_hospital_ground_inject_error_20.out";
-    List<DenialConstraint> dcs = DCLoader.load(params.headerPath, dcsPath, new HashSet<>());
+    String dcsPath = "D:\\paper\\dc_user_guided_detection\\experiment\\data\\DS1_Hospital\\dcs_hospital 扩展性5~25条规则.txt";
+    String headerPath = "D:\\paper\\dc_user_guided_detection\\experiment\\data\\DS1_Hospital\\preprocessed_hospital_header.csv";
+    List<DenialConstraint> dcs = DCLoader.load(headerPath, dcsPath, new HashSet<>());
     de.hpi.naumann.dc.denialcontraints.DenialConstraintSet set = new de.hpi.naumann.dc.denialcontraints.DenialConstraintSet();
     for (DenialConstraint dc : dcs) {
       set.add(dc);

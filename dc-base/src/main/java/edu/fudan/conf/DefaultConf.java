@@ -67,7 +67,7 @@ public class DefaultConf {
   public static int maxTupleQuestionBudget = 100;
   public static TupleQStrategy defTupleQStrategy = TupleQStrategy.VIOLATIONS_PRIOR;
   // DCsQ
-  public static int maxDCQuestionBudget = 5;
+  public static int maxDCQuestionBudget = 10;
   public static int minLenOfDC = 2;
   public static double succinctFactor = 0.5;
   public static DCQStrategy defDCQStrategy = DCQStrategy.SUC_COR_VIOS;

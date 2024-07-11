@@ -4,7 +4,7 @@ public class GlobalConf {
   /**
    * All datasets used in this experiment.
    */
-  public static String[] dsNames = {"hospital", "stock", "tax", "flights", "hospital2", "beers", "rayyan", "airport"};
+  public static String[] dsNames = {"hospital", "stock", "tax", "flights", "hospital2", "beers", "rayyan", "airport", "movie"};
   /**
    * The base directory.
    */

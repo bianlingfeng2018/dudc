@@ -147,8 +147,11 @@ public class UGuideDiscovery {
           break;
         }
         if (evaluation.allTrueViolationsFound()) {
-          log.debug("NoMoreDiscDCs and allTrueViolationsFound, just break!!!");
-          break;
+          if (evaluation.noFalseViolations()) {
+            log.debug("NoMoreDiscDCs, allTrueViolationsFound and noFalseViolations, just break!!!");
+            break;
+          }
+          log.debug("NoMoreDiscDCs and allTrueViolationsFound!!!");
         }
         // 没有更多DC了，在动态g1的设定下，且真规则还未找全，才考虑变化g1
         log.debug("NoMoreDiscDCs, decrease g1 and continue!!!");

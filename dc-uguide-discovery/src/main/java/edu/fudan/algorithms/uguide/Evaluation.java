@@ -281,11 +281,13 @@ public class Evaluation {
       for (DenialConstraint falseDC : falseDCs) {
         this.candidateDCs.remove(falseDC);
         // TODO: 加强版的排除假规则，即可以推断出假规则的规则也要排除
-        for (DenialConstraint candiDC : candidateDCs) {
+        Iterator<DenialConstraint> it = candidateDCs.iterator();
+        while (it.hasNext()) {
+          DenialConstraint next = it.next();
           NTreeSearch tmpTree = new NTreeSearch();
-          tmpTree.add(PredicateSetFactory.create(candiDC.getPredicateSet()).getBitset());
+          tmpTree.add(PredicateSetFactory.create(next.getPredicateSet()).getBitset());
           if (falseDC.isImpliedBy(tmpTree)) {
-            candidateDCs.remove(candiDC);
+            it.remove();
           }
         }
       }
