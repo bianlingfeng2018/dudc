@@ -255,10 +255,9 @@ public class CellQuestionV2 {
         falseVios.size(), trueVios.size(), chosenFromCellList.size(), chosenFromPendingList.size());
     // 打印找到的falseDC和带置信度的DC
     log.debug("Found falseDCs:{}", falseDCs.size());
-    for (DenialConstraint falseDC : falseDCs) {
-      log.debug("{}", DCFormatUtil.convertDC2String(falseDC));
-    }
-    log.debug("Found possible trueDCs:");
+//    for (DenialConstraint falseDC : falseDCs) {
+//      log.debug("{}", DCFormatUtil.convertDC2String(falseDC));
+//    }
     for (Entry<DenialConstraint, Double> e : dcWeightMap.entrySet()) {
       DenialConstraint dc = e.getKey();
       Double conf = e.getValue();
@@ -268,16 +267,12 @@ public class CellQuestionV2 {
 //      possibleTrueDCs.add(dc);
       // 置信度高的加入真DC
       if (conf >= trueDCConfThreshold) {
-        log.debug("{} -> {}(Conf > {}, added to possible trueDCs)", DCFormatUtil.convertDC2String(dc), conf,
-            trueDCConfThreshold);
+//        log.debug("{} -> {}(Conf > {}, added to possible trueDCs)", DCFormatUtil.convertDC2String(dc), conf,
+//            trueDCConfThreshold);
         possibleTrueDCs.add(dc);
       }
-//      else {
-//        // 置信度低的先待定
-//        log.debug("{} -> {}(Added to falseDCs)", DCFormatUtil.convertDC2String(dc), conf);
-//        falseDCs.add(dc);
-//      }
     }
+    log.debug("Found possible trueDCs: {}", possibleTrueDCs.size());
     // TODO: TrueDC如果也去掉其冲突元组的10%，那就和DCsQ一模一样了。暂时只去掉直接判断过的trueVio
 //    Set<Integer> excludedLines = Sets.newHashSet();
 //    for (DCViolation vio : trueVios) {
@@ -351,9 +346,9 @@ public class CellQuestionV2 {
       }
     }
     log.debug("Printing falseDCs: {}", falseDCs.size());
-    for (DenialConstraint falseDC : falseDCs) {
-      log.debug(" {}", DCFormatUtil.convertDC2String(falseDC));
-    }
+//    for (DenialConstraint falseDC : falseDCs) {
+//      log.debug(" {}", DCFormatUtil.convertDC2String(falseDC));
+//    }
     return falseDCs.size();
   }
 

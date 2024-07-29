@@ -1,9 +1,5 @@
 package edu.fudan;
 
-import static edu.fudan.utils.FileUtil.generateNewCopy;
-
-import de.hpi.naumann.dc.input.Input;
-import de.hpi.naumann.dc.input.ParsedColumn;
 import de.metanome.algorithm_integration.input.InputGenerationException;
 import de.metanome.algorithm_integration.input.InputIterationException;
 import de.metanome.algorithm_integration.input.RelationalInput;
@@ -11,6 +7,7 @@ import de.metanome.backend.input.file.DefaultFileInputGenerator;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.junit.Test;
@@ -73,5 +70,36 @@ public class SimpleTest {
     String[] split = line.split(",", -1);
     log.debug("{}", split[2]);
     log.debug("split: {}", split.length);
+  }
+
+  public static String doubleToString(double number) {
+    String str = Double.toString(number);
+    if (str.endsWith(".0")) {
+      str = str.substring(0, str.length() - 2); // 去掉末尾的".0"
+    }
+    return str;
+  }
+
+  @Test
+  public void testToString() {
+    Double a = new Double(-10);
+    String b = doubleToString(a);
+    log.debug("a = {}", b);
+
+  }
+
+  @Test
+  public void testShuffle() {
+    ArrayList<String> list = new ArrayList<>();
+    list.add("a");
+    list.add("b");
+    list.add("c");
+    list.add("d");
+    list.add("e");
+
+    log.debug("list: {}", list);
+    Collections.shuffle(list);
+    log.debug("list: {}", list);
+
   }
 }

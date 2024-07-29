@@ -31,7 +31,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -342,11 +341,19 @@ public class DCUtil {
    * Print dc-violations map.
    *
    * @param violationSet All violations
+   * @param dcs
    */
-  public static void printDCVioMap(DCViolationSet violationSet) {
-    log.debug("Violations size = {}, print dc-violations map:", violationSet.size());
+  public static void printDCVioMap(DCViolationSet violationSet, List<DenialConstraint> dcs) {
+    log.debug("Violations = {}, dcs = {}, print dc-violations map:", violationSet.size(),
+        dcs.size());
     Set<DCViolation> vioSet = violationSet.getViosSet();
+    if (vioSet.size() == 0) {
+      return;
+    }
     Map<DenialConstraint, Integer> map = new HashMap<>();
+    for (DenialConstraint dc : dcs) {
+      map.put(dc, 0);
+    }
     for (DCViolation vio : vioSet) {
       DenialConstraint dc = vio.getDenialConstraintsNoData().get(0);
       if (map.containsKey(dc)) {
@@ -356,10 +363,12 @@ public class DCUtil {
         map.put(dc, 1);
       }
     }
+    int count = 0;
     for (DenialConstraint dc : map.keySet()) {
+      count++;
       String s = DCFormatUtil.convertDC2String(dc);
       Integer i = map.get(dc);
-      log.debug("{}->{}", s, i);
+      log.debug("({}){}->{}", count, s, i);
     }
   }
 }

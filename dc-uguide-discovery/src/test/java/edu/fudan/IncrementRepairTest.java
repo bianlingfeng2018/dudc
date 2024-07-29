@@ -5,9 +5,11 @@ import static edu.fudan.utils.DCUtil.printDCVioMap;
 
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import edu.fudan.algorithms.BasicDCGenerator;
+import edu.fudan.algorithms.DCLoader;
 import edu.fudan.algorithms.DCViolationSet;
 import edu.fudan.algorithms.HydraDetector;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
@@ -43,11 +45,12 @@ public class IncrementRepairTest {
     log.debug("datasetPath={}", dataPath);
     log.debug("headerPath={}", headerPath);
     log.debug("dcPath={}", dcTransPath);
-    HydraDetector detector = new HydraDetector(dataPath, dcTransPath, headerPath);
+    List<DenialConstraint> loadedDCs = DCLoader.load(headerPath, dcTransPath);
+    HydraDetector detector = new HydraDetector(dataPath, new HashSet<>(loadedDCs));
     DCViolationSet violationSet = detector.detect();
     log.info("violationSet={}", violationSet.size());
 
-    printDCVioMap(violationSet);
+    printDCVioMap(violationSet, loadedDCs);
   }
 
 

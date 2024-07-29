@@ -3,12 +3,9 @@ package edu.fudan;
 import static edu.fudan.conf.DefaultConf.predictArgs;
 import static edu.fudan.conf.DefaultConf.sharedArgs;
 import static edu.fudan.conf.DefaultConf.trainArgs;
-import static edu.fudan.utils.DCUtil.getCellsOfChanges;
-import static edu.fudan.utils.DCUtil.getCellsOfViolations;
 import static edu.fudan.utils.DCUtil.loadChanges;
 import static edu.fudan.utils.DCUtil.loadDirtyDataExcludedLines;
 import static edu.fudan.utils.DCUtil.printDCVioMap;
-import static edu.fudan.utils.FileUtil.generateNewCopy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -16,7 +13,6 @@ import ch.javasoft.bitset.search.NTreeSearch;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
-import de.hpi.naumann.dc.input.Input;
 import de.hpi.naumann.dc.paritions.LinePair;
 import de.hpi.naumann.dc.predicates.sets.PredicateSetFactory;
 import de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraintSet;
@@ -27,7 +23,6 @@ import edu.fudan.algorithms.DiscoveryEntry;
 import edu.fudan.algorithms.HydraDetector;
 import edu.fudan.algorithms.PythonCaller;
 import edu.fudan.algorithms.RLDCGenerator;
-import edu.fudan.algorithms.uguide.TCell;
 import edu.fudan.algorithms.uguide.TChange;
 import edu.fudan.transformat.DCFormatUtil;
 import edu.fudan.utils.DCUtil;
@@ -35,7 +30,6 @@ import edu.fudan.utils.UGDParams;
 import edu.fudan.utils.UGDRunner;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -133,18 +127,6 @@ public class UGDSimpleTest {
     log.debug("DCs before minimize = {}", set.size());
     set.minimize();
     log.debug("DCs after minimize =  {}", set.size());
-  }
-
-  /**
-   * Test no violations on clean dataset.
-   */
-  @Test
-  public void testNoViosOnCleanDS() {
-    HydraDetector detector = new HydraDetector(params.cleanDataPath, params.fullDCsPath,
-        params.headerPath);
-    DCViolationSet vios = detector.detect();
-    log.info("Vios = {}", vios.size());
-    printDCVioMap(vios);
   }
 
   /**

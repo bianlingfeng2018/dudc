@@ -61,6 +61,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -374,8 +375,10 @@ public class UGuideDiscovery {
     Set<DCViolation> violations = vios.getViosSet();
     log.info("Violations = {}", violations.size());
     // TODO: 这里设定冲突数量上线，以节省后续提问时间
-    List<DCViolation> subList = new ArrayList<>(violations).subList(0,
-        Math.min(violations.size(), 100000));
+    ArrayList<DCViolation> list = new ArrayList<>(violations);
+    Collections.shuffle(list);
+    List<DCViolation> subList = list.subList(0,
+        Math.min(violations.size(), 10000));
 
     evaluation.update(null, null, null, new HashSet<>(subList), null, null, null);
   }

@@ -10,6 +10,7 @@ import edu.fudan.utils.DCUtil;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -44,20 +45,68 @@ public class BasicDCGenerator implements DCGenerator {
     this.topK = topK;
   }
 
+//  @Override
+//  public Set<DenialConstraint> generateDCs() {
+//    try {
+//      DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(this.inputDataPath,
+//          this.errorThreshold, this.evidencePath);
+//      List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint> dcList = getSortedDCs(
+//          dcs);
+//      log.info("Result size: " + dcList.size());
+//
+//      log.debug("Saving DCs into: " + this.fullDCsPath);
+//      persistDCFinderDCs(dcList, this.fullDCsPath);
+//    } catch (IOException e) {
+//      throw new RuntimeException(e);
+//    }
+//    // 取前k个规则
+//    // TODO: 删除特别长的规则，否则检测冲突的时间会很长
+//    List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(this.topK, this.fullDCsPath,
+//        this.headerPath, this.excludeDCs, maxDCLen);
+//    if (topKDCsPath != null) {
+//      DCUtil.persistTopKDCs(topKDCs, this.topKDCsPath);
+//    }
+//    return new HashSet<>(topKDCs);
+//  }
+
   @Override
   public Set<DenialConstraint> generateDCs() {
-    try {
-      DenialConstraintSet dcs = DiscoveryEntry.discoveryDCsDCFinder(this.inputDataPath,
-          this.errorThreshold, this.evidencePath);
-      List<de.metanome.algorithms.dcfinder.denialconstraints.DenialConstraint> dcList = getSortedDCs(
-          dcs);
-      log.info("Result size: " + dcList.size());
+    // Call DCFinder to discover all dcs.
+//    String[] args = new String[]{this.inputDataPath, "-t", String.valueOf(this.errorThreshold),
+//        "-o", this.fullDCsPath};
+//    int exitCode = new CommandLine(new DCFinderMocker()).execute(args);
+//    log.debug("Discovery DCs (by DCFinder) exit code: {}", exitCode);
 
-      log.debug("Saving DCs into: " + this.fullDCsPath);
-      persistDCFinderDCs(dcList, this.fullDCsPath);
+    // 创建 ProcessBuilder 实例并传入命令及参数
+    String[] args = new String[]{this.inputDataPath, "-t", String.valueOf(this.errorThreshold),
+        "-o", this.fullDCsPath};
+    try {
+      // 构造命令
+      String command =
+          "java -jar D:/MyFile/IdeaProjects/dc_miner_tools/libs/dc-discovery-1.0-SNAPSHOT-jar-with-dependencies.jar "
+              + String.join(" ", args);
+      log.debug("command: {}", command);
+
+      // 使用 Runtime 执行命令
+      Process process = Runtime.getRuntime().exec(command);
+
+      // 获取进程的输入流（输出）
+      InputStream inputStream = process.getInputStream();
+      int exitCode = process.waitFor();
+      System.out.println("命令执行完成，退出码: " + exitCode);
+
+      // 打印命令输出
+      int n;
+      while ((n = inputStream.read()) != -1) {
+        System.out.print((char) n);
+      }
+
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      e.printStackTrace();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
     }
+
     // 取前k个规则
     // TODO: 删除特别长的规则，否则检测冲突的时间会很长
     List<DenialConstraint> topKDCs = DCUtil.generateTopKDCs(this.topK, this.fullDCsPath,

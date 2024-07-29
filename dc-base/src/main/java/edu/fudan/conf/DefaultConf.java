@@ -46,7 +46,7 @@ public class DefaultConf {
   public static boolean useSample = false;
   // ADC
   public static int maxDCLen = 4;
-  public static double defaultErrorThreshold = 0.001;
+  public static double defaultErrorThreshold = 5E-5;
   public static boolean dynamicG1 = true;
   public static boolean calG1Snapshot = false;
   // 0.87是0.001~0.0001分成50次降低得来的
@@ -89,13 +89,13 @@ public class DefaultConf {
     String s = String.format(
         "UseSample=%s, MaxDiscoveryRound=%s, MaxCellQuestionBudget=%s, MaxTupleQuestionBudget=%s, MaxDCQuestionBudget=%s, QuestionsConf=[%s;%s;%s]"
             + "\nMinTopKOfCluster=%s, MinNumInCluster=%s, TopKOfCluster=%s, MaxInCluster=%s, AddCounterExampleS=%s, RandomClusterS=%s"
-            + "\nDefaultErrorThreshold=%s, DynamicG1=%s, DecreaseFactor=%s, TopK=%s, "
+            + "\nMaxDCLen=%s, DefaultErrorThreshold(G1)=%s, DynamicG1=%s, DecreaseFactor=%s, TopK=%s, "
             + "\nRepairExcluded=%s, TrueDCConfThreshold=%s, CellQStrategy=%s, TupleQStrategy=%s, DCsQStrategy=%s"
             + "\nDelta=%s, MinLenOfDC=%s, SuccinctFactor=%s\n", useSample, maxDiscoveryRound,
         maxCellQuestionBudget, maxTupleQuestionBudget, maxDCQuestionBudget, questionsConf[0],
         questionsConf[1], questionsConf[2], minTopKOfCluster, minNumInCluster, topKOfCluster,
-        numInCluster, addCounterExampleS, randomClusterS, defaultErrorThreshold, dynamicG1,
-        decreaseFactor, topK, repairErrors, trueDCConfThreshold, defCellQStrategy,
+        numInCluster, addCounterExampleS, randomClusterS, maxDCLen, defaultErrorThreshold,
+        dynamicG1, decreaseFactor, topK, repairErrors, trueDCConfThreshold, defCellQStrategy,
         defTupleQStrategy, defDCQStrategy, delta, minLenOfDC, succinctFactor);
     return s;
   }

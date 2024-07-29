@@ -43,7 +43,7 @@
          <groupId>de.metanome</groupId>
          <artifactId>backend</artifactId>
          <version>${metanome.version}</version>
-         <scope>provided</scope>
+         <scope>compile</scope>
       </dependency>
       <dependency>
          <groupId>org.mockito</groupId>
