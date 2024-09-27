@@ -5,5 +5,6 @@ package edu.fudan.algorithms.uguide;
  */
 public enum SampleStrategy {
   RANDOM,
-  EFFICIENT
+  EFFICIENT,
+  NONE
 }

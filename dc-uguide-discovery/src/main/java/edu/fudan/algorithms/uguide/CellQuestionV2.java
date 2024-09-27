@@ -84,7 +84,7 @@ public class CellQuestionV2 {
     log.debug("Building index done.");
 
     // Print falseDCs (only for testing!!!).
-    int falseDCsSize = printFalseDCs(vioCellsMap, cellsOfChanges);
+    Set<DenialConstraint> falseDCsGround = printFalseDCs(vioCellsMap, cellsOfChanges);
 
     // The lower the average confidence(w) of the associated DC, the higher the priority.
     // w = 0.0 ~ +infinity
@@ -114,7 +114,7 @@ public class CellQuestionV2 {
         log.debug("Budget used {}/{}", i + 1, budget);
       }
       // When all falseDCs are found, it can end early (only for testing!!!).
-      if (canBreakEarly && falseDCs.size() == falseDCsSize) {
+      if (canBreakEarly && falseDCs.size() == falseDCsGround.size()) {
         break;
       }
       if (cellsList.isEmpty()) {
@@ -327,7 +327,7 @@ public class CellQuestionV2 {
     }
   }
 
-  private int printFalseDCs(Map<DCViolation, Set<TCell>> vioCellsMap, Set<TCell> cellsOfChanges) {
+  private Set<DenialConstraint> printFalseDCs(Map<DCViolation, Set<TCell>> vioCellsMap, Set<TCell> cellsOfChanges) {
     Set<DenialConstraint> falseDCs = Sets.newHashSet();
     for (Entry<DCViolation, Set<TCell>> entry : vioCellsMap.entrySet()) {
       DCViolation vio = entry.getKey();
@@ -349,7 +349,7 @@ public class CellQuestionV2 {
 //    for (DenialConstraint falseDC : falseDCs) {
 //      log.debug(" {}", DCFormatUtil.convertDC2String(falseDC));
 //    }
-    return falseDCs.size();
+    return falseDCs;
   }
 
   private boolean allClean(Set<TCell> cells, Set<TCell> cellsOfChanges) {

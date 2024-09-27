@@ -46,7 +46,7 @@ public class DefaultConf {
   public static boolean useSample = false;
   // ADC
   public static int maxDCLen = 4;
-  public static double defaultErrorThreshold = 5E-5;
+  public static double defaultErrorThreshold = 0.5E-5;
   public static boolean dynamicG1 = true;
   public static boolean calG1Snapshot = false;
   // 0.87是0.001~0.0001分成50次降低得来的
@@ -62,7 +62,7 @@ public class DefaultConf {
   public static double delta = 0.1;
   public static boolean canBreakEarly = false;
   public static double excludeLinePercent = 0.1;
-  public static double trueDCConfThreshold = 0.5;
+  public static double trueDCConfThreshold = 0.9;
   // TupleQ
   public static int maxTupleQuestionBudget = 100;
   public static TupleQStrategy defTupleQStrategy = TupleQStrategy.VIOLATIONS_PRIOR;

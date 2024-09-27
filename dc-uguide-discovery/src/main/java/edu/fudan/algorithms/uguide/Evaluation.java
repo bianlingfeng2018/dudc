@@ -107,6 +107,12 @@ public class Evaluation {
   @Getter
   private final Set<DenialConstraint> candidateDCs = Sets.newHashSet();
 
+//  /**
+//   * Possible true dcs. We think they are true dcs and no need to be checked next rounds.
+//   */
+//  @Getter
+//  private final Set<DenialConstraint> possTrueDCs = Sets.newHashSet();
+
   /**
    * Visited DCs
    */
@@ -324,6 +330,10 @@ public class Evaluation {
     if (dcs != null) {
       this.currDCs.clear();
       this.currDCs.addAll(dcs);
+      // TODO: 合并之前的candiDC，因为在candiDC中可能还有很多falseDC没有被排除
+      this.currDCs.addAll(this.candidateDCs);
+      log.debug("CurrDCs = {} ({}newDiscDCs + {}candiDCs", this.currDCs.size(),
+          dcs.size(), this.candidateDCs.size());
     }
     if (violations != null) {
       this.currVios.clear();
@@ -350,6 +360,7 @@ public class Evaluation {
     if (dynamicG1 && this.lastCandiDCsSize == this.candidateDCs.size()) {
       decreaseG1(decreaseFactor);
     }
+//    decreaseG1(decreaseFactor);
     // g1从大到小的范围内发现的candiDC都当作真DC，兼顾了反例多的(g1可以更松)和反例少(g1需要更严格)的规则
     // g1的本质是：不覆盖错误的元组对，同时也可能不覆盖一些反例
     // 1.当需要反例没覆盖时，发现的规则就是TooGeneral的假规则

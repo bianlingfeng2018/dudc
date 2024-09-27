@@ -72,7 +72,7 @@ public class DCsQuestion {
     Map<DenialConstraint, Double> dcScoreUniformMap = getDCScoreUniformMap(testDCs,
         columnsCorrScoreMap, minLenOfDC, succinctFactor);
     // 综合打分:
-    // 1.简洁性+相关性打分高的在前
+    // 1.简洁性+相关性打分低（更可能是假规则）的在前
     // 2.冲突数量多的在前
     switch (strategy) {
       case SUC_COR_VIOS:

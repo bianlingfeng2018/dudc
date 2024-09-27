@@ -81,7 +81,7 @@ public class UGDTest {
 
   @Before
   public void setUp() throws Exception {
-    int dsIndex = Arrays.asList(dsNames).indexOf("adult");
+    int dsIndex = Arrays.asList(dsNames).indexOf("hospital");
     params = UGDRunner.buildParams(dsIndex);
   }
 
@@ -155,7 +155,7 @@ public class UGDTest {
     // TODO: 目前发现一个BART的BUG:
     //  注入错误后，输出的xxx_dirty.csv中单引号(')变成两个单引号('')，如果出现这种情况，需要手动替换一下。
     CellQStrategy strategy = CellQStrategy.VIO_AND_CONF;
-    int budget = 100;
+    int budget = 1000;
     Set<DCViolation> vios = new HydraDetector(params.dirtyDataPath, params.topKDCsPath,
         params.headerPath).detect().getViosSet();
     Input di = generateNewCopy(params.dirtyDataPath);
@@ -176,10 +176,10 @@ public class UGDTest {
    */
   @Test
   public void testTupleQuestion() {
-    // RANDOM, DCS, VIOLATIONS, DCS_PRIOR, VIOLATIONS_PRIOR
+    // RANDOM_TUPLE, DCS, VIOLATIONS, DCS_PRIOR, VIOLATIONS_PRIOR
     // 0.02, 0.26, 0.715, 0.47, 0.725
-    TupleQStrategy strategy = TupleQStrategy.VIOLATIONS_PRIOR;
-    int budget = 200;
+    TupleQStrategy strategy = TupleQStrategy.RANDOM_TUPLE;
+    int budget = 1000;
     Set<DCViolation> vios = new HydraDetector(params.dirtyDataPath, params.topKDCsPath,
         params.headerPath).detect().getViosSet();
 
@@ -204,8 +204,8 @@ public class UGDTest {
     // 2.关联冲突个数，希望真冲突的个数越多越好
     int minLenOfDC = 2;
     double succinctFactor = 1.0;
-    int budget = 10;
-    DCQStrategy strategy = DCQStrategy.SUC_COR;
+    int budget = 300;
+    DCQStrategy strategy = DCQStrategy.RANDOM_DC;
     Set<DCViolation> vios = new HydraDetector(params.dirtyDataPath, params.topKDCsPath,
         params.headerPath).detect().getViosSet();
 
@@ -460,7 +460,8 @@ public class UGDTest {
    */
   @Test
   public void testUGuide() {
-    String[] args = "-i 9 -r 50 -u REPAIR -s EFFICIENT -a HYDRA -c VIO_AND_CONF -t VIOLATIONS_PRIOR -d SUC_COR_VIOS -g DYNAMIC".split(
+//    String[] args = "-i 0 -r 50 -u REPAIR -s EFFICIENT -a HYDRA -c VIO_AND_CONF -t VIOLATIONS_PRIOR -d SUC_COR_VIOS -g DYNAMIC".split(
+    String[] args = "-i 0 -r 50 -u REPAIR -s EFFICIENT -a HYDRA -c VIO_AND_CONF -t VIOLATIONS_PRIOR -d SUC_COR_VIOS -g DYNAMIC".split(
         " ");
     int exitCode = new CommandLine(new UGDRunner()).execute(args);
     log.debug("ExitCode = {}", exitCode);

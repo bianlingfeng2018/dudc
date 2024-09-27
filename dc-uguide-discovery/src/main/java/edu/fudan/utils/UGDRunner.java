@@ -4,6 +4,7 @@ import static edu.fudan.conf.DefaultConf.defCellQStrategy;
 import static edu.fudan.conf.DefaultConf.defDCQStrategy;
 import static edu.fudan.conf.DefaultConf.defTupleQStrategy;
 import static edu.fudan.conf.DefaultConf.dynamicG1;
+import static edu.fudan.conf.DefaultConf.useSample;
 import static edu.fudan.conf.DefaultConf.maxDiscoveryRound;
 import static edu.fudan.conf.DefaultConf.randomClusterS;
 import static edu.fudan.conf.DefaultConf.repairErrors;
@@ -73,6 +74,7 @@ public class UGDRunner implements Callable<Integer> {
     maxDiscoveryRound = maxRound;
     repairErrors = updateStrategy == UpdateStrategy.REPAIR;
     randomClusterS = sampleStrategy == SampleStrategy.RANDOM;
+    useSample = (sampleStrategy != SampleStrategy.NONE);
     defCellQStrategy = cellQStrategy;
     defTupleQStrategy = tupleQStrategy;
     defDCQStrategy = dcQStrategy;
