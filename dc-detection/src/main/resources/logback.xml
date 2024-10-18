@@ -12,7 +12,7 @@
 
   <appender name="RollingFile"
     class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>${LOGS}/edu.fudan.dc.log</file>
+    <file>${LOGS}/edu.xxx.dc.log</file>
     <encoder>
       <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
     </encoder>
@@ -20,7 +20,7 @@
     <rollingPolicy
       class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
       <!-- rollover daily and when the file reaches 10 MegaBytes -->
-      <fileNamePattern>${LOGS}/archived/edu.fudan.dc-%d{yyyy-MM-dd}.%i.log
+      <fileNamePattern>${LOGS}/archived/edu.xxx.dc-%d{yyyy-MM-dd}.%i.log
       </fileNamePattern>
       <timeBasedFileNamingAndTriggeringPolicy
         class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
@@ -36,7 +36,7 @@
   </root>
 
   <!-- LOG specific package -->
-  <logger name="edu.fudan.algorithms" level="debug" additivity="false">
+  <logger name="edu.xxx.algorithms" level="debug" additivity="false">
     <appender-ref ref="RollingFile"/>
     <appender-ref ref="Console"/>
   </logger>

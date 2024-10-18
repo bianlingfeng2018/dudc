@@ -1,1 +1,1 @@
-mvn install:install-file -Dfile=D:\MyFile\IdeaProjects\dc_miner_tools\libs\discoverDCs.jar -DgroupId=edu.fudan -DartifactId=fcdc -Dversion=1.0 -Dpackaging=jar
+mvn install:install-file -Dfile=D:\MyFile\IdeaProjects\dc_miner_tools\libs\discoverDCs.jar -DgroupId=edu.xxx -DartifactId=fcdc -Dversion=1.0 -Dpackaging=jar
