@@ -2,6 +2,7 @@ package edu.fudan.algorithms.uguide;
 
 import static edu.fudan.algorithms.uguide.Strategy.addToCountMap;
 import static edu.fudan.algorithms.uguide.Strategy.getSortedLines;
+import static edu.fudan.conf.DefaultConf.userProb_tupleq;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -80,13 +81,27 @@ public class TupleQuestion {
     }
     List<Integer> subList = sorted.subList(0, Math.min(budget, sorted.size()));
     // Simulate check error tuples(lines)!!!
-    List<Integer> errorsTuples = subList.stream().filter(errorLinesOfChanges::contains)
+    List<Integer> errorsTuples = subList.stream().filter(l -> isError(l))
         .collect(Collectors.toList());
     long errorFound = errorsTuples.size();
     errorRate = (double) errorFound / subList.size();
     log.debug("ErrorFound={}, Budget={}, ErrorRate={}", errorFound, budget, errorRate);
 
     return new TupleQuestionResult(errorsTuples, subList.size(), errorRate);
+  }
+
+  private boolean isError(Integer l) {
+//    return errorLinesOfChanges.contains(l);
+    // TODO:用户判断正确率
+    double r = Math.random();  // 生成0到1之间的随机数
+
+    if (r < userProb_tupleq) {
+      // 60%的概率进入逻辑A
+      return errorLinesOfChanges.contains(l);
+    } else {
+      // 40%的概率进入逻辑B
+      return !errorLinesOfChanges.contains(l);
+    }
   }
 
 }

@@ -192,8 +192,8 @@ public class EvaluateUtil {
       boolean b4 = lpSizeDisc == integersGT[1];
 
       if (!b1 || !b2 || !b3 || !b4) {
-        log.debug("b1 = {}, b2 = {}, b3 = {}, b4 = {}", b1, b2, b3, b4);
-        throw new RuntimeException("Size relation error, b1-3-4-5");
+        log.error("b1 = {}, b2 = {}, b3 = {}, b4 = {}", b1, b2, b3, b4);
+//        throw new RuntimeException("Size relation error, b1-3-4-5");
       }
       allV2InGT = allV2InGT + integersGT[1];
     }

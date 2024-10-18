@@ -8,6 +8,7 @@ public class UGDParams {
   public String cleanDataPath;
   public String dirtyDataPath;
   public String dirtyDataUnrepairedPath;
+  public String affectedPath;
   public String excludedLinesPath;
   public String sampledDataPath;
   public String fullDCsPath;

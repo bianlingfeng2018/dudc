@@ -1,5 +1,6 @@
 package edu.fudan.algorithms.uguide;
 
+import static edu.fudan.conf.DefaultConf.userProb_dcq;
 import static edu.fudan.utils.CorrelationUtil.getDCScoreUniformMap;
 
 import ch.javasoft.bitset.search.NTreeSearch;
@@ -132,7 +133,17 @@ public class DCsQuestion {
   }
 
   private boolean isTrueDC(DenialConstraint dc, NTreeSearch gtTree) {
-    return dc.isImpliedBy(gtTree);
+//    return dc.isImpliedBy(gtTree);
+    // TODO:用户判断正确率
+    double r = Math.random();  // 生成0到1之间的随机数
+
+    if (r < userProb_dcq) {
+      // 60%的概率进入逻辑A
+      return dc.isImpliedBy(gtTree);
+    } else {
+      // 40%的概率进入逻辑B
+      return !dc.isImpliedBy(gtTree);
+    }
   }
 
 }

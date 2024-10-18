@@ -45,6 +45,9 @@ public class HydraDetector {
   private final Set<DenialConstraint> dcsNoData;
   private final Boolean noCrossColumn = Boolean.TRUE;
   private final double minimumSharedValue = 0.30d;
+  // 是否用第一列的ID属性替换linePair的行号 ID = 行号 + 1
+  private boolean replaceLineWithID = false;
+
   /**
    * 采样次数
    * TODO: 当数据集很小时，如果报错，可以将 sampleRounds 设为 1
@@ -59,6 +62,11 @@ public class HydraDetector {
   public HydraDetector(String dataPath, Set<DenialConstraint> dcsNoData) {
     this.dataPath = dataPath;
     this.dcsNoData = dcsNoData;
+  }
+
+  public DCViolationSet detect(boolean replaceLineWithID) {
+    this.replaceLineWithID = replaceLineWithID;
+    return detect();
   }
 
   public DCViolationSet detect() {
@@ -126,9 +134,18 @@ public class HydraDetector {
           // 构建冲突集合
           for (Iterator<LinePair> it = clusterPair.getLinePairIterator(); it.hasNext(); ) {
             LinePair linePair = it.next();
+            // 用id列编号-1来获取原来数据集中的行号（如果不增删和改变原来数据集的顺序，则直接用行号即可）
             if (linePair.getLine1() != linePair.getLine2()) {
-              DCViolation vio = new DCViolation(dcsNoData, currentDCs, linePair);
-              violationSet.add(vio);
+              if (replaceLineWithID) {
+                int id1 = Integer.parseInt((String) input.getColumns()[0].getValue(linePair.getLine1())) - 1;
+                int id2 = Integer.parseInt((String) input.getColumns()[0].getValue(linePair.getLine2())) - 1;
+                LinePair lp = new LinePair(id1, id2);
+                DCViolation vio = new DCViolation(dcsNoData, currentDCs, lp);
+                violationSet.add(vio);
+              } else {
+                DCViolation vio = new DCViolation(dcsNoData, currentDCs, linePair);
+                violationSet.add(vio);
+              }
             }
           }
         } else {

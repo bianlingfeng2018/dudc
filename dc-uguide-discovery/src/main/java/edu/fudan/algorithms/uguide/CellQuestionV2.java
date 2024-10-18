@@ -1,6 +1,7 @@
 package edu.fudan.algorithms.uguide;
 
 import static edu.fudan.conf.DefaultConf.trueDCConfThreshold;
+import static edu.fudan.conf.DefaultConf.userProb_cellq;
 import static edu.fudan.utils.DCUtil.getCellsOfViolation;
 
 import com.google.common.collect.Maps;
@@ -9,7 +10,6 @@ import de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import de.hpi.naumann.dc.input.Input;
 import de.hpi.naumann.dc.paritions.LinePair;
 import edu.fudan.algorithms.DCViolation;
-import edu.fudan.transformat.DCFormatUtil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -148,7 +148,7 @@ public class CellQuestionV2 {
       Set<TCell> allCellsOfVios = getAllCellsOfVios(viosOfSelectedCell, vioCellsMap);
       // 判断选择的cell
       // Simulate checking if a cell is erroneous!!!
-      if (cellsOfChanges.contains(selCell)) {
+      if (isErrorCell(selCell)) {
         // 真错误
         dirtyCells.add(selCell);
         // 真冲突
@@ -271,7 +271,19 @@ public class CellQuestionV2 {
 //            trueDCConfThreshold);
         possibleTrueDCs.add(dc);
       }
+      // 置信度为0，也加入falseDCs
+//      else if (conf == 0){
+//        falseDCs.add(dc);
+//      }
     }
+    log.debug("Found falseDCs (Confidence):{}", falseDCs.size());
+    int falseDCCorrectionSize = 0;
+    for (DenialConstraint dc : falseDCs) {
+      if (falseDCsGround.contains(dc)) {
+        falseDCCorrectionSize++;
+      }
+    }
+    log.debug("Found falseDCs (Correction):{}", falseDCCorrectionSize);
     log.debug("Found possible trueDCs: {}", possibleTrueDCs.size());
     // TODO: TrueDC如果也去掉其冲突元组的10%，那就和DCsQ一模一样了。暂时只去掉直接判断过的trueVio
 //    Set<Integer> excludedLines = Sets.newHashSet();
@@ -285,6 +297,20 @@ public class CellQuestionV2 {
 //    log.debug("RandomExcludedLines = {}, {} of {}", randomExcludedLines.size(), excludeLinePercent,
 //        excludedLines.size());
     return new CellQuestionResult(falseDCs, possibleTrueDCs, falseVios, selectedCells.size());
+  }
+
+  private boolean isErrorCell(TCell selCell) {
+//    return cellsOfChanges.contains(selCell);
+    // TODO:用户判断正确率
+    double r = Math.random();  // 生成0到1之间的随机数
+
+    if (r < userProb_cellq) {
+      // 60%的概率进入逻辑A
+      return cellsOfChanges.contains(selCell);
+    } else {
+      // 40%的概率进入逻辑B
+      return !cellsOfChanges.contains(selCell);
+    }
   }
 
   private void addToDCViosMap(DCViolation vio, DenialConstraint dc,

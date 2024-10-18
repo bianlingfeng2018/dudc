@@ -3,7 +3,15 @@ package edu.fudan.utils;
 import static edu.fudan.conf.DefaultConf.defCellQStrategy;
 import static edu.fudan.conf.DefaultConf.defDCQStrategy;
 import static edu.fudan.conf.DefaultConf.defTupleQStrategy;
+import static edu.fudan.conf.DefaultConf.defaultErrorThreshold;
 import static edu.fudan.conf.DefaultConf.dynamicG1;
+import static edu.fudan.conf.DefaultConf.maxCellQuestionBudget;
+import static edu.fudan.conf.DefaultConf.maxDCLen;
+import static edu.fudan.conf.DefaultConf.maxDCQuestionBudget;
+import static edu.fudan.conf.DefaultConf.maxTupleQuestionBudget;
+import static edu.fudan.conf.DefaultConf.numInCluster;
+import static edu.fudan.conf.DefaultConf.topKOfCluster;
+import static edu.fudan.conf.DefaultConf.topK;
 import static edu.fudan.conf.DefaultConf.useSample;
 import static edu.fudan.conf.DefaultConf.maxDiscoveryRound;
 import static edu.fudan.conf.DefaultConf.randomClusterS;
@@ -66,6 +74,29 @@ public class UGDRunner implements Callable<Integer> {
   @Option(names = {"-g", "--g1"}, description = "G1 used for approximate DC discovery.")
   G1Strategy g1Strategy = G1Strategy.FIXED;
 
+  @Option(names = {"-k", "--cluster"}, description = "Clusters")
+  int clusters = -1;
+
+  @Option(names = {"-n", "--tuple"}, description = "Tuples")
+  int tuples = -1;
+
+  @Option(names = {"-len", "--length"}, description = "length")
+  int length = -1;
+
+  @Option(names = {"-cq", "--cellsq"}, description = "cellsq")
+  int cellsq = -1;
+
+  @Option(names = {"-tq", "--tupleq"}, description = "tupleq")
+  int tupleq = -1;
+
+  @Option(names = {"-dq", "--dcq"}, description = "dcq")
+  int dcq = -1;
+
+  @Option(names = {"-tk", "--top-k"}, description = "Top-k discovered dcs")
+  int tk = -1;
+
+  @Option(names = {"-th", "--threshold"}, description = "threshold")
+  double threshold = -1.0;
 
   @Override
   public Integer call() throws Exception {
@@ -80,6 +111,17 @@ public class UGDRunner implements Callable<Integer> {
     defDCQStrategy = dcQStrategy;
     dynamicG1 = g1Strategy == G1Strategy.DYNAMIC;
 
+    topKOfCluster = clusters;
+    numInCluster = tuples;
+    maxDCLen = length;
+
+    maxCellQuestionBudget = cellsq;
+    maxTupleQuestionBudget = tupleq;
+    maxDCQuestionBudget = dcq;
+
+    topK = tk <= 0 ? Integer.MAX_VALUE : tk;
+    defaultErrorThreshold = threshold;
+
     printArgs();
 
     UGDParams params = buildParams(dataset);
@@ -87,7 +129,7 @@ public class UGDRunner implements Callable<Integer> {
     log.info("The base dir is {}", new File(baseDir).getAbsolutePath());
     log.info("Executing algorithms...");
     UGuideDiscovery ud = new UGuideDiscovery(params.cleanDataPath, params.changesPath,
-        params.dirtyDataPath, params.dirtyDataUnrepairedPath, params.excludedLinesPath,
+        params.dirtyDataPath, params.dirtyDataUnrepairedPath, params.affectedPath, params.excludedLinesPath,
         params.sampledDataPath, params.fullDCsPath, params.dcsPathForDCMiner, params.evidencesPath,
         params.topKDCsPath, params.groundTruthDCsPath, params.candidateDCsPath,
         params.candidateTrueDCsPath, params.excludedDCsPath, params.headerPath,
@@ -106,6 +148,7 @@ public class UGDRunner implements Callable<Integer> {
     params.cleanDataPath = baseDir + "/preprocessed_" + dsName + ".csv";
     params.dirtyDataPath = baseDir + "/preprocessed_" + dsName + "_dirty.csv";
     params.dirtyDataUnrepairedPath = baseDir + "/preprocessed_" + dsName + "_dirty_unrepaired.csv";
+    params.affectedPath = baseDir + "/preprocessed_" + dsName + "_affected.csv";
     params.excludedLinesPath = baseDir + "/preprocessed_" + dsName + "_dirty_excluded.csv";
     params.sampledDataPath = baseDir + "/preprocessed_" + dsName + "_dirty_sample.csv";
     params.groundTruthDCsPath = baseDir + "/dcs_ground_" + dsName + ".txt";

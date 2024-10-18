@@ -107,6 +107,15 @@ public class Evaluation {
   @Getter
   private final Set<DenialConstraint> candidateDCs = Sets.newHashSet();
 
+  @Getter
+  private final Set<DenialConstraint> delDCs = Sets.newHashSet();
+
+  @Getter
+  private final Set<DenialConstraint> addDCs = Sets.newHashSet();
+
+  @Getter
+  private final Set<DenialConstraint> reservedDCs = Sets.newHashSet();
+
 //  /**
 //   * Possible true dcs. We think they are true dcs and no need to be checked next rounds.
 //   */
@@ -125,6 +134,9 @@ public class Evaluation {
    */
   @Getter
   private final Set<DenialConstraint> currDCs = Sets.newHashSet();
+
+  @Getter
+  final private Set<DenialConstraint> lastCurrDCs = Sets.newHashSet();;
   /**
    * Current round violations. Choose violation question from them.
    */
@@ -200,10 +212,14 @@ public class Evaluation {
    * 记录上次candiDC个数
    */
   @Getter
-  private int lastCandiDCsSize = 0;
+  final private Set<DenialConstraint> lastCandiDCs = Sets.newHashSet();;
   @Getter
   private Map<Integer, Map<Integer, String>> lineChangesMap;
   private List<TChange> changes;
+
+  @Setter
+  @Getter
+  private Set<Integer> affectedTuples;
 
   public Evaluation(CleanDS cleanDS, DirtyDS dirtyDS, String groundTruthDCsPath,
       String candidateDCsPath, String trueDCsPath, String visitedDCsPath, String csvResultPath) {
@@ -332,7 +348,7 @@ public class Evaluation {
       this.currDCs.addAll(dcs);
       // TODO: 合并之前的candiDC，因为在candiDC中可能还有很多falseDC没有被排除
       this.currDCs.addAll(this.candidateDCs);
-      log.debug("CurrDCs = {} ({}newDiscDCs + {}candiDCs", this.currDCs.size(),
+      log.debug("CurrDCs = {} ({} newDiscDCs + {} candiDCs)", this.currDCs.size(),
           dcs.size(), this.candidateDCs.size());
     }
     if (violations != null) {
@@ -357,7 +373,7 @@ public class Evaluation {
     EvalResult result = new EvalResult();
     // 当前g1
     result.setCurrG1(this.errorThreshold);
-    if (dynamicG1 && this.lastCandiDCsSize == this.candidateDCs.size()) {
+    if (dynamicG1 && this.lastCandiDCs.size() == this.candidateDCs.size()) {
       decreaseG1(decreaseFactor);
     }
 //    decreaseG1(decreaseFactor);
@@ -366,7 +382,8 @@ public class Evaluation {
     // 1.当需要反例没覆盖时，发现的规则就是TooGeneral的假规则
     // 2.当不覆盖的错误不够时，发现的规则就是TooSpecific的假规则
     // 还有一个吹点，就是容错能力更强，比如一开始设定了一个不太好的g1（偏大的）？
-    this.lastCandiDCsSize = this.candidateDCs.size();
+    this.lastCandiDCs.clear();
+    this.lastCandiDCs.addAll(this.candidateDCs);
     String unrepairedPath = dirtyDS.getDataUnrepairedPath();
     // 真规则
     long t1 = System.currentTimeMillis();
@@ -437,6 +454,34 @@ public class Evaluation {
     result.setDu7(du7);
     this.evalResults.add(result);
     return result;
+  }
+
+  public void updateDCsChange() {
+    this.addDCs.clear();
+    this.delDCs.clear();
+    this.reservedDCs.clear();
+    for (DenialConstraint cur : currDCs) {
+      if (lastCurrDCs.contains(cur)) {
+        // 已经有的DC
+        reservedDCs.add(cur);
+      }
+      else {
+        // 新增的DC
+        addDCs.add(cur);
+      }
+    }
+    for (DenialConstraint last : lastCurrDCs) {
+      if (!reservedDCs.contains(last)) {
+        // 被删除的DC
+        delDCs.add(last);
+      }
+    }
+    log.info("add DC = {}", addDCs.size());
+    log.info("del DC = {}", delDCs.size());
+    log.info("reserved DC = {}", reservedDCs.size());
+
+    lastCurrDCs.clear();
+    lastCurrDCs.addAll(currDCs);
   }
 
   public void decreaseG1(double factor) {

@@ -102,4 +102,10 @@ public class SimpleTest {
     log.debug("list: {}", list);
 
   }
+
+  @Test
+  public void testRandom() {
+    double r = Math.random();
+    System.out.println(r);
+  }
 }

@@ -142,8 +142,16 @@ public class UGDTest {
   @Test
   public void testDetectViolations() {
     List<DenialConstraint> dcs = DCLoader.load(params.headerPath, params.groundTruthDCsPath);
-    DCViolationSet vios = new HydraDetector(params.dirtyDataPath, new HashSet<>(dcs)).detect();
+    DCViolationSet vios = new HydraDetector(params.cleanDataPath, new HashSet<>(dcs)).detect();
     printDCVioMap(vios, dcs);
+    Set<LinePair> pairs = Sets.newHashSet();
+    for (DCViolation v : vios.getViosSet()) {
+      LinePair lp = v.getLinePair();
+      pairs.add(lp);
+    }
+    for (LinePair pair : pairs) {
+      log.debug(pair.toString());
+    }
   }
 
 
@@ -184,6 +192,7 @@ public class UGDTest {
         params.headerPath).detect().getViosSet();
 
     Set<Integer> errorLines = getErrorLinesContainingChanges(loadChanges(params.changesPath));
+    log.debug("ErrorLines = {}", errorLines.size());
     TupleQuestion selector = new TupleQuestion(errorLines, vios, strategy, budget);
     TupleQuestionResult result = selector.simulate();
 
@@ -444,10 +453,10 @@ public class UGDTest {
   @Test
   public void testOneRoundUGuide()
       throws InputGenerationException, InputIterationException, IOException {
-    maxDiscoveryRound = 1;
-    repairErrors = false;
+    maxDiscoveryRound = 5;
+    repairErrors = true;
     UGuideDiscovery ud = new UGuideDiscovery(params.cleanDataPath, params.changesPath,
-        params.dirtyDataPath, params.dirtyDataUnrepairedPath, params.excludedLinesPath,
+        params.dirtyDataPath, params.dirtyDataUnrepairedPath, params.affectedPath, params.excludedLinesPath,
         params.sampledDataPath, params.fullDCsPath, params.dcsPathForDCMiner, params.evidencesPath,
         params.topKDCsPath, params.groundTruthDCsPath, params.candidateDCsPath,
         params.candidateTrueDCsPath, params.excludedDCsPath, params.headerPath,
@@ -461,7 +470,7 @@ public class UGDTest {
   @Test
   public void testUGuide() {
 //    String[] args = "-i 0 -r 50 -u REPAIR -s EFFICIENT -a HYDRA -c VIO_AND_CONF -t VIOLATIONS_PRIOR -d SUC_COR_VIOS -g DYNAMIC".split(
-    String[] args = "-i 0 -r 50 -u REPAIR -s EFFICIENT -a HYDRA -c VIO_AND_CONF -t VIOLATIONS_PRIOR -d SUC_COR_VIOS -g DYNAMIC".split(
+    String[] args = "-i 7 -r 50 -k 5 -n 3 -len 3 -cq 100 -tq 100 -dq 10 -tk 50 -th 0.000001 -u REPAIR -s NONE -a HYDRA -c VIO_AND_CONF -t VIOLATIONS_PRIOR -d SUC_COR_VIOS -g DYNAMIC".split(
         " ");
     int exitCode = new CommandLine(new UGDRunner()).execute(args);
     log.debug("ExitCode = {}", exitCode);

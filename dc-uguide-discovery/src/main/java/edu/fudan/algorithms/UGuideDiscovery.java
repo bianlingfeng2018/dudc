@@ -3,7 +3,6 @@ package edu.fudan.algorithms;
 import static edu.fudan.conf.DefaultConf.addCounterExampleS;
 import static edu.fudan.conf.DefaultConf.canBreakEarly;
 import static edu.fudan.conf.DefaultConf.dcGeneratorConf;
-import static edu.fudan.conf.DefaultConf.decreaseFactor;
 import static edu.fudan.conf.DefaultConf.defCellQStrategy;
 import static edu.fudan.conf.DefaultConf.defDCQStrategy;
 import static edu.fudan.conf.DefaultConf.defTupleQStrategy;
@@ -25,6 +24,7 @@ import static edu.fudan.conf.DefaultConf.topKOfCluster;
 import static edu.fudan.conf.DefaultConf.useSample;
 import static edu.fudan.utils.CorrelationUtil.readColumnCorrScoreMap;
 import static edu.fudan.utils.FileUtil.generateNewCopy;
+import static edu.fudan.utils.FileUtil.getAffectedTuples;
 import static edu.fudan.utils.FileUtil.getRepairedLinesWithHeader;
 
 import ch.javasoft.bitset.search.NTreeSearch;
@@ -49,6 +49,7 @@ import edu.fudan.algorithms.uguide.TCell;
 import edu.fudan.algorithms.uguide.TupleQuestion;
 import edu.fudan.algorithms.uguide.TupleQuestionResult;
 import edu.fudan.transformat.DCFormatUtil;
+import edu.fudan.utils.AffTuplesResult;
 import edu.fudan.utils.CSVWriter;
 import edu.fudan.utils.FileUtil;
 import java.io.BufferedReader;
@@ -63,6 +64,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -95,12 +97,12 @@ public class UGuideDiscovery {
   private final Map<String, Double> columnsCorrScoreMap;
 
   public UGuideDiscovery(String cleanDataPath, String changesPath, String dirtyDataPath,
-      String dirtyDataUnrepairedPath, String excludedLinesPath, String sampledDataPath,
+      String dirtyDataUnrepairedPath, String affectedPath, String excludedLinesPath, String sampledDataPath,
       String fullDCsPath, String dcsPathForDCMiner, String evidencesPath, String topKDCsPath,
       String groundTruthDCsPath, String candidateDCsPath, String trueDCsPath, String visitedDCsPath,
       String headerPath, String csvResultPath, String correlationByUserPath) throws IOException {
     this.cleanDS = new CleanDS(cleanDataPath, headerPath, changesPath);
-    this.dirtyDS = new DirtyDS(dirtyDataPath, dirtyDataUnrepairedPath, excludedLinesPath,
+    this.dirtyDS = new DirtyDS(dirtyDataPath, dirtyDataUnrepairedPath, affectedPath, excludedLinesPath,
         headerPath);
     this.sampleDS = new SampleDS(sampledDataPath, headerPath);
     this.candidateDCs = new CandidateDCs(fullDCsPath, dcsPathForDCMiner, evidencesPath,
@@ -267,8 +269,8 @@ public class UGuideDiscovery {
     Set<DenialConstraint> falseDCs = result.getFalseDCs();
     Set<DenialConstraint> trueDCs = result.getTrueDCs();
     HashSet<DenialConstraint> visitedDCs = new HashSet<>();
-    visitedDCs.addAll(falseDCs);
-    visitedDCs.addAll(trueDCs);
+    visitedDCs.addAll(falseDCs);  // 增量 全量 测试时注释此行
+    visitedDCs.addAll(trueDCs);  // 增量 全量 测试时注释此行
 //    // 排除真DC在脏数据上的冲突元组
 //    Set<Integer> excludedLinesInDCsQ = Sets.newHashSet();
 //    DCViolationSet vios = new HydraDetector(evaluation.getDirtyDS().getDataPath(), trueDCs).detect();
@@ -327,7 +329,7 @@ public class UGuideDiscovery {
     Set<DenialConstraint> falseDCs = result.getFalseDCs();
     Set<DenialConstraint> possibleTrueDCs = result.getPossibleTrueDCs();
     HashSet<DenialConstraint> visitedDCs = new HashSet<>();
-    visitedDCs.addAll(falseDCs);
+    visitedDCs.addAll(falseDCs);  // 增量 全量 测试时注释此行
     // TODO: PossibleTrueDCs并不确定，如果作为visitedDC，可能会降低准确率。
 //    visitedDCs.addAll(possibleTrueDCs);
     // Add counterexample from falseVios.
@@ -370,15 +372,63 @@ public class UGuideDiscovery {
 
   private void detect() {
     log.info("====== 4.Detect violations on dirty data ======");
-    DCViolationSet vios = new HydraDetector(evaluation.getDirtyDS().getDataPath(),
+    // ====================== 全量检测 ======================
+    DCViolationSet vioSet = new HydraDetector(evaluation.getDirtyDS().getDataPath(),
         evaluation.getCurrDCs()).detect();
-    Set<DCViolation> violations = vios.getViosSet();
+    Set<DCViolation> violations = vioSet.getViosSet();
+    // ====================== 全量检测 ======================
+
+    // ====================== 增量检测 ======================
+//    Set<DenialConstraint> addDCs = evaluation.getAddDCs();
+//    Set<DenialConstraint> delDCs = evaluation.getDelDCs();
+//    Set<DenialConstraint> reservedDCs = evaluation.getReservedDCs();
+//    // 1、新增冲突
+//    Set<DCViolation> viosAdd = new HydraDetector(evaluation.getDirtyDS().getDataPath(),
+//        addDCs).detect().getViosSet();
+//    log.debug("AddDCs = {}, ViosAdd = {}", addDCs.size(), viosAdd.size());
+//    // 2、删除冲突（删除了规则的冲突+受影响的元组的冲突）
+//    Set<DCViolation> currVios = evaluation.getCurrVios();
+//    Set<Integer> affTuples = evaluation.getAffectedTuples();
+//    log.debug("CurrVios = {}(before delete)", currVios.size());
+//    log.debug("DelDCs = {}", delDCs.size());
+//    log.debug("AffTuples = {}", affTuples.size());
+//    Iterator<DCViolation> it = currVios.iterator();
+//    while (it.hasNext()) {
+//      DCViolation vio = it.next();
+//      DenialConstraint dc = vio.getDenialConstraintsNoData().get(0);
+//
+//      if (delDCs.contains(dc)) {
+//        // 情况1：删除了的规则的冲突
+//        it.remove();
+//        continue;
+//      }
+//
+//      LinePair lp = vio.getLinePair();
+//      if (affTuples.contains(lp.getLine1()) && affTuples.contains(lp.getLine2())) {
+//        // 情况2：受影响的元组的冲突
+//        it.remove();
+//        continue;
+//      }
+//    }
+//    log.debug("CurrVios = {}(after deleted)", currVios.size());
+//    // 3、更新冲突(replaceLineWithID = true)
+//    log.debug("ReservedDCs = {}", reservedDCs.size());
+//    Set<DCViolation> viosUpdate = new HydraDetector(evaluation.getDirtyDS().getAffectedPath(),
+//        reservedDCs).detect(true).getViosSet();
+//    log.debug("ViosUpdate = {}", viosUpdate.size());
+//
+//    HashSet<DCViolation> violations = new HashSet<>();
+//    violations.addAll(currVios);
+//    violations.addAll(viosAdd);
+//    violations.addAll(viosUpdate);
+    // ====================== 增量检测 ======================
+
     log.info("Violations = {}", violations.size());
     // TODO: 这里设定冲突数量上线，以节省后续提问时间
     ArrayList<DCViolation> list = new ArrayList<>(violations);
     Collections.shuffle(list);
     List<DCViolation> subList = list.subList(0,
-        Math.min(violations.size(), 10000));
+        Math.min(violations.size(), 100000));
 
     evaluation.update(null, null, null, new HashSet<>(subList), null, null, null);
   }
@@ -395,6 +445,11 @@ public class UGuideDiscovery {
 
     // 把新发现的规则作为candiDC
     evaluation.update(dcs, null, null, null, null, null, null);
+
+    // ====================== 增量检测 ======================
+    // 更新 add del reserved DCs
+//    evaluation.updateDCsChange();
+    // ====================== 增量检测 ======================
   }
 
   private void copyAsSample() throws IOException {
@@ -428,13 +483,32 @@ public class UGuideDiscovery {
     Set<Integer> excludedLines = evaluation.getExcludedLines();
     log.debug("====== 1.x SimRepairing excludedLines: {} ====== ", excludedLines.size());
     log.debug("REPAIR = {}", excludedLines);
-
-    // 修复excludedLines
+    // 修复excludedLines，存入dirtyFile
     String dirtyPath = dirtyDS.getDataPath();
     File dirtyFile = new File(dirtyPath);
+
+    // ===================== 增量检测 =====================
+    // 获取affected tuples，存入affectedFile，用于后续增量检测冲突
+//    String affectedPath = dirtyDS.getAffectedPath();
+//    File affFile = new File(affectedPath);
+//    AffTuplesResult result = getAffectedTuples(excludedLines, evaluation.getLineChangesMap(),
+//        dirtyFile);
+//    List<List<String>> affLinesWithHeader = result.getAffLinesWithHeader();
+//    Set<Integer> affTuples = result.getAffTuples();
+//    log.debug("Write affLinesWithHeader to file: {}({} rows including header)", affectedPath,
+//        affLinesWithHeader.size());
+//    FileUtil.writeListLinesToFile(affLinesWithHeader, affFile);
+//    log.debug("AffectedTuples = {}", affTuples.size());
+//    evaluation.setAffectedTuples(affTuples);
+    // ===================== 增量检测 =====================
+
+    if (excludedLines.size() == 0) {
+      return;
+    }
     List<List<String>> repairedLinesWithHeader = getRepairedLinesWithHeader(excludedLines,
         evaluation.getLineChangesMap(), dirtyFile);
-    log.debug("Write to file: {}", dirtyPath);
+    log.debug("Write repairedLinesWithHeader to file: {}({} rows including header)",
+        dirtyPath, repairedLinesWithHeader.size());
     FileUtil.writeListLinesToFile(repairedLinesWithHeader, dirtyFile);
 
     // 更新changes（excludedLines已经修复，因此需要从changes中删除）

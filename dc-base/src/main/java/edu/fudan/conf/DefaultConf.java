@@ -45,8 +45,8 @@ public class DefaultConf {
   // Sample
   public static boolean useSample = false;
   // ADC
-  public static int maxDCLen = 4;
-  public static double defaultErrorThreshold = 0.5E-5;
+  public static int maxDCLen = 5;
+  public static double defaultErrorThreshold = 0.01;
   public static boolean dynamicG1 = true;
   public static boolean calG1Snapshot = false;
   // 0.87是0.001~0.0001分成50次降低得来的
@@ -71,6 +71,10 @@ public class DefaultConf {
   public static int minLenOfDC = 2;
   public static double succinctFactor = 0.5;
   public static DCQStrategy defDCQStrategy = DCQStrategy.SUC_COR_VIOS;
+  // 用户判断正确率
+  public static double userProb_cellq = 1.0;
+  public static double userProb_tupleq = 1.0;
+  public static double userProb_dcq = 1.0;
   // DCMiner
   // TODO: 慎用static final关键字，因为修改后需要重新mvn clean一下才生效
   public static String dcGeneratorConf = "Basic";  // Basic DCMiner

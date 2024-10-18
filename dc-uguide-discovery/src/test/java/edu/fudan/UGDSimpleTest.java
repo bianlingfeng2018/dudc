@@ -98,35 +98,41 @@ public class UGDSimpleTest {
   public void testImpDCString() {
     // not(t1.City!=t2.City^t1.Year!=t2.Year) + not(t1.Abbr!=t2.Abbr^t1.City=t2.City)
     //  -> not(t1.Abbr!=t2.Abbr^t1.Year!=t2.Year)
-    String dcStr1 = "not(t1.City!=t2.City^t1.Year!=t2.Year)";
-    String dcStr2 = "not(t1.Abbr!=t2.Abbr^t1.City=t2.City)";
-    String dcStr3 = "not(t1.Abbr=t2.Abbr^t1.City!=t2.City)";
-    String dcStr4 = "not(t1.Abbr!=t2.Abbr^t1.Year!=t2.Year)";
-    String dcStr5 = "not(t1.City!=t2.City)";
-    String header = "City(String),Abbr(String),Year(String)";
+    String dcStr1 = "not(t1.flight=t2.flight^t1.sched_dep_time!=t2.sched_dep_time)";
+    String dcStr2 = "not(t1.flight=t2.flight^t1.act_dep_time!=t2.act_dep_time)";
+    String dcStr3 = "not(t1.flight=t2.flight^t1.sched_arr_time!=t2.sched_arr_time)";
+//    String dcStr4 = "not(t1.flight=t2.flight^t1.act_arr_time!=t2.act_arr_time)";
+    String dcStr4 = "not(t1.flight!=t2.flight^t1.act_arr_time=t2.act_arr_time)";
+    String dcStr5 = "not(t1.act_arr_time=t2.act_arr_time^t1.sched_dep_time!=t2.sched_dep_time)";
+    String dcStr6 = "not(t1.sched_arr_time!=t2.sched_arr_time^t1.flight=t2.flight^t1.act_arr_time!=t2.act_arr_time)";
+    String header = "tuple_id(String),src(String),flight(String),sched_dep_time(String),act_dep_time(String),sched_arr_time(String),act_arr_time(String)";
     DenialConstraint dc1 = DCFormatUtil.convertString2DC(dcStr1, header);
     DenialConstraint dc2 = DCFormatUtil.convertString2DC(dcStr2, header);
     DenialConstraint dc3 = DCFormatUtil.convertString2DC(dcStr3, header);
     DenialConstraint dc4 = DCFormatUtil.convertString2DC(dcStr4, header);
     DenialConstraint dc5 = DCFormatUtil.convertString2DC(dcStr5, header);
+    DenialConstraint dc6 = DCFormatUtil.convertString2DC(dcStr6, header);
 
     NTreeSearch gtTree = new NTreeSearch();
-    gtTree.add(PredicateSetFactory.create(dc5.getPredicateSet()).getBitset());
-//    gtTree.add(PredicateSetFactory.create(dc2.getPredicateSet()).getBitset());
-//    gtTree.add(PredicateSetFactory.create(dc3.getPredicateSet()).getBitset());
+    gtTree.add(PredicateSetFactory.create(dc1.getPredicateSet()).getBitset());
+    gtTree.add(PredicateSetFactory.create(dc2.getPredicateSet()).getBitset());
+    gtTree.add(PredicateSetFactory.create(dc3.getPredicateSet()).getBitset());
+    gtTree.add(PredicateSetFactory.create(dc4.getPredicateSet()).getBitset());
 
-    boolean implied = dc1.isImpliedBy(gtTree);
-    log.debug("Implied = {}", implied);
+    boolean b1 = dc5.isImpliedBy(gtTree);
+    log.debug("dc5 is implied = {}", b1);
+    boolean b2 = dc6.isImpliedBy(gtTree);
+    log.debug("dc6 is implied = {}", b2);
 
-    de.hpi.naumann.dc.denialcontraints.DenialConstraintSet set = new de.hpi.naumann.dc.denialcontraints.DenialConstraintSet();
-    set.add(dc1);
-    set.add(dc2);
-    set.add(dc3);
-    set.add(dc4);
-    set.add(dc5);
-    log.debug("DCs before minimize = {}", set.size());
-    set.minimize();
-    log.debug("DCs after minimize =  {}", set.size());
+//    de.hpi.naumann.dc.denialcontraints.DenialConstraintSet set = new de.hpi.naumann.dc.denialcontraints.DenialConstraintSet();
+//    set.add(dc1);
+//    set.add(dc2);
+//    set.add(dc3);
+//    set.add(dc4);
+//    set.add(dc5);
+//    log.debug("DCs before minimize = {}", set.size());
+//    set.minimize();
+//    log.debug("DCs after minimize =  {}", set.size());
   }
 
   /**

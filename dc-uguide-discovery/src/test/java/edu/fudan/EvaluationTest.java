@@ -27,7 +27,7 @@ public class EvaluationTest {
 
   @Before
   public void setUp() throws Exception {
-    int dsIndex = 0;
+    int dsIndex = 9;
     params = UGDRunner.buildParams(dsIndex);
   }
 

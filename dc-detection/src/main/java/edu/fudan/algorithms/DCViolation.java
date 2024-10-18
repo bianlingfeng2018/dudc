@@ -20,6 +20,7 @@ public class DCViolation {
   /**
    * Hydra DC with parsed column data
    */
+  @Deprecated
   private List<DenialConstraint> constraints;
 
   private LinePair linePair;

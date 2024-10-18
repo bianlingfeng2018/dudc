@@ -9,6 +9,9 @@ public class GlobalConf {
    * The base directory.
    */
 //  public static String baseDir = "/Users/benryoubon/IdeaProjects/dc_tools/data";
+  // IDE测试用这个绝对路径
   public static String baseDir = "D:/paper/dc_user_guided_detection/experiment/data";
+  // 打包后用这个相对路径
+//  public static String baseDir = "./data";
 //  public static String baseDir = "/Users/benryoubon/Desktop/paper/dc_user_guided_detection/experiment/data";
 }

@@ -65,8 +65,10 @@ public class Column {
 	}
 
 	public Long getLong(int line) {
-		Long l = Long.valueOf(values.get(line));
-		return l == null ? Long.valueOf(Long.MIN_VALUE) : l;
+//		Long l = Long.valueOf(values.get(line));
+//		return l == null ? Long.valueOf(Long.MIN_VALUE) : l;
+		Double doubleValue = Double.valueOf(values.get(line));
+		return doubleValue.longValue();
 	}
 
 	public Double getDouble(int line) {

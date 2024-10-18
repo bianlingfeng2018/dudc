@@ -150,9 +150,9 @@ public class MinimalCoverCandidate {
 			IBitSet bs = pSet.getBitset();
 			if (bs.get(addIndex)) {
 
-				if (addables.isSubSetOf(bs)) {
-					return null;
-				}
+//				if (addables.isSubSetOf(bs)) {
+//					return null;
+//				}
 
 				bs = bs.clone();
 				bs.and(addables);
