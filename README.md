@@ -17,6 +17,9 @@ This repository contains the source code for reproducing the results in our pape
 ## Datasets used in our experiments
 Download the dataset to the `data/` folder.
 
+## How to build
+`mvn clean package -DskipTests`
+
 ## Running Instructions
 1. **Prepare directory**: Put the `data/` directory and the jar file in the same directory.
 1. **Run jar file on dataset(an example)**: `java -jar dc-uguide-discovery-1.0-SNAPSHOT-jar-with-dependencies.jar -i 2 -r 10 -k 5 -n 3 -len 3 -cq 100 -tq 100 -dq 10 -tk 50 -th 0.0001 -u REPAIR -s EFFICIENT -a HYDRA -c VIO_AND_CONF -t VIOLATIONS_PRIOR -d SUC_COR_VIOS -g DYNAMIC`
