@@ -64,4 +64,4 @@ We use five real-life datasets: Hospital, Stock, Flights, Airport and Adult, alo
 **To be added after acceptance.**
 
 ## License
-**To be added after acceptance.**
+We have reused some of the source code from [Hydra](https://github.com/HPI-Information-Systems/metanome-algorithms/tree/master/hydra) and [DCFinder](https://github.com/HPI-Information-Systems/metanome-algorithms/tree/master/dcfinder), both of which are licensed under [Apache 2.0 license](https://github.com/HPI-Information-Systems/metanome-algorithms/blob/master/LICENSE).
