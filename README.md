@@ -1,4 +1,4 @@
-# Project Title
+# Introduction
 This repository contains the source code for reproducing the results in our paper titled **Discovering Effective Approximate Denial Constraints With Dynamic Thresholds and User Feedback**.
 
 ## Repository Structure
