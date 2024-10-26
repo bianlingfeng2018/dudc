@@ -1,0 +1,1 @@
+tuple_id(String),src(String),flight(String),sched_dep_time(String),act_dep_time(String),sched_arr_time(String),act_arr_time(String)

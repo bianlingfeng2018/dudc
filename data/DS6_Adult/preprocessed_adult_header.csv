@@ -1,0 +1,1 @@
+age(String),workclass(String),fnlwgt(String),education(String),education_num(String),marital_status(String),occupation(String),relationship(String),race(String),sex(String),capital_gain(String),capital_loss(String),hours_per_week(String),nativecountry(String),class(String)

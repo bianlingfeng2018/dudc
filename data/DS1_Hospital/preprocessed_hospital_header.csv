@@ -1,0 +1,1 @@
+ProviderNumber(String),HospitalName(String),City(String),State(String),ZIPCode(String),CountyName(String),PhoneNumber(String),HospitalType(String),HospitalOwner(String),EmergencyService(String),Condition(String),MeasureCode(String),MeasureName(String),Sample(String),StateAvg(String)

@@ -1,0 +1,1791 @@
+attribute,wrong_val,correct_val
+2495.hospitalname,TUSC*AL*OO*SA VA MEDICAL** CENTER,TUSCALOOSA VA MEDICAL CENTER
+110.providernumber,10018,10007
+1359.providernumber,10018,10083
+1603.providernumber,10018,10100
+2451.phonenumber,2053258100,2513682500
+2260.emergencyservice,*N****o,No
+2654.condition,Surgical Infecti*on* *Preve*ntio*n,Surgical Infection Prevention
+799.condition,*Surgica**l Infec*tion* Prevention,Surgical Infection Prevention
+817.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given Initial Antibiotic(s) within 6 Hours After Arrival
+2518.phonenumber,2053258100,2518472223
+2401.condition,Surgi*c*al Infecti*o*n Prevent*ion,Surgical Infection Prevention
+1334.providernumber,10018,10079
+99.phonenumber,2053258100,3344933541
+7054.measurecode,SCI**P*-I*N*F-4,SCIP-INF-4
+31.stateavg,AK_PN-7,AL_PN-2
+5897.emergencyservice,***N**o,No
+5863.emergencyservice,***N**o,No
+812.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given ACE Inhibitor or ARB for Left Ventricular Systolic Dysfunction (LVSD)
+730.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given Smoking Cessation Advice/Counseling
+2066.stateavg,AL_SCIP-CARD-2,AL_PN-7
+4900.measurecode,SC*IP-I***NF*-4,SCIP-INF-4
+2645.state,**A***K,AK
+1294.providernumber,10018,10073
+2077.stateavg,AL_SCIP-CARD-2,AL_AMI-3
+2747.condition,**He***art Attack,Heart Attack
+1985.stateavg,AL_SCIP-CARD-2,AL_HF-4
+439.stateavg,AL_SCIP-INF-1,AK_PN-4
+9548.hospitaltype,Ac*ute* Ca*re Hospit*a*ls,Acute Care Hospitals
+4536.hospitalname,V*A S. ARIZONA *HEALTHC**ARE S*YSTEM,VA S. ARIZONA HEALTHCARE SYSTEM
+2493.phonenumber,20*5*5*5**42000,2055542000
+4569.hospitalname,VA N*ORTHERN ARIZONA HEALTHCARE** *SY*STEM,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+5886.hospitaltype,Acute *Care - VA *Med*ical *C*enter,Acute Care - VA Medical Center
+4531.hospitalname,VA S*. ARIZONA *HEALTHCARE* SYST**EM,VA S. ARIZONA HEALTHCARE SYSTEM
+9416.hospitaltype,Acu**te Care Hospita*l**s,Acute Care Hospitals
+2033.stateavg,AL_SCIP-CARD-2,AL_HF-2
+749.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given Discharge Instructions
+2523.phonenumber,2053258100,2518472223
+429.providernumber,10018,10164
+107.providernumber,10018,10007
+4562.hospitalname,VA* NO*RTHERN *ARIZONA HEALT*HCARE SYSTE*M,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+4797.measurecode,SC***IP*-IN*F-4,SCIP-INF-4
+2088.stateavg,AL_SCIP-CARD-2,AL_PN-4
+1591.providernumber,10018,10099
+2773.condition,*He**a*rt Fai*lure,Heart Failure
+726.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given ACE Inhibitor or ARB for Left Ventricular Systolic Dysfunction (LVSD)
+8275.emergencyservice,N*****o,No
+2641.state,****A*K,AK
+803.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Aspirin at Arrival
+808.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Fibrinolytic Medication Within 30 Minutes Of Arrival
+5253.measurecode,*SCIP*-*IN*F-*4,SCIP-INF-4
+744.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given ACE Inhibitor or ARB for Left Ventricular Systolic Dysfunction (LVSD)
+9417.hospitaltype,Ac**ut*e C*are Hosp*itals,Acute Care Hospitals
+1912.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Whose Initial Emergency Room Blood Culture Was Performed Prior To The Administration Of The First Hospital Dose Of Antibiotics
+2494.hospitalname,TUSCALO**OSA VA M**E*DICAL CENTER,TUSCALOOSA VA MEDICAL CENTER
+449.providernumber,10018,20017
+452.providernumber,10018,20018
+874.condition,*Surgical* Infe*ction *Pr*evention,Surgical Infection Prevention
+5905.emergencyservice,*****No,No
+1588.providernumber,10018,10099
+1266.providernumber,10018,10069
+74.stateavg,AK_PN-7,AL_AMI-5
+1274.providernumber,10018,10069
+1648.providernumber,10018,10102
+1656.providernumber,10018,10102
+2126.stateavg,AL_SCIP-CARD-2,AL_AMI-2
+2811.state,*A****K,AK
+2962.condition,Sur*gical I*nf*ection Preve*n*tion,Surgical Infection Prevention
+676.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given ACE Inhibitor or ARB for Left Ventricular Systolic Dysfunction (LVSD)
+2610.condition,*Hea**rt Att**ack,Heart Attack
+2710.state,A*****K,AK
+1299.providernumber,10018,10073
+432.providernumber,10018,10164
+1921.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,all heart surgery patients whose blood sugar (blood glucose) is kept under good control in the days right after surgery
+2468.phonenumber,*33*4*260410**0,3342604100
+8267.emergencyservice,****N*o,No
+2662.state,*****AK,AK
+2868.condition,He*a*rt *At**tack,Heart Attack
+4540.phonenumber,52**062*9*182*1,5206291821
+1339.providernumber,10018,10079
+2594.phonenumber,2053258100,9072613675
+1623.providernumber,10018,10101
+1926.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Aspirin at Discharge
+2115.stateavg,AL_SCIP-CARD-2,AL_PN-6
+2642.state,***A**K,AK
+1314.providernumber,10018,10078
+2666.condition,Heart *Att*a**c*k,Heart Attack
+1709.emergencyservice,***N**o,No
+67.stateavg,AK_PN-7,AL_SCIP-INF-6
+5893.hospitaltype,Acute C**a*re - VA M*edical C*enter,Acute Care - VA Medical Center
+721.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Beta Blocker at Discharge
+1608.providernumber,10018,10100
+6186.measurecode,SCIP**-I**NF-*4,SCIP-INF-4
+81.stateavg,AK_PN-7,AL_PN-2
+2090.stateavg,AL_SCIP-CARD-2,AL_PN-6
+2682.condition,Surgical* Inf*ecti*on Prev*e*ntion,Surgical Infection Prevention
+1354.providernumber,10018,10079
+115.providernumber,10018,10007
+2600.phonenumber,2053258100,9072613675
+2700.condition,Hear**t** Failu*re,Heart Failure
+5581.measurecode,SCI*P-*I*NF*-*4,SCIP-INF-4
+9403.hospitaltype,***Acute Care Hospi*tal*s,Acute Care Hospitals
+2589.phonenumber,2053258100,9072613675
+2861.state,A*****K,AK
+4572.emergencyservice,**N***o,No
+3174.condition,Surgi*cal Inf*ection* Preventio**n,Surgical Infection Prevention
+2624.state,*A****K,AK
+2699.state,***A**K,AK
+2690.condition,He*a***rt At*tack,Heart Attack
+2691.state,**A***K,AK
+76.stateavg,AK_PN-7,AL_AMI-8A
+1631.providernumber,10018,10101
+83.stateavg,AK_PN-7,AL_PN-4
+8260.emergencyservice,N*****o,No
+69.stateavg,AK_PN-7,AL_SCIP-VTE-2
+1628.providernumber,10018,10101
+2051.emergencyservice,N*****o,No
+1306.providernumber,10018,10073
+2055.stateavg,AL_SCIP-CARD-2,AL_AMI-7A
+2673.state,****A*K,AK
+2710.phonenumber,2053258100,9075436300
+2699.phonenumber,2053258100,9075436300
+1846.condition,Surgi*ca*l Infec*tion Preve*n*tion,Surgical Infection Prevention
+2705.phonenumber,2053258100,9075436300
+1651.providernumber,10018,10102
+2009.stateavg,AL_SCIP-CARD-2,AL_HF-3
+5556.measurecode,S*CI**P-I*N*F-4,SCIP-INF-4
+1596.providernumber,10018,10100
+2588.phonenumber,2053258100,9072613675
+5902.hospitaltype,A*cute* Care - VA* Medical* Cent*er,Acute Care - VA Medical Center
+2501.phonenumber,20555*42**0*0*0,2055542000
+1326.providernumber,10018,10078
+4512.phonenumber,602*2**226**444,6022226444
+2698.phonenumber,2053258100,9075436300
+2937.condition,Surgic*al In**fection P*reve*ntion,Surgical Infection Prevention
+1671.providernumber,10018,10103
+2885.state,****A*K,AK
+4510.phonenumber,6022*2*2**6*444,6022226444
+58.stateavg,AK_PN-7,AL_PN-4
+5908.hospitaltype,*Acut**e Care *- VA Medical Cent*er,Acute Care - VA Medical Center
+5931.measurecode,**SC*IP-*I*NF-4,SCIP-INF-4
+2681.state,***A**K,AK
+3274.condition,S*u**rgic*al In*fection Prevention,Surgical Infection Prevention
+1935.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given Smoking Cessation Advice/Counseling
+1668.providernumber,10018,10102
+1636.providernumber,10018,10101
+2264.phonenumber,2059334***51**5,2059334515
+9414.hospitaltype,Acu*t*e C*are Ho**spitals,Acute Care Hospitals
+5896.emergencyservice,****N*o,No
+22.stateavg,AK_PN-7,AL_AMI-3
+4536.emergencyservice,*N****o,No
+2671.state,**A***K,AK
+2073.emergencyservice,*N****o,No
+1953.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Smoking Cessation Advice/Counseling
+1261.providernumber,10018,10069
+2820.condition,H*eart*** At*tack,Heart Attack
+5889.hospitaltype,Acut*e Care* - VA* Medi*c*al Center,Acute Care - VA Medical Center
+767.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Children Who Received Reliever Medication While Hospitalized for Asthma
+2593.phonenumber,2053258100,9072613675
+1583.providernumber,10018,10099
+1930.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Fibrinolytic Medication Within 30 Minutes Of Arrival
+1180.condition,Surgical Infectio*n ***Prev*ention,Surgical Infection Prevention
+2104.stateavg,AL_SCIP-CARD-2,AL_AMI-5
+5656.measurecode,**S*CIP*-I*NF-4,SCIP-INF-4
+2476.hospitaltype,Acute C**are *- VA *Medical Cen*ter,Acute Care - VA Medical Center
+2497.phonenumber,205554*****2000,2055542000
+2721.condition,**Heart* *A*ttack,Heart Attack
+5907.hospitaltype,*Acut*e* Care - VA Medical Cent*e*r,Acute Care - VA Medical Center
+4571.hospitalname,VA N*ORTHERN* ARIZO*NA HEALTHCA**RE SYSTEM,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+5.stateavg,AK_PN-7,AL_SCIP-INF-4
+2629.state,A*****K,AK
+2755.state,A*****K,AK
+1330.condition,Surg**ical Infection P*r*ev*ention,Surgical Infection Prevention
+2491.hospitalname,TUSCA***LO*OS*A VA MEDICAL CENTER,TUSCALOOSA VA MEDICAL CENTER
+1974.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,patients who got treatment  at the right time (within 24 hours before or after their surgery) to help prevent blood clots after certain types of surgery
+3.stateavg,AK_PN-7,AL_SCIP-INF-2
+2631.state,*A****K,AK
+2013.stateavg,AL_SCIP-CARD-2,AL_PN-4
+416.providernumber,10018,10164
+8004.providernumber,10018,50095
+2121.condition,Surgical I*nf*ection *Preve**ntion,Surgical Infection Prevention
+6665.measurecode,*S*CIP-*I**NF-4,SCIP-INF-4
+717.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Aspirin at Arrival
+2505.phonenumber,2053258100,2518472223
+680.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given Smoking Cessation Advice/Counseling
+1894.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,surgery patients who were given the  right kind  of antibiotic to help prevent infection
+2002.stateavg,AL_SCIP-CARD-2,AL_AMI-3
+2725.condition,He**ar***t Failure,Heart Failure
+794.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Assessed and Given Influenza Vaccination
+5901.emergencyservice,****N*o,No
+5872.hospitalname,FAY*ETTEVILL**E *AR VA MEDICAL CENTE*R,FAYETTEVILLE AR VA MEDICAL CENTER
+2071.emergencyservice,***N**o,No
+2035.stateavg,AL_SCIP-CARD-2,AL_HF-4
+2510.phonenumber,2053258100,2518472223
+98.phonenumber,2053258100,3344933541
+1746.condition,S*urgic*al Infec*tion Preve**ntion,Surgical Infection Prevention
+2697.condition,He*art** Atta*c*k,Heart Attack
+2081.stateavg,AL_SCIP-CARD-2,AL_AMI-8A
+1903.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Smoking Cessation Advice/Counseling
+5892.hospitaltype,A*c**ute* C*are - VA Medical Center,Acute Care - VA Medical Center
+1908.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given an Evaluation of Left Ventricular Systolic (LVS) Function
+24.stateavg,AK_PN-7,AL_AMI-5
+2254.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+4527.hospitalname,VA S. A**RIZONA H*E*ALTHCARE* SYSTEM,VA S. ARIZONA HEALTHCARE SYSTEM
+6901.emergencyservice,***N**o,No
+2724.state,*A****K,AK
+1708.emergencyservice,****N*o,No
+4573.emergencyservice,*****No,No
+1979.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Beta Blocker at Discharge
+2748.state,A*****K,AK
+2786.state,***A**K,AK
+2256.emergencyservice,****N*o,No
+2446.phonenumber,2053258100,2513682500
+40.stateavg,AK_PN-7,AL_SCIP-INF-3
+1958.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given an Evaluation of Left Ventricular Systolic (LVS) Function
+1899.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,patients who got treatment  at the right time (within 24 hours before or after their surgery) to help prevent blood clots after certain types of surgery
+26.stateavg,AK_PN-7,AL_AMI-8A
+6390.measurecode,S**C*I*P-INF*-4,SCIP-INF-4
+2253.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+1380.condition,Surgical I*n*fec*ti*on *Prevention,Surgical Infection Prevention
+49.stateavg,AK_PN-7,AL_AMI-5
+1874.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,patients who got treatment  at the right time (within 24 hours before or after their surgery) to help prevent blood clots after certain types of surgery
+1318.providernumber,10018,10078
+2873.condition,**H*e*art *Failure,Heart Failure
+788.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given Smoking Cessation Advice/Counseling
+1951.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Aspirin at Discharge
+2628.state,A*****K,AK
+5871.emergencyservice,*N****o,No
+1077.condition,Surgical I*nf*ectio**n* Prevention,Surgical Infection Prevention
+2252.emergencyservice,***N**o,No
+2079.stateavg,AL_SCIP-CARD-2,AL_AMI-5
+1262.providernumber,10018,10069
+6903.emergencyservice,*N****o,No
+1305.condition,Surgical *Infec*tio*n **Prevention,Surgical Infection Prevention
+2466.phonenumber,33***42604*10*0,3342604100
+2643.state,*****AK,AK
+5867.hospitalname,FAYETTEVILLE A*R VA *ME*DICAL C**ENTER,FAYETTEVILLE AR VA MEDICAL CENTER
+9907.emergencyservice,****N*o,No
+1956.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given PCI Within 90 Minutes Of Arrival
+1716.condition,Surgic*al In*fection Preven*ti**on,Surgical Infection Prevention
+1350.providernumber,10018,10079
+2260.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+1281.providernumber,10018,10069
+2450.phonenumber,2053258100,2513682500
+1879.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Beta Blocker at Discharge
+2733.state,****A*K,AK
+5873.emergencyservice,****N*o,No
+1287.providernumber,10018,10073
+1980.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Fibrinolytic Medication Within 30 Minutes Of Arrival
+1821.condition,Surgic*al **Infe*ction Preventio*n,Surgical Infection Prevention
+1987.stateavg,AL_SCIP-CARD-2,AL_PN-3B
+2834.state,A*****K,AK
+2517.phonenumber,2053258100,2518472223
+2296.condition,Surgical In*fec*t**ion Prev*ention,Surgical Infection Prevention
+9901.emergencyservice,*N****o,No
+6515.measurecode,S*CI*P-INF**-*4,SCIP-INF-4
+2522.phonenumber,2053258100,2518472223
+2046.condition,S**urgic*al *Infect*ion Prevention,Surgical Infection Prevention
+4540.emergencyservice,***N**o,No
+5891.emergencyservice,*****No,No
+6362.measurecode,SCIP-**IN*F*-*4,SCIP-INF-4
+2708.state,*****AK,AK
+1302.providernumber,10018,10073
+1230.condition,Surg**ical Infection Preve**nt*ion,Surgical Infection Prevention
+9540.hospitaltype,Acu**t*e C*are Hospit*als,Acute Care Hospitals
+6898.emergencyservice,****N*o,No
+2781.state,***A**K,AK
+2831.state,*A****K,AK
+8257.emergencyservice,***N**o,No
+1644.providernumber,10018,10101
+783.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Fibrinolytic Medication Within 30 Minutes Of Arrival
+1322.providernumber,10018,10078
+2057.stateavg,AL_SCIP-CARD-2,AL_HF-1
+2007.stateavg,AL_SCIP-CARD-2,AL_HF-1
+2767.state,***A**K,AK
+1282.providernumber,10018,10069
+2674.state,A*****K,AK
+1664.providernumber,10018,10102
+85.stateavg,AK_PN-7,AL_PN-6
+2706.phonenumber,2053258100,9075436300
+683.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Assessed and Given Influenza Vaccination
+4530.hospitalname,*VA S. A*RI**ZONA H*EALTHCARE SYSTEM,VA S. ARIZONA HEALTHCARE SYSTEM
+9530.hospitaltype,Acute Car**e H*os*p*itals,Acute Care Hospitals
+450.stateavg,AL_SCIP-INF-1,AK_SCIP-VTE-2
+2171.condition,Surg*ical Infect*ion* Preven*ti*on,Surgical Infection Prevention
+692.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Aspirin at Arrival
+2070.emergencyservice,****N*o,No
+4557.hospitalname,V**A NORTHERN ARIZONA HEAL*THCARE SYS**TEM,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+1584.providernumber,10018,10099
+6868.measurecode,SC**I**P-INF*-4,SCIP-INF-4
+4533.hospitalname,VA S*. ARIZONA H*EALTH*C*ARE* SYSTEM,VA S. ARIZONA HEALTHCARE SYSTEM
+6900.emergencyservice,****N*o,No
+65.stateavg,AK_PN-7,AL_SCIP-INF-3
+4555.hospitalname,VA NORTHERN ARI*ZO*NA HEAL*THC*ARE *SYSTEM,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+2882.state,**A***K,AK
+2616.condition,***Heart* Fa*ilure,Heart Failure
+2113.stateavg,AL_SCIP-CARD-2,AL_PN-4
+78.stateavg,AK_PN-7,AL_HF-2
+4515.phonenumber,6*02222*64**4*4,6022226444
+8276.emergencyservice,***N**o,No
+2711.phonenumber,2053258100,9075436300
+437.providernumber,10018,20017
+6915.emergencyservice,****N*o,No
+4521.hospitalname,PH*OENIX* V*A** MEDICAL CENTER,PHOENIX VA MEDICAL CENTER
+1888.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given Smoking Cessation Advice/Counseling
+1883.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given an Evaluation of Left Ventricular Systolic (LVS) Function
+4504.hospitalname,PHOE*NIX VA ME**DICA*L* CENTER,PHOENIX VA MEDICAL CENTER
+697.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Fibrinolytic Medication Within 30 Minutes Of Arrival
+6913.emergencyservice,*****No,No
+2102.stateavg,AL_SCIP-CARD-2,AL_AMI-3
+1576.providernumber,10018,10099
+9.stateavg,AK_PN-7,AL_AMI-1
+2632.state,**A***K,AK
+6718.measurecode,S*CIP-I*NF-***4,SCIP-INF-4
+4525.phonenumber,60*22***22*6444,6022226444
+417.providernumber,10018,10164
+2270.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+5862.hospitalname,F*AYETTEVILL*E AR VA* ME*DICAL CENTE*R,FAYETTEVILLE AR VA MEDICAL CENTER
+2859.state,A*****K,AK
+2601.phonenumber,2053258100,9072613675
+2736.state,A*****K,AK
+5403.measurecode,*S*CIP-*IN**F-4,SCIP-INF-4
+2712.condition,*Surgical* I*nfect*ion Preventi*on,Surgical Infection Prevention
+6311.measurecode,*S*CI*P*-*INF-4,SCIP-INF-4
+2061.stateavg,AL_SCIP-CARD-2,AL_PN-2
+1611.providernumber,10018,10100
+4543.hospitalname,VA S. ARIZON*A HEA*LTHC*A*R*E SYSTEM,VA S. ARIZONA HEALTHCARE SYSTEM
+2704.state,*A****K,AK
+1255.condition,*Su**rgical I*nf*ection Prevention,Surgical Infection Prevention
+2843.condition,H**ear*t A*t*tack,Heart Attack
+102.providernumber,10018,10007
+1267.providernumber,10018,10069
+6465.measurecode,**S*CIP*-I*NF-4,SCIP-INF-4
+815.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Whose Initial Emergency Room Blood Culture Was Performed Prior To The Administration Of The First Hospital Dose Of Antibiotics
+2724.condition,Heart *F**ailur**e,Heart Failure
+2050.stateavg,AL_SCIP-CARD-2,AL_AMI-1
+5877.emergencyservice,*****No,No
+2808.state,***A**K,AK
+1541.condition,Su*rgic*al *Inf*ection Preve*ntion,Surgical Infection Prevention
+1944.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,surgery patients who were given the  right kind  of antibiotic to help prevent infection
+51.stateavg,AK_PN-7,AL_AMI-8A
+444.providernumber,10018,20017
+2637.state,**A***K,AK
+2743.condition,Heart *Att****ack,Heart Attack
+2711.state,*A****K,AK
+4555.emergencyservice,****N*o,No
+2654.state,***A**K,AK
+2697.phonenumber,2053258100,9075436300
+9547.hospitaltype,Acut*e C*are* Hosp*i*tals,Acute Care Hospitals
+819.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Assessed and Given Influenza Vaccination
+1624.providernumber,10018,10101
+810.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given Discharge Instructions
+2799.condition,Heart **Fa**ilur*e,Heart Failure
+2083.stateavg,AL_SCIP-CARD-2,AL_HF-2
+1915.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given the Most Appropriate Initial Antibiotic(s)
+1358.providernumber,10018,10079
+2611.condition,Heart ***At*ta*ck,Heart Attack
+4547.emergencyservice,***N**o,No
+2587.phonenumber,2053258100,9072613675
+4520.phonenumber,6*0**22**226444,6022226444
+11.stateavg,AK_PN-7,AL_AMI-3
+5869.emergencyservice,*****No,No
+1949.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,patients who got treatment  at the right time (within 24 hours before or after their surgery) to help prevent blood clots after certain types of surgery
+2797.condition,H**e*ar*t At*tack,Heart Attack
+2474.hospitaltype,Acute* Car*e - VA Medica**l Cen*ter,Acute Care - VA Medical Center
+2679.state,A*****K,AK
+1342.providernumber,10018,10079
+2787.condition,Surgical* I*n*fection* Prev*ention,Surgical Infection Prevention
+5892.emergencyservice,*N****o,No
+5025.measurecode,S**CI*P-INF-**4,SCIP-INF-4
+1338.providernumber,10018,10079
+5631.measurecode,**SCIP*-I*NF-*4,SCIP-INF-4
+4542.hospitalname,VA S. ARIZON*A **HEALTHCARE SYST**EM,VA S. ARIZONA HEALTHCARE SYSTEM
+2067.emergencyservice,*N****o,No
+2592.phonenumber,2053258100,9072613675
+2600.state,**A***K,AK
+5888.hospitaltype,Acute *Ca*re - VA Medica***l Center,Acute Care - VA Medical Center
+97.providernumber,10018,10007
+1691.condition,S**urgical In*fectio*n Prev*ention,Surgical Infection Prevention
+2262.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+2846.condition,He*a*rt* A**ttack,Heart Attack
+758.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Assessed and Given Influenza Vaccination
+7129.measurecode,SCIP-**IN**F-*4,SCIP-INF-4
+4534.phonenumber,52*0***62*91821,5206291821
+5900.emergencyservice,*****No,No
+2346.condition,S*urgical In*f*ectio**n Prevention,Surgical Infection Prevention
+5731.measurecode,*SCI*P*-*INF*-4,SCIP-INF-4
+2504.phonenumber,205**5542**0*00,2055542000
+753.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Assessed and Given Pneumococcal Vaccination
+424.providernumber,10018,10164
+2659.state,****A*K,AK
+2651.state,**A***K,AK
+2011.stateavg,AL_SCIP-CARD-2,AL_PN-2
+2762.state,***A**K,AK
+1716.emergencyservice,N*****o,No
+729.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Whose Initial Emergency Room Blood Culture Was Performed Prior To The Administration Of The First Hospital Dose Of Antibiotics
+2726.state,**A***K,AK
+2848.condition,*Hear****t Failure,Heart Failure
+2029.stateavg,AL_SCIP-CARD-2,AL_AMI-5
+2875.condition,*H*e**art Failu*re,Heart Failure
+1604.providernumber,10018,10100
+2445.phonenumber,2053258100,2513682500
+708.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Assessed and Given Influenza Vaccination
+1607.providernumber,10018,10100
+1641.condition,Sur*g*ical* Infecti*on* Prevention,Surgical Infection Prevention
+2688.state,*A****K,AK
+2000.stateavg,AL_SCIP-CARD-2,AL_AMI-1
+451.providernumber,10018,20018
+4518.hospitalname,*PHOENIX *VA* M*EDICA*L CENTER,PHOENIX VA MEDICAL CENTER
+5893.emergencyservice,***N**o,No
+2847.condition,H*e***art At*tack,Heart Attack
+2265.phonenumber,205*9*33451***5,2059334515
+15.stateavg,AK_PN-7,AL_AMI-8A
+9903.emergencyservice,**N***o,No
+6540.measurecode,SC**IP-I*N*F*-4,SCIP-INF-4
+779.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Aspirin at Discharge
+2680.state,***A**K,AK
+1305.providernumber,10018,10073
+5894.emergencyservice,****N*o,No
+4559.emergencyservice,*N****o,No
+1627.providernumber,10018,10101
+431.providernumber,10018,10164
+1965.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given the Most Appropriate Initial Antibiotic(s)
+1960.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given Smoking Cessation Advice/Counseling
+2701.state,****A*K,AK
+732.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given the Most Appropriate Initial Antibiotic(s)
+5904.hospitaltype,Ac**ute Ca*re - VA Medi*cal Cen*ter,Acute Care - VA Medical Center
+2483.phonenumber,*205*5*5420**00,2055542000
+35.stateavg,AK_PN-7,AL_PN-6
+4562.emergencyservice,***N**o,No
+1355.providernumber,10018,10079
+1647.providernumber,10018,10102
+2490.phonenumber,20**5*55*42*000,2055542000
+19.stateavg,AK_PN-7,AL_HF-4
+2812.state,*A****K,AK
+724.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given Discharge Instructions
+1910.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given Smoking Cessation Advice/Counseling
+703.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Assessed and Given Pneumococcal Vaccination
+2495.phonenumber,*2*0**5*5542000,2055542000
+4553.hospitalname,VA NORTHERN ARIZ*ON*A H*EALTHCAR*E S*YSTEM,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+1657.providernumber,10018,10102
+9421.hospitaltype,Acute** Ca*r*e H*ospitals,Acute Care Hospitals
+1335.providernumber,10018,10079
+4502.hospitalname,PHOE*NIX V**A MEDICAL CENTE**R,PHOENIX VA MEDICAL CENTER
+1666.condition,*Surg*ical Infect***ion Prevention,Surgical Infection Prevention
+5874.emergencyservice,**N***o,No
+1932.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given Discharge Instructions
+2469.hospitaltype,Acute C*a*re - V*A *Me*dical Center,Acute Care - VA Medical Center
+9411.hospitaltype,Acut*e Care H**osp*ita*ls,Acute Care Hospitals
+4504.phonenumber,6*0*22*22*64*44,6022226444
+9542.hospitaltype,Acu**te *Care Hos*pital*s,Acute Care Hospitals
+6111.measurecode,S*CIP-I**NF*-*4,SCIP-INF-4
+2652.state,*A****K,AK
+1660.providernumber,10018,10102
+2871.condition,Hea*r*t Att***ack,Heart Attack
+2666.state,*****AK,AK
+5030.providernumber,10018,40014
+4554.emergencyservice,****N*o,No
+6490.measurecode,*S**CIP-**INF-4,SCIP-INF-4
+2785.state,*****AK,AK
+927.condition,Su*rgic*al Infe*ct*ion P*revention,Surgical Infection Prevention
+4514.hospitalname,PHO*E*NIX* VA ME*D*ICAL CENTER,PHOENIX VA MEDICAL CENTER
+2251.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+9528.hospitaltype,A**cute Car*e H*ospit*als,Acute Care Hospitals
+4507.phonenumber,6*0*2222*644**4,6022226444
+2639.state,***A**K,AK
+1923.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,surgery patients whose doctors ordered treatments to prevent blood clots after certain types of surgeries
+1353.providernumber,10018,10079
+5175.measurecode,SCI*P-I**NF-**4,SCIP-INF-4
+2055.emergencyservice,*****No,No
+696.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Beta Blocker at Discharge
+1981.stateavg,AL_SCIP-CARD-2,AL_AMI-8A
+1941.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Assessed and Given Influenza Vaccination
+2669.state,A*****K,AK
+2706.state,****A*K,AK
+2765.state,***A**K,AK
+2464.hospitaltype,Acu*te Care - VA *M**edical* Center,Acute Care - VA Medical Center
+5865.hospitalname,FAYET*TEVILLE *AR VA MEDICA*L CEN*T*ER,FAYETTEVILLE AR VA MEDICAL CENTER
+4509.phonenumber,60*22*2**264*44,6022226444
+771.condition,Surgical In*f*ection **Pr*evention,Surgical Infection Prevention
+2746.state,**A***K,AK
+8270.emergencyservice,N*****o,No
+4533.phonenumber,*5*206*2**91821,5206291821
+6905.emergencyservice,N*****o,No
+8264.emergencyservice,***N**o,No
+60.stateavg,AK_PN-7,AL_PN-6
+6161.measurecode,SC**IP-I*NF*-*4,SCIP-INF-4
+46.stateavg,AK_PN-7,AL_AMI-2
+1275.providernumber,10018,10069
+2465.hospitaltype,Acu*te Car*e *- VA Medical* C*enter,Acute Care - VA Medical Center
+2109.stateavg,AL_SCIP-CARD-2,AL_HF-3
+1701.emergencyservice,*N****o,No
+4517.hospitalname,PH*OENIX *VA MEDICA*L CE*NTE*R,PHOENIX VA MEDICAL CENTER
+2255.emergencyservice,*****No,No
+61.stateavg,AK_PN-7,AL_PN-7
+2026.stateavg,AL_SCIP-CARD-2,AL_AMI-2
+1928.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Smoking Cessation Advice/Counseling
+4570.hospitalname,V*A NORT*HE*RN ARIZONA HEAL*THCAR*E SYSTEM,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+2494.phonenumber,2*0*555*4*2*000,2055542000
+9405.hospitaltype,Acu*te* C*a*re H*ospitals,Acute Care Hospitals
+2822.condition,He*a*r*t* Attac*k,Heart Attack
+101.providernumber,10018,10007
+682.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given the Most Appropriate Initial Antibiotic(s)
+2112.stateavg,AL_SCIP-CARD-2,AL_PN-3B
+433.providernumber,10018,20017
+4560.hospitalname,VA *NORTH*ERN A*RIZO*NA *HEALTHCARE SYSTEM,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+4513.phonenumber,*60*222**26*444,6022226444
+2729.state,***A**K,AK
+4509.hospitalname,PHOENI*X V*A ME*DI*CAL* CENTER,PHOENIX VA MEDICAL CENTER
+1946.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,all heart surgery patients whose blood sugar (blood glucose) is kept under good control in the days right after surgery
+1582.providernumber,10018,10099
+9534.hospitaltype,Acut*e C*ar*e Hos*p*itals,Acute Care Hospitals
+2615.state,A*****K,AK
+8277.emergencyservice,****N*o,No
+791.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given Smoking Cessation Advice/Counseling
+1955.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Fibrinolytic Medication Within 30 Minutes Of Arrival
+2825.condition,**H*eart *Fail*ure,Heart Failure
+2434.phonenumber,2053258100,2513682500
+2782.state,*****AK,AK
+2684.state,****A*K,AK
+2725.state,*A****K,AK
+828.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Aspirin at Arrival
+9423.hospitaltype,Acut*e Care H**o*s*pitals,Acute Care Hospitals
+2634.state,**A***K,AK
+2771.condition,Hea*rt A*tt**ac*k,Heart Attack
+8265.emergencyservice,**N***o,No
+2264.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+9533.hospitaltype,Acut*e* Care H*ospit**als,Acute Care Hospitals
+2376.condition,S*urg****ical Infection Prevention,Surgical Infection Prevention
+1589.providernumber,10018,10099
+806.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Smoking Cessation Advice/Counseling
+4697.measurecode,SC****IP-*INF-4,SCIP-INF-4
+5453.measurecode,*SCI*P-IN*F*-*4,SCIP-INF-4
+2472.phonenumber,*334*260*4**100,3342604100
+4542.emergencyservice,N*****o,No
+1950.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Aspirin at Arrival
+2730.state,***A**K,AK
+2004.stateavg,AL_SCIP-CARD-2,AL_AMI-5
+2734.state,A*****K,AK
+4508.hospitalname,PH*OENIX* VA M**EDICAL C*ENTER,PHOENIX VA MEDICAL CENTER
+1969.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,surgery patients who were given the  right kind  of antibiotic to help prevent infection
+5905.hospitaltype,Acut*e Car*e - V*A* Medical Cent*er,Acute Care - VA Medical Center
+1890.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given the Most Appropriate Initial Antibiotic(s)
+8271.emergencyservice,*****No,No
+2649.state,***A**K,AK
+4511.phonenumber,6*0222**26*44*4,6022226444
+899.condition,S**urgical* Infecti**on Prevention,Surgical Infection Prevention
+2713.state,****A*K,AK
+4530.phonenumber,*5*206**2*91821,5206291821
+2796.condition,*Hear**t Atta**ck,Heart Attack
+1052.condition,Sur**gical I*nfectio**n Prevention,Surgical Infection Prevention
+4557.emergencyservice,*****No,No
+2596.phonenumber,2053258100,9072613675
+2473.phonenumber,*334*2**60*4100,3342604100
+4536.phonenumber,520***62918*2*1,5206291821
+4573.hospitalname,VA NORTHERN* ARIZO*NA HEALTHCARE* SYST*E*M,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+2862.state,***A**K,AK
+2272.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+2269.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+1896.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,all heart surgery patients whose blood sugar (blood glucose) is kept under good control in the days right after surgery
+2060.emergencyservice,N*****o,No
+4502.phonenumber,60*2*2226**44*4,6022226444
+451.stateavg,AL_SCIP-INF-1,AK_AMI-1
+4531.phonenumber,5206**29*182**1,5206291821
+2268.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+2271.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+728.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Assessed and Given Pneumococcal Vaccination
+1991.stateavg,AL_SCIP-CARD-2,AL_PN-7
+723.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given PCI Within 90 Minutes Of Arrival
+4516.hospitalname,*PHO*E*NI*X VA M*EDICAL CENTER,PHOENIX VA MEDICAL CENTER
+1698.emergencyservice,**N***o,No
+1906.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given PCI Within 90 Minutes Of Arrival
+1901.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Aspirin at Discharge
+2697.state,****A*K,AK
+1881.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given PCI Within 90 Minutes Of Arrival
+9902.emergencyservice,N*****o,No
+1886.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Assessed and Given Pneumococcal Vaccination
+2798.condition,*H*eart *Failu*r*e,Heart Failure
+1307.providernumber,10018,10073
+9532.hospitaltype,Acute* Car*e *Hos*pi*tals,Acute Care Hospitals
+1205.condition,Su*rg*i*cal Infection Preven*t*ion,Surgical Infection Prevention
+2063.emergencyservice,*N****o,No
+2591.phonenumber,2053258100,9072613675
+2683.state,*****AK,AK
+5875.emergencyservice,*****No,No
+2065.emergencyservice,*N****o,No
+2470.phonenumber,334**2**60*4100,3342604100
+2712.phonenumber,2053258100,9075436300
+1652.providernumber,10018,10102
+1639.providernumber,10018,10101
+4747.measurecode,*S*C*IP-I*N*F-4,SCIP-INF-4
+1665.providernumber,10018,10102
+1574.providernumber,10018,10099
+1590.providernumber,10018,10099
+2643.condition,H*ea**r*t Failu*re,Heart Failure
+2770.condition,Hea*rt* A**t*tack,Heart Attack
+2459.phonenumber,33***42*604*100,3342604100
+118.providernumber,10018,10007
+7004.measurecode,****SC*IP-INF-4,SCIP-INF-4
+4503.phonenumber,*60*22226**44*4,6022226444
+2707.phonenumber,2053258100,9075436300
+1313.providernumber,10018,10078
+4567.emergencyservice,****N*o,No
+5890.hospitaltype,Acut*e Care* - VA *Medical Cen*t*er,Acute Care - VA Medical Center
+733.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Assessed and Given Influenza Vaccination
+1587.providernumber,10018,10099
+2767.condition,*Heart* Att**a*ck,Heart Attack
+2439.phonenumber,2053258100,2513682500
+2470.hospitaltype,Ac*ute Care *- VA Me**dic*al Center,Acute Care - VA Medical Center
+2750.condition,He*art F*a**il*ure,Heart Failure
+5872.emergencyservice,****N*o,No
+2586.phonenumber,2053258100,9072613675
+786.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given an Evaluation of Left Ventricular Systolic (LVS) Function
+2108.stateavg,AL_SCIP-CARD-2,AL_HF-2
+2472.hospitaltype,Acu*te **Ca*re - *VA Medical Center,Acute Care - VA Medical Center
+2485.phonenumber,20555420*****00,2055542000
+2618.state,A*****K,AK
+54.stateavg,AK_PN-7,AL_HF-3
+5907.emergencyservice,****N*o,No
+2884.state,**A***K,AK
+2670.state,A*****K,AK
+1964.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given Initial Antibiotic(s) within 6 Hours After Arrival
+48.stateavg,AK_PN-7,AL_AMI-4
+2512.phonenumber,2053258100,2518472223
+1616.condition,Surgica*l Infectio*n Pr*e*v*ention,Surgical Infection Prevention
+2507.phonenumber,2053258100,2518472223
+1295.providernumber,10018,10073
+1982.stateavg,AL_SCIP-CARD-2,AL_HF-1
+1300.providernumber,10018,10073
+2444.phonenumber,2053258100,2513682500
+52.stateavg,AK_PN-7,AL_HF-1
+28.stateavg,AK_PN-7,AL_HF-2
+2740.state,*****AK,AK
+1288.providernumber,10018,10073
+3155.condition,Sur*g*ical Infe*ction Preve**ntion,Surgical Infection Prevention
+2272.phonenumber,2*05*9*3*345*15,2059334515
+1659.providernumber,10018,10102
+1645.providernumber,10018,10102
+6693.measurecode,SCI**P***-INF-4,SCIP-INF-4
+96.phonenumber,2053258100,3344933541
+5878.emergencyservice,*N****o,No
+2787.state,**A***K,AK
+2027.stateavg,AL_SCIP-CARD-2,AL_AMI-3
+2668.state,**A***K,AK
+2613.condition,Heart ***At**tack,Heart Attack
+1333.providernumber,10018,10078
+99.providernumber,10018,10007
+2475.hospitaltype,Acute* Ca*re - *VA *Medic*al Center,Acute Care - VA Medical Center
+2496.phonenumber,2**055542*00**0,2055542000
+4568.emergencyservice,*N****o,No
+1672.providernumber,10018,10103
+4950.measurecode,**SC*IP-INF**-4,SCIP-INF-4
+2146.condition,Surgical **Infec*tion Prev*ent*ion,Surgical Infection Prevention
+436.stateavg,AL_SCIP-INF-1,AK_HF-4
+6136.measurecode,S**C*IP-*INF*-4,SCIP-INF-4
+2606.phonenumber,2053258100,9072613675
+9408.hospitaltype,***Acute Care Hospit*al*s,Acute Care Hospitals
+1327.providernumber,10018,10078
+977.condition,Surgica**l I*nfec*tion Preve*ntion,Surgical Infection Prevention
+2702.state,**A***K,AK
+2694.state,****A*K,AK
+2250.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+2255.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+1632.providernumber,10018,10101
+1619.providernumber,10018,10100
+1291.providernumber,10018,10073
+9422.hospitaltype,A*cute *Car**e Ho*spitals,Acute Care Hospitals
+2475.phonenumber,334260*41**0**0,3342604100
+2743.state,**A***K,AK
+2737.state,A*****K,AK
+781.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Smoking Cessation Advice/Counseling
+1320.providernumber,10018,10078
+114.providernumber,10018,10007
+2051.stateavg,AL_SCIP-CARD-2,AL_AMI-2
+446.providernumber,10018,20017
+1612.providernumber,10018,10100
+2676.state,*****AK,AK
+5867.emergencyservice,****N*o,No
+1937.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Whose Initial Emergency Room Blood Culture Was Performed Prior To The Administration Of The First Hospital Dose Of Antibiotics
+9529.hospitaltype,Acut*e* Care Hospit**a*ls,Acute Care Hospitals
+2824.condition,H*eart** **Failure,Heart Failure
+2005.stateavg,AL_SCIP-CARD-2,AL_AMI-7A
+9910.emergencyservice,N*****o,No
+2479.hospitaltype,Acut*e Care - V*A Medical Ce*nt*e*r,Acute Care - VA Medical Center
+4512.hospitalname,P*HOENIX VA *MEDI*CAL C**ENTER,PHOENIX VA MEDICAL CENTER
+4549.hospitalname,VA **S. ARI*ZONA H*EALTHCA*RE SYSTEM,VA S. ARIZONA HEALTHCARE SYSTEM
+1600.providernumber,10018,10100
+1913.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given Smoking Cessation Advice/Counseling
+1990.stateavg,AL_SCIP-CARD-2,AL_PN-6
+1918.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,surgery patients who were given an antibiotic at the right time (within one hour before surgery) to help prevent infection
+20.stateavg,AK_PN-7,AL_AMI-1
+2604.state,**A***K,AK
+4539.hospitalname,VA *S. ARIZ*ONA HE*AL*THCARE *SYSTEM,VA S. ARIZONA HEALTHCARE SYSTEM
+5378.measurecode,*SCI*P-INF***-4,SCIP-INF-4
+86.stateavg,AK_PN-7,AL_PN-7
+113.providernumber,10018,10007
+2484.phonenumber,*20**5554**2000,2055542000
+2269.phonenumber,2***0*593*34515,2059334515
+4550.emergencyservice,*N****o,No
+2447.phonenumber,2053258100,2513682500
+2075.stateavg,AL_SCIP-CARD-2,AL_AMI-1
+3122.condition,Sur**gical* Infection Prev*entio*n,Surgical Infection Prevention
+119.providernumber,10018,10007
+4549.emergencyservice,*N****o,No
+4514.phonenumber,602*22*2**64*44,6022226444
+1983.stateavg,AL_SCIP-CARD-2,AL_HF-2
+1909.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given ACE Inhibitor or ARB for Left Ventricular Systolic Dysfunction (LVSD)
+1321.providernumber,10018,10078
+2458.hospitaltype,Ac*ute **Care *- VA* Medical Center,Acute Care - VA Medical Center
+2265.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+4572.hospitalname,VA NORTHE*RN ARI*ZONA HEALTHC**ARE SYS*TEM,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+2806.state,**A***K,AK
+9545.hospitaltype,Ac*ute Care H**o**spitals,Acute Care Hospitals
+7104.measurecode,*S**CIP-*INF*-4,SCIP-INF-4
+9905.emergencyservice,***N**o,No
+1673.providernumber,10018,10103
+3088.condition,S*urgic*al Infec**tion Preve*ntion,Surgical Infection Prevention
+57.stateavg,AK_PN-7,AL_PN-3B
+2599.phonenumber,2053258100,9072613675
+98.providernumber,10018,10007
+2497.hospitalname,T*USCALOOSA VA **M**EDICAL CENTER,TUSCALOOSA VA MEDICAL CENTER
+1721.condition,Surgi*cal Infection *P*reve**ntion,Surgical Infection Prevention
+1347.providernumber,10018,10079
+2754.state,A*****K,AK
+2719.state,*****AK,AK
+813.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given Smoking Cessation Advice/Counseling
+438.stateavg,AL_SCIP-INF-1,AK_PN-3B
+1441.condition,Surgi*cal Infectio*n Preventi*o**n,Surgical Infection Prevention
+1625.providernumber,10018,10101
+816.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given Smoking Cessation Advice/Counseling
+1606.providernumber,10018,10100
+2003.stateavg,AL_SCIP-CARD-2,AL_AMI-4
+2053.stateavg,AL_SCIP-CARD-2,AL_AMI-4
+2246.condition,Sur*gi**cal Inf*ection Pr*evention,Surgical Infection Prevention
+1904.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Beta Blocker at Discharge
+2057.emergencyservice,*****No,No
+4561.hospitalname,VA NO*RTH*ERN AR**IZONA *HEALTHCARE SYSTEM,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+9537.hospitaltype,Acute C*ar*e Ho*spita**ls,Acute Care Hospitals
+6211.measurecode,SC*I***P-IN*F-4,SCIP-INF-4
+2479.phonenumber,33**426*0*4*100,3342604100
+5756.measurecode,SC*I*P*-INF**-4,SCIP-INF-4
+63.stateavg,AK_PN-7,AL_SCIP-INF-1
+700.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given an Evaluation of Left Ventricular Systolic (LVS) Function
+777.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Children and their Caregivers Who Received a Home Management Plan of Care Document While Hospitalized for Asthma
+2473.hospitaltype,Acute Car*e - *VA *Med*ic*al Center,Acute Care - VA Medical Center
+440.providernumber,10018,20017
+4523.phonenumber,602**222*6*4*44,6022226444
+9538.hospitaltype,Acute C**are Hosp**i*tals,Acute Care Hospitals
+1290.providernumber,10018,10073
+5865.emergencyservice,*N****o,No
+1653.providernumber,10018,10102
+705.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given Smoking Cessation Advice/Counseling
+2451.condition,Su*rgical* Infe*ct*i*on Prevention,Surgical Infection Prevention
+9912.emergencyservice,****N*o,No
+1341.providernumber,10018,10079
+1626.providernumber,10018,10101
+4559.hospitalname,V*A N*ORTHER*N AR*IZ*ONA HEALTHCARE SYSTEM,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+72.stateavg,AK_PN-7,AL_AMI-3
+4571.emergencyservice,*****No,No
+2614.condition,*Hea**rt* Atta*ck,Heart Attack
+3066.condition,S*ur*gical Infection* Pre**vention,Surgical Infection Prevention
+2768.state,****A*K,AK
+2025.stateavg,AL_SCIP-CARD-2,AL_AMI-1
+9541.hospitaltype,Acute *Ca*re* Hosp**itals,Acute Care Hospitals
+9531.hospitaltype,Acut**e Care Hospi*ta**ls,Acute Care Hospitals
+2845.condition,H*ea*rt* A*t*tack,Heart Attack
+4575.hospitalname,VA NORTHE*RN ARIZONA H*EALT**HCAR*E SYSTEM,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+4546.emergencyservice,****N*o,No
+7.stateavg,AK_PN-7,AL_SCIP-VTE-1
+1346.providernumber,10018,10079
+2462.phonenumber,*33*4260***4100,3342604100
+5886.emergencyservice,*N****o,No
+1704.emergencyservice,*****No,No
+1962.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Whose Initial Emergency Room Blood Culture Was Performed Prior To The Administration Of The First Hospital Dose Of Antibiotics
+1971.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,all heart surgery patients whose blood sugar (blood glucose) is kept under good control in the days right after surgery
+1710.emergencyservice,**N***o,No
+445.providernumber,10018,20017
+2772.state,****A*K,AK
+6036.measurecode,**SC*I*P-I*NF-4,SCIP-INF-4
+2031.stateavg,AL_SCIP-CARD-2,AL_AMI-8A
+2704.phonenumber,2053258100,9075436300
+1697.emergencyservice,*****No,No
+1719.emergencyservice,****N*o,No
+2271.phonenumber,2*05*93*3**4515,2059334515
+2520.phonenumber,2053258100,2518472223
+2636.state,****A*K,AK
+4539.emergencyservice,**N***o,No
+2850.condition,**Heart* Failur**e,Heart Failure
+2107.stateavg,AL_SCIP-CARD-2,AL_HF-1
+4516.phonenumber,**6*022226**444,6022226444
+756.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given Initial Antibiotic(s) within 6 Hours After Arrival
+719.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given ACE Inhibitor or ARB for Left Ventricular Systolic Dysfunction (LVSD)
+2705.state,**A***K,AK
+2457.hospitaltype,Acute C*ar*e - VA *Medi*cal Ce*nter,Acute Care - VA Medical Center
+4566.emergencyservice,**N***o,No
+2515.phonenumber,2053258100,2518472223
+77.stateavg,AK_PN-7,AL_HF-1
+4506.hospitalname,PHOENIX VA **MEDICAL **CENTE*R,PHOENIX VA MEDICAL CENTER
+2813.state,*A****K,AK
+420.providernumber,10018,10164
+6061.measurecode,S*CI*P*-*INF-*4,SCIP-INF-4
+2809.state,*A****K,AK
+2110.stateavg,AL_SCIP-CARD-2,AL_HF-4
+1269.providernumber,10018,10069
+1976.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Aspirin at Discharge
+2764.state,A*****K,AK
+742.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Aspirin at Arrival
+2621.state,**A***K,AK
+2612.condition,He***ar*t Att*ack,Heart Attack
+5887.hospitaltype,Acute* Ca*re - VA Medical C*en*t*er,Acute Care - VA Medical Center
+5000.measurecode,*SC**IP-INF**-4,SCIP-INF-4
+2655.state,**A***K,AK
+4544.hospitalname,VA S. A*RIZONA *HEALTHC*ARE SY**STEM,VA S. ARIZONA HEALTHCARE SYSTEM
+747.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Fibrinolytic Medication Within 30 Minutes Of Arrival
+2858.state,A*****K,AK
+1289.providernumber,10018,10073
+7029.measurecode,S*CI*P*-I*NF*-4,SCIP-INF-4
+5478.measurecode,SCIP**-*IN*F*-4,SCIP-INF-4
+425.providernumber,10018,10164
+699.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given Discharge Instructions
+1301.providernumber,10018,10073
+433.stateavg,AL_SCIP-INF-1,AK_HF-1
+2722.state,*A****K,AK
+6236.measurecode,SC**IP-INF***-4,SCIP-INF-4
+1633.providernumber,10018,10101
+8278.emergencyservice,*N****o,No
+2603.phonenumber,2053258100,9072613675
+2052.stateavg,AL_SCIP-CARD-2,AL_AMI-3
+5328.measurecode,S*CIP**-IN*F-*4,SCIP-INF-4
+5981.measurecode,*SCIP-I**N*F-*4,SCIP-INF-4
+1920.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,surgery patients whose preventive antibiotics were stopped at the right time (within 24 hours after surgery)
+2030.stateavg,AL_SCIP-CARD-2,AL_AMI-7A
+5901.hospitaltype,Ac*u*te Care - VA* Medical **Center,Acute Care - VA Medical Center
+2857.state,**A***K,AK
+9526.hospitaltype,Acute* Ca*re Ho*sp**itals,Acute Care Hospitals
+1707.emergencyservice,**N***o,No
+5868.hospitalname,FAYETTEVIL*L*E AR VA ME*DICAL* CENTE*R,FAYETTEVILLE AR VA MEDICAL CENTER
+751.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given ACE Inhibitor or ARB for Left Ventricular Systolic Dysfunction (LVSD)
+5894.hospitaltype,Acute *Care -* VA Medical*** Center,Acute Care - VA Medical Center
+1130.condition,Surgical In*fec*ti*on Pre*ven*tion,Surgical Infection Prevention
+1270.providernumber,10018,10069
+2622.state,*****AK,AK
+4975.measurecode,S*C**IP-IN*F*-4,SCIP-INF-4
+2696.state,**A***K,AK
+1276.providernumber,10018,10069
+1319.providernumber,10018,10078
+2503.hospitalname,TU*SCA*LOOSA* VA M*EDICAL CEN*TER,TUSCALOOSA VA MEDICAL CENTER
+1925.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Aspirin at Arrival
+2487.phonenumber,2*0*5554**200*0,2055542000
+6908.emergencyservice,N*****o,No
+17.stateavg,AK_PN-7,AL_HF-2
+2128.stateavg,AL_SCIP-CARD-2,AL_AMI-4
+9539.hospitaltype,Acute *C*ar*e *Hospit*als,Acute Care Hospitals
+1296.providernumber,10018,10073
+5956.measurecode,S*CIP*-IN**F-*4,SCIP-INF-4
+2261.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+2821.condition,*Hear*t *Attac**k,Heart Attack
+2695.phonenumber,2053258100,9075436300
+9544.hospitaltype,*Acute* Ca**re Hosp*itals,Acute Care Hospitals
+106.providernumber,10018,10007
+9401.hospitaltype,Acute Care Hos*pi***tal*s,Acute Care Hospitals
+678.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Assessed and Given Pneumococcal Vaccination
+1620.providernumber,10018,10101
+43.stateavg,AK_PN-7,AL_SCIP-VTE-1
+438.providernumber,10018,20017
+2525.phonenumber,2053258100,2518472223
+1640.providernumber,10018,10101
+8273.emergencyservice,*N****o,No
+37.stateavg,AK_PN-7,AL_SCIP-CARD-2
+2061.emergencyservice,**N***o,No
+809.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given PCI Within 90 Minutes Of Arrival
+2111.stateavg,AL_SCIP-CARD-2,AL_PN-2
+418.providernumber,10018,10164
+5890.emergencyservice,***N**o,No
+23.stateavg,AK_PN-7,AL_AMI-4
+1591.condition,Surgical *In*fection* Pre*vent*ion,Surgical Infection Prevention
+6899.emergencyservice,*****No,No
+2465.phonenumber,***334*26*04100,3342604100
+8259.emergencyservice,N*****o,No
+2452.phonenumber,2053258100,2513682500
+2106.stateavg,AL_SCIP-CARD-2,AL_AMI-8A
+2883.state,****A*K,AK
+1283.providernumber,10018,10069
+694.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given ACE Inhibitor or ARB for Left Ventricular Systolic Dysfunction (LVSD)
+2835.state,****A*K,AK
+3140.condition,Surgica*l *Infection* *Prevent*ion,Surgical Infection Prevention
+2817.condition,He*a*rt At**ta*ck,Heart Attack
+1575.providernumber,10018,10099
+5681.measurecode,***SCIP-*IN*F-4,SCIP-INF-4
+1595.providernumber,10018,10100
+1984.stateavg,AL_SCIP-CARD-2,AL_HF-3
+4772.measurecode,*SCI*P*-I*NF*-4,SCIP-INF-4
+1263.providernumber,10018,10069
+2457.phonenumber,334*2**60*41*00,3342604100
+804.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Aspirin at Discharge
+4.stateavg,AK_PN-7,AL_SCIP-INF-3
+9549.hospitaltype,Ac*ute Care* H*ospi*t*als,Acute Care Hospitals
+9908.emergencyservice,*****No,No
+4505.phonenumber,*60**2*22264*44,6022226444
+2602.state,*A****K,AK
+2598.phonenumber,2053258100,9072613675
+16.stateavg,AK_PN-7,AL_HF-1
+2689.state,***A**K,AK
+75.stateavg,AK_PN-7,AL_AMI-7A
+1996.condition,Surgic**al Infection P*rev*enti*on,Surgical Infection Prevention
+1966.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Assessed and Given Influenza Vaccination
+2664.state,***A**K,AK
+1889.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given Initial Antibiotic(s) within 6 Hours After Arrival
+1970.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,surgery patients whose preventive antibiotics were stopped at the right time (within 24 hours after surgery)
+1893.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,surgery patients who were given an antibiotic at the right time (within one hour before surgery) to help prevent infection
+1898.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,surgery patients whose doctors ordered treatments to prevent blood clots after certain types of surgeries
+2266.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+1975.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Aspirin at Arrival
+2749.state,****A*K,AK
+2259.emergencyservice,N*****o,No
+2469.phonenumber,*33**4260*41*00,3342604100
+4553.emergencyservice,*****No,No
+2753.state,*A****K,AK
+1284.providernumber,10018,10073
+5864.hospitalname,F*AYETTEVILLE *AR V*A ME*DICAL CENTE*R,FAYETTEVILLE AR VA MEDICAL CENTER
+2478.hospitaltype,Ac*ute** Car*e *- VA Medical Center,Acute Care - VA Medical Center
+2638.condition,***H**eart Attack,Heart Attack
+2274.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+2498.hospitalname,TU*SCALOOSA VA M*EDIC**AL* CENTER,TUSCALOOSA VA MEDICAL CENTER
+2701.phonenumber,2053258100,9075436300
+2258.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+6286.measurecode,SCI**P*-*IN*F-4,SCIP-INF-4
+2739.state,*A****K,AK
+442.providernumber,10018,20017
+793.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given the Most Appropriate Initial Antibiotic(s)
+2091.stateavg,AL_SCIP-CARD-2,AL_PN-7
+1771.condition,Su*rg*ical Infec***tion Prevention,Surgical Infection Prevention
+1598.providernumber,10018,10100
+1957.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given Discharge Instructions
+2717.state,****A*K,AK
+5884.emergencyservice,*****No,No
+2080.stateavg,AL_SCIP-CARD-2,AL_AMI-7A
+5125.measurecode,*S*C*IP-*INF*-4,SCIP-INF-4
+2771.state,*****AK,AK
+2105.stateavg,AL_SCIP-CARD-2,AL_AMI-7A
+1961.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Assessed and Given Pneumococcal Vaccination
+5861.emergencyservice,****N*o,No
+2467.hospitaltype,**Acute Care -* VA Medical *Cente*r,Acute Care - VA Medical Center
+1884.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given ACE Inhibitor or ARB for Left Ventricular Systolic Dysfunction (LVSD)
+1578.providernumber,10018,10099
+5902.emergencyservice,****N*o,No
+2604.condition,Surgical Infectio*n Preven**t*i*on,Surgical Infection Prevention
+2116.stateavg,AL_SCIP-CARD-2,AL_PN-7
+439.providernumber,10018,20017
+2849.condition,H*eart* Fail**ur*e,Heart Failure
+2744.state,***A**K,AK
+8004.stateavg,AL_SCIP-INF-1,CA_HF-1
+4515.hospitalname,PHOENIX VA MED*I*CAL *CENTE**R,PHOENIX VA MEDICAL CENTER
+2720.condition,*He*ar**t *Attack,Heart Attack
+2273.phonenumber,2*059*334*5**15,2059334515
+2689.condition,*Hea*r*t* Attac*k,Heart Attack
+2258.emergencyservice,***N**o,No
+784.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given PCI Within 90 Minutes Of Arrival
+1948.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,surgery patients whose doctors ordered treatments to prevent blood clots after certain types of surgeries
+789.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Assessed and Given Pneumococcal Vaccination
+1618.providernumber,10018,10100
+9527.hospitaltype,Acute* *Ca**re Hosp*itals,Acute Care Hospitals
+2257.emergencyservice,****N*o,No
+419.providernumber,10018,10164
+2012.stateavg,AL_SCIP-CARD-2,AL_PN-3B
+8280.emergencyservice,*****No,No
+1352.providernumber,10018,10079
+6261.measurecode,S**CIP*-I*NF-*4,SCIP-INF-4
+2668.condition,*Hea*rt *Failur**e,Heart Failure
+2703.state,**A***K,AK
+1581.providernumber,10018,10099
+4539.phonenumber,5**20*6*29*1821,5206291821
+2514.phonenumber,2053258100,2518472223
+2888.state,***A**K,AK
+100.providernumber,10018,10007
+59.stateavg,AK_PN-7,AL_PN-5C
+849.condition,S**urgical* *I*nfection Prevention,Surgical Infection Prevention
+1349.providernumber,10018,10079
+4847.measurecode,SCI**P*-I**NF-4,SCIP-INF-4
+1316.providernumber,10018,10078
+2722.condition,*H*e*art *Attac*k,Heart Attack
+1934.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given ACE Inhibitor or ARB for Left Ventricular Systolic Dysfunction (LVSD)
+4622.measurecode,*SCI**P*-INF*-4,SCIP-INF-4
+4566.hospitalname,VA NORTHE*RN ARIZON*A HEALT*HC*ARE SYS*TEM,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+1324.providernumber,10018,10078
+8269.emergencyservice,**N***o,No
+9418.hospitaltype,Ac*ute* C*are Hos**pitals,Acute Care Hospitals
+2509.phonenumber,2053258100,2518472223
+2626.state,A*****K,AK
+1264.providernumber,10018,10069
+4527.phonenumber,520*629*1*82**1,5206291821
+82.stateavg,AK_PN-7,AL_PN-3B
+1621.providernumber,10018,10101
+95.providernumber,10018,10007
+68.stateavg,AK_PN-7,AL_SCIP-VTE-1
+1613.providernumber,10018,10100
+1658.providernumber,10018,10102
+1666.providernumber,10018,10102
+3199.condition,Surg**ical Infection* Prev*ent*ion,Surgical Infection Prevention
+4517.phonenumber,6*022**2*264*44,6022226444
+1344.providernumber,10018,10079
+9424.hospitaltype,Acut*e* *Car*e Ho*spitals,Acute Care Hospitals
+2745.condition,Hear*t At*t*a**ck,Heart Attack
+6640.measurecode,SCI*P-INF****-4,SCIP-INF-4
+2526.condition,Surgical In*fecti*o*n *Pr*evention,Surgical Infection Prevention
+1661.providernumber,10018,10102
+2618.condition,Heart **Fa*il*u*re,Heart Failure
+1641.providernumber,10018,10101
+2742.state,**A***K,AK
+2690.state,***A**K,AK
+2001.stateavg,AL_SCIP-CARD-2,AL_AMI-2
+1638.providernumber,10018,10101
+5881.measurecode,*S*CIP**-*INF-4,SCIP-INF-4
+5880.emergencyservice,****N*o,No
+2625.state,***A**K,AK
+5030.stateavg,AL_SCIP-INF-1,AR_AMI-2
+6912.emergencyservice,****N*o,No
+84.stateavg,AK_PN-7,AL_PN-5C
+2261.phonenumber,205***9*3*34515,2059334515
+1593.providernumber,10018,10099
+9415.hospitaltype,Acu*te Ca***re Ho*spitals,Acute Care Hospitals
+2021.condition,Surgical Infe*cti*o*n** Prevention,Surgical Infection Prevention
+2096.condition,Surg*ical I*nfec*tion P*reve*ntion,Surgical Infection Prevention
+2471.phonenumber,33*4**26*0410*0,3342604100
+2528.phonenumber,2053258100,2518472223
+2752.state,*****AK,AK
+2775.condition,Hear*t Fa*ilu**r*e,Heart Failure
+4535.hospitalname,VA *S**. *ARIZONA* HEALTHCARE SYSTEM,VA S. ARIZONA HEALTHCARE SYSTEM
+2709.phonenumber,2053258100,9075436300
+2437.phonenumber,2053258100,2513682500
+2065.stateavg,AL_SCIP-CARD-2,AL_PN-6
+1717.emergencyservice,*****No,No
+4552.hospitalname,V*A NORTHERN ARI*ZON*A HEALTHC*AR*E SYSTEM,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+2677.state,A*****K,AK
+422.providernumber,10018,10164
+1304.providernumber,10018,10073
+5203.measurecode,SC*IP-I***NF-*4,SCIP-INF-4
+14.stateavg,AK_PN-7,AL_AMI-7A
+6793.measurecode,*S*C*IP-*INF-*4,SCIP-INF-4
+2664.condition,H*eart** A*t*tack,Heart Attack
+2262.phonenumber,20*59*3*34*51*5,2059334515
+704.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Whose Initial Emergency Room Blood Culture Was Performed Prior To The Administration Of The First Hospital Dose Of Antibiotics
+66.stateavg,AK_PN-7,AL_SCIP-INF-4
+2054.stateavg,AL_SCIP-CARD-2,AL_AMI-5
+6590.measurecode,SCI*P*-**I*NF-4,SCIP-INF-4
+1646.providernumber,10018,10102
+752.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given Smoking Cessation Advice/Counseling
+1911.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Assessed and Given Pneumococcal Vaccination
+2714.phonenumber,2053258100,9075436300
+1939.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given Initial Antibiotic(s) within 6 Hours After Arrival
+1105.condition,S*urgical Infec*tion *Pre*venti*on,Surgical Infection Prevention
+2844.condition,*He*ar*t Attac**k,Heart Attack
+5903.emergencyservice,***N**o,No
+775.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Children Who Received Reliever Medication While Hospitalized for Asthma
+6909.emergencyservice,**N***o,No
+693.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Aspirin at Discharge
+2087.stateavg,AL_SCIP-CARD-2,AL_PN-3B
+698.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given PCI Within 90 Minutes Of Arrival
+2442.phonenumber,2053258100,2513682500
+1605.providernumber,10018,10100
+757.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given the Most Appropriate Initial Antibiotic(s)
+5506.measurecode,*S*C*IP-*INF-*4,SCIP-INF-4
+2076.stateavg,AL_SCIP-CARD-2,AL_AMI-2
+2502.hospitalname,*TU*SCALOO*SA* VA M*EDICAL CENTER,TUSCALOOSA VA MEDICAL CENTER
+2642.condition,**Hea*rt Fai*lur*e,Heart Failure
+2617.condition,He*a**rt Fai*l*ure,Heart Failure
+6914.emergencyservice,*****No,No
+2792.condition,H*e*a*rt Atta*c*k,Heart Attack
+1357.providernumber,10018,10079
+2604.phonenumber,2053258100,9072613675
+6906.emergencyservice,*N****o,No
+1986.stateavg,AL_SCIP-CARD-2,AL_PN-2
+5895.hospitaltype,Acu*te Care - VA* Medical *C**enter,Acute Care - VA Medical Center
+2672.state,*****AK,AK
+2052.emergencyservice,*****No,No
+1943.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,surgery patients who were given an antibiotic at the right time (within one hour before surgery) to help prevent infection
+2635.state,**A***K,AK
+2606.state,A*****K,AK
+2774.condition,*He*art Fa*il*u*re,Heart Failure
+2259.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+117.providernumber,10018,10007
+2746.condition,He*art At**t*a*ck,Heart Attack
+9913.emergencyservice,***N**o,No
+5881.emergencyservice,***N**o,No
+2127.stateavg,AL_SCIP-CARD-2,AL_AMI-3
+1360.providernumber,10018,10083
+4568.hospitalname,V*A N*ORTHERN ARIZ*ONA HEALTHCARE SYS**TEM,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+2010.stateavg,AL_SCIP-CARD-2,AL_HF-4
+2068.emergencyservice,*N****o,No
+9536.hospitaltype,Ac**ute Care *Hospi*t*als,Acute Care Hospitals
+2493.hospitalname,TUSCAL*OOS*A VA **MED*ICAL CENTER,TUSCALOOSA VA MEDICAL CENTER
+2842.condition,Hea***r**t Attack,Heart Attack
+2694.phonenumber,2053258100,9075436300
+811.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given an Evaluation of Left Ventricular Systolic (LVS) Function
+2474.phonenumber,3****34*2604100,3342604100
+2700.phonenumber,2053258100,9075436300
+30.stateavg,AK_PN-7,AL_HF-4
+2008.stateavg,AL_SCIP-CARD-2,AL_HF-2
+2838.state,A*****K,AK
+818.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given the Most Appropriate Initial Antibiotic(s)
+1271.providernumber,10018,10069
+731.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given Initial Antibiotic(s) within 6 Hours After Arrival
+4524.phonenumber,6*0**22*226*444,6022226444
+434.stateavg,AL_SCIP-INF-1,AK_HF-2
+2032.stateavg,AL_SCIP-CARD-2,AL_HF-1
+2464.phonenumber,334*26**041*0*0,3342604100
+34.stateavg,AK_PN-7,AL_PN-5C
+1516.condition,Surg*ic*al Infec*ti*on* Prevention,Surgical Infection Prevention
+2751.state,****A*K,AK
+2196.condition,S*urgical *Inf**ection Preventi*on,Surgical Infection Prevention
+5883.emergencyservice,**N***o,No
+426.providernumber,10018,10164
+2058.emergencyservice,**N***o,No
+1268.providernumber,10018,10069
+2059.emergencyservice,N*****o,No
+2614.state,A*****K,AK
+2502.phonenumber,*205554***20*00,2055542000
+4548.hospitalname,VA S. A*R**IZONA HEALTHCARE SYS*T*EM,VA S. ARIZONA HEALTHCARE SYSTEM
+5873.hospitalname,FAYE*TTEVILLE* AR VA MED*ICAL CENT**ER,FAYETTEVILLE AR VA MEDICAL CENTER
+32.stateavg,AK_PN-7,AL_PN-3B
+2584.phonenumber,2053258100,9072613675
+4552.emergencyservice,**N***o,No
+2460.phonenumber,33*4*2*6*04*100,3342604100
+1916.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Assessed and Given Influenza Vaccination
+18.stateavg,AK_PN-7,AL_HF-3
+4565.hospitalname,*V*A NORTHERN* ARIZONA HEALTHCARE SYST*E*M,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+2837.condition,Surgical* Inf*ect*ion Pr*ev*ention,Surgical Infection Prevention
+2489.hospitaltype,Acute Care - V*A M*ed**ical C*enter,Acute Care - VA Medical Center
+1280.condition,**Surgical* Inf*ection Preventio*n,Surgical Infection Prevention
+2060.stateavg,AL_SCIP-CARD-2,AL_HF-4
+2661.state,*A****K,AK
+4550.hospitalname,VA S. A*RIZONA **HEALTHCA*RE SY*STEM,VA S. ARIZONA HEALTHCARE SYSTEM
+2504.hospitalname,TUSC*AL*OO*SA VA* MEDICA*L CENTER,TUSCALOOSA VA MEDICAL CENTER
+824.condition,*Surg*ical Infe**ction P*revention,Surgical Infection Prevention
+2863.state,*****AK,AK
+754.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Whose Initial Emergency Room Blood Culture Was Performed Prior To The Administration Of The First Hospital Dose Of Antibiotics
+2783.state,****A*K,AK
+4565.emergencyservice,**N***o,No
+5870.hospitalname,FAYE*TTEVILL*E AR V*A M*EDICA*L CENTER,FAYETTEVILLE AR VA MEDICAL CENTER
+4558.hospitalname,*VA** NORTHE*RN ARIZ*ONA HEALTHCARE SYSTEM,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+2599.state,*A****K,AK
+2818.condition,*He*a*r*t Att*ack,Heart Attack
+64.stateavg,AK_PN-7,AL_SCIP-INF-2
+6086.measurecode,**SC*IP-I**NF-4,SCIP-INF-4
+4545.emergencyservice,*****No,No
+2597.phonenumber,2053258100,9072613675
+1297.providernumber,10018,10073
+2257.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+2794.condition,*Hea**rt *At*tack,Heart Attack
+100.phonenumber,2053258100,3344933541
+4534.hospitalname,VA S. A*R*IZ*ON*A HEALTHCA*RE SYSTEM,VA S. ARIZONA HEALTHCARE SYSTEM
+2682.state,****A*K,AK
+725.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given an Evaluation of Left Ventricular Systolic (LVS) Function
+2576.condition,Su*r*gical Infection *Pre*ve*ntion,Surgical Infection Prevention
+441.stateavg,AL_SCIP-INF-1,AK_PN-6
+4519.hospitalname,PHO*ENIX* VA* MEDI*C*AL CENTER,PHOENIX VA MEDICAL CENTER
+1340.providernumber,10018,10079
+2491.phonenumber,20*5*55*4*20*00,2055542000
+2426.condition,Surgic*al Infectio*n Pr*eve**ntion,Surgical Infection Prevention
+707.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given the Most Appropriate Initial Antibiotic(s)
+702.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given Smoking Cessation Advice/Counseling
+2812.condition,*Surgic*al In**fection Preve*ntion,Surgical Infection Prevention
+1922.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,surgery patients needing hair removed from the surgical area before surgery&#54; who had hair removed using a safer method (electric clippers or hair removal cream - not a razor)
+1308.providernumber,10018,10073
+2449.phonenumber,2053258100,2513682500
+71.stateavg,AK_PN-7,AL_AMI-2
+2615.condition,*He**ar*t Fai*lure,Heart Failure
+2619.state,***A**K,AK
+1328.providernumber,10018,10078
+2657.state,*****AK,AK
+2742.hospitaltype,*Acute** Care H**ospitals,Acute Care Hospitals
+1312.providernumber,10018,10078
+2867.condition,Hear*t *A*tta**ck,Heart Attack
+720.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Smoking Cessation Advice/Counseling
+1718.emergencyservice,**N***o,No
+2647.state,**A***K,AK
+4540.hospitalname,VA S. *ARIZONA HEA*LTHCARE SYS**TE*M,VA S. ARIZONA HEALTHCARE SYSTEM
+12.stateavg,AK_PN-7,AL_AMI-4
+2702.phonenumber,2053258100,9075436300
+2723.state,**A***K,AK
+9404.hospitaltype,*Acute Care *Hospita*l**s,Acute Care Hospitals
+1654.providernumber,10018,10102
+2640.condition,He*a**rt* F*ailure,Heart Failure
+2492.hospitalname,TUSCALO*OSA* VA* MEDIC*AL *CENTER,TUSCALOOSA VA MEDICAL CENTER
+5909.emergencyservice,****N*o,No
+2758.state,*A****K,AK
+1277.providernumber,10018,10069
+5891.hospitaltype,Acute *Car*e - VA Medica*l* Cen*ter,Acute Care - VA Medical Center
+427.providernumber,10018,10164
+6336.measurecode,SCIP-*****INF-4,SCIP-INF-4
+2837.state,A*****K,AK
+8272.emergencyservice,N*****o,No
+3047.condition,Surg**ical Infection P*rev*enti*on,Surgical Infection Prevention
+2856.state,****A*K,AK
+1586.providernumber,10018,10099
+5906.emergencyservice,N*****o,No
+6768.measurecode,SC**I*P-INF*-*4,SCIP-INF-4
+2501.condition,Surgical Inf*ec*t*ion* Pr*evention,Surgical Infection Prevention
+9546.hospitaltype,Acut*e Care Ho*s*p*it*als,Acute Care Hospitals
+1601.providernumber,10018,10100
+80.stateavg,AK_PN-7,AL_HF-4
+2006.stateavg,AL_SCIP-CARD-2,AL_AMI-8A
+2039.stateavg,AL_SCIP-CARD-2,AL_PN-5C
+2459.hospitaltype,Acu*te C*ar*e - *VA* Medical Center,Acute Care - VA Medical Center
+1927.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given ACE Inhibitor or ARB for Left Ventricular Systolic Dysfunction (LVSD)
+807.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Beta Blocker at Discharge
+79.stateavg,AK_PN-7,AL_HF-3
+2082.stateavg,AL_SCIP-CARD-2,AL_HF-1
+1272.providernumber,10018,10069
+2639.condition,H***ear*t *Attack,Heart Attack
+1594.providernumber,10018,10099
+5870.emergencyservice,*N****o,No
+2028.stateavg,AL_SCIP-CARD-2,AL_AMI-4
+2772.condition,Hea*r*t* *Atta*ck,Heart Attack
+2440.phonenumber,2053258100,2513682500
+5900.hospitaltype,Acute Ca*re* - VA *M*edical Cen*ter,Acute Care - VA Medical Center
+2499.hospitalname,*TUSCALO*O*SA* *VA MEDICAL CENTER,TUSCALOOSA VA MEDICAL CENTER
+2435.phonenumber,2053258100,2513682500
+9412.hospitaltype,A*cute Car**e Hosp*i*tals,Acute Care Hospitals
+1292.providernumber,10018,10073
+1988.stateavg,AL_SCIP-CARD-2,AL_PN-4
+2688.condition,He***ar**t Attack,Heart Attack
+5228.measurecode,SCIP*-INF**-**4,SCIP-INF-4
+5864.emergencyservice,***N**o,No
+5898.emergencyservice,***N**o,No
+4525.hospitalname,PHOE*NIX VA *MEDICAL* CEN**TER,PHOENIX VA MEDICAL CENTER
+1348.providernumber,10018,10079
+4532.hospitalname,VA S.* ARIZONA** HEALTHCAR*E SYST*EM,VA S. ARIZONA HEALTHCARE SYSTEM
+4506.phonenumber,6*02*2*22*6*444,6022226444
+2441.phonenumber,2053258100,2513682500
+1345.providernumber,10018,10079
+1978.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Smoking Cessation Advice/Counseling
+2692.condition,H**eart Att**a*ck,Heart Attack
+2757.state,****A*K,AK
+2508.phonenumber,2053258100,2518472223
+790.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Whose Initial Emergency Room Blood Culture Was Performed Prior To The Administration Of The First Hospital Dose Of Antibiotics
+105.providernumber,10018,10007
+6.stateavg,AK_PN-7,AL_SCIP-INF-6
+441.providernumber,10018,20017
+2769.condition,He*ar*t** Attac*k,Heart Attack
+2745.state,*A****K,AK
+1891.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Assessed and Given Influenza Vaccination
+4575.emergencyservice,***N**o,No
+2056.stateavg,AL_SCIP-CARD-2,AL_AMI-8A
+2656.state,****A*K,AK
+1599.providernumber,10018,10100
+675.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given an Evaluation of Left Ventricular Systolic (LVS) Function
+29.stateavg,AK_PN-7,AL_HF-3
+88.stateavg,AK_PN-7,AL_SCIP-INF-1
+2436.phonenumber,2053258100,2513682500
+447.providernumber,10018,20017
+1617.providernumber,10018,10100
+1614.providernumber,10018,10100
+2034.stateavg,AL_SCIP-CARD-2,AL_HF-3
+434.providernumber,10018,20017
+2513.phonenumber,2053258100,2518472223
+95.phonenumber,2053258100,3344933541
+2456.hospitaltype,Acute *Care - VA* Medic*a*l Cente*r,Acute Care - VA Medical Center
+4556.emergencyservice,**N***o,No
+112.providernumber,10018,10007
+5706.measurecode,SC*IP***-INF*-4,SCIP-INF-4
+1895.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,surgery patients whose preventive antibiotics were stopped at the right time (within 24 hours after surgery)
+2498.phonenumber,2**0*55*5*42000,2055542000
+4574.emergencyservice,*****No,No
+2492.phonenumber,20**5*55*420*00,2055542000
+5866.emergencyservice,****N*o,No
+2071.condition,Surgica*l *Inf*ectio*n *Prevention,Surgical Infection Prevention
+5899.emergencyservice,N*****o,No
+2721.state,A*****K,AK
+5861.hospitalname,F*AYE*TTEVILLE AR VA *MEDICAL CENT*E*R,FAYETTEVILLE AR VA MEDICAL CENTER
+4510.hospitalname,PHOE*NI*X VA *MEDICAL CEN*T*ER,PHOENIX VA MEDICAL CENTER
+5531.measurecode,**SCIP-**I*NF-4,SCIP-INF-4
+2270.phonenumber,2059**334**51*5,2059334515
+1887.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Whose Initial Emergency Room Blood Culture Was Performed Prior To The Administration Of The First Hospital Dose Of Antibiotics
+5903.hospitaltype,**Acute Care - V*A Medi*ca*l Center,Acute Care - VA Medical Center
+1907.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given Discharge Instructions
+4518.phonenumber,6**022226***444,6022226444
+55.stateavg,AK_PN-7,AL_HF-4
+1332.providernumber,10018,10078
+2062.emergencyservice,***N**o,No
+1667.providernumber,10018,10102
+2454.phonenumber,2053258100,2513682500
+2605.phonenumber,2053258100,9072613675
+2125.stateavg,AL_SCIP-CARD-2,AL_AMI-1
+41.stateavg,AK_PN-7,AL_SCIP-INF-4
+39.stateavg,AK_PN-7,AL_SCIP-INF-2
+2870.condition,Hear***t** Attack,Heart Attack
+5869.hospitalname,*FAYETTEVILL**E AR VA MEDIC*AL C*ENTER,FAYETTEVILLE AR VA MEDICAL CENTER
+1637.providernumber,10018,10101
+1936.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Assessed and Given Pneumococcal Vaccination
+5899.hospitaltype,Acut*e Care - VA M*ed**ical* Center,Acute Care - VA Medical Center
+21.stateavg,AK_PN-7,AL_AMI-2
+2490.hospitalname,T*U*SCA*LOOS*A VA MEDIC*AL CENTER,TUSCALOOSA VA MEDICAL CENTER
+2762.condition,Surgical In*f*ectio*n Prev*ent*ion,Surgical Infection Prevention
+1871.condition,Surgical Infe*ction P**re*vent*ion,Surgical Infection Prevention
+1711.emergencyservice,****N*o,No
+421.providernumber,10018,10164
+1634.providernumber,10018,10101
+435.stateavg,AL_SCIP-INF-1,AK_HF-3
+2731.state,*****AK,AK
+9407.hospitaltype,Acute Care **Ho*s**pitals,Acute Care Hospitals
+5866.hospitalname,F*AYETTE*VILLE AR VA* ME*DICAL* CENTER,FAYETTEVILLE AR VA MEDICAL CENTER
+2874.condition,H*eart F*ailur***e,Heart Failure
+782.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Beta Blocker at Discharge
+1902.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given ACE Inhibitor or ARB for Left Ventricular Systolic Dysfunction (LVSD)
+9420.hospitaltype,Acute Ca**re Hos*pital**s,Acute Care Hospitals
+2715.phonenumber,2053258100,9075436300
+4872.measurecode,SCIP-**I*NF*-*4,SCIP-INF-4
+2795.condition,*Heart **Attac**k,Heart Attack
+2089.stateavg,AL_SCIP-CARD-2,AL_PN-5C
+2601.state,A*****K,AK
+2583.phonenumber,2053258100,9072613675
+2912.condition,Surgic*al I*nfection P*r*ev*ention,Surgical Infection Prevention
+8258.emergencyservice,**N***o,No
+2103.stateavg,AL_SCIP-CARD-2,AL_AMI-4
+9906.emergencyservice,*****No,No
+5428.measurecode,S*CI*P**-INF-*4,SCIP-INF-4
+2078.stateavg,AL_SCIP-CARD-2,AL_AMI-4
+440.stateavg,AL_SCIP-INF-1,AK_PN-5C
+2693.phonenumber,2053258100,9075436300
+1931.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given PCI Within 90 Minutes Of Arrival
+745.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Smoking Cessation Advice/Counseling
+1952.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given ACE Inhibitor or ARB for Left Ventricular Systolic Dysfunction (LVSD)
+1325.providernumber,10018,10078
+25.stateavg,AK_PN-7,AL_AMI-7A
+1973.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,surgery patients whose doctors ordered treatments to prevent blood clots after certain types of surgeries
+2613.state,***A**K,AK
+2267.phonenumber,*2*0593*3*451*5,2059334515
+787.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given ACE Inhibitor or ARB for Left Ventricular Systolic Dysfunction (LVSD)
+2527.phonenumber,2053258100,2518472223
+2114.stateavg,AL_SCIP-CARD-2,AL_PN-5C
+2062.stateavg,AL_SCIP-CARD-2,AL_PN-3B
+2066.emergencyservice,****N*o,No
+9406.hospitaltype,Acute C**a**re Hospital*s,Acute Care Hospitals
+38.stateavg,AK_PN-7,AL_SCIP-INF-1
+2663.state,**A***K,AK
+4513.hospitalname,*PHOENIX V*A M*EDICAL *CEN*TER,PHOENIX VA MEDICAL CENTER
+116.providernumber,10018,10007
+5353.measurecode,*SCI*P-I**NF-*4,SCIP-INF-4
+2521.phonenumber,2053258100,2518472223
+5871.hospitalname,FAYETTEVIL*L*E AR VA M*ED*ICAL C*ENTER,FAYETTEVILLE AR VA MEDICAL CENTER
+1315.providernumber,10018,10078
+2486.phonenumber,2*05554**2**000,2055542000
+53.stateavg,AK_PN-7,AL_HF-2
+701.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given ACE Inhibitor or ARB for Left Ventricular Systolic Dysfunction (LVSD)
+2263.phonenumber,*2059*3*3*451*5,2059334515
+2448.phonenumber,2053258100,2513682500
+1265.providernumber,10018,10069
+2703.phonenumber,2053258100,9075436300
+2714.state,**A***K,AK
+4529.phonenumber,**5206*2*9*1821,5206291821
+6440.measurecode,S**C*I*P-I*NF-4,SCIP-INF-4
+9535.hospitaltype,Acute Car*e **Hosp**itals,Acute Care Hospitals
+2040.stateavg,AL_SCIP-CARD-2,AL_PN-6
+1989.stateavg,AL_SCIP-CARD-2,AL_PN-5C
+2064.emergencyservice,*N****o,No
+5906.hospitaltype,*Acute Care *- VA Medical C**en*ter,Acute Care - VA Medical Center
+2471.hospitaltype,A*cute Care** - VA Med*ical *Center,Acute Care - VA Medical Center
+2693.condition,H**ea*rt *Attac*k,Heart Attack
+437.stateavg,AL_SCIP-INF-1,AK_PN-2
+1343.providernumber,10018,10079
+5904.emergencyservice,*N****o,No
+2503.phonenumber,**205*5*5*42000,2055542000
+2616.state,*A****K,AK
+4538.emergencyservice,**N***o,No
+5908.emergencyservice,***N**o,No
+423.providernumber,10018,10164
+45.stateavg,AK_PN-7,AL_AMI-1
+2037.stateavg,AL_SCIP-CARD-2,AL_PN-3B
+2629.condition,Surg*i*cal* Inf*ect*ion Prevention,Surgical Infection Prevention
+2084.stateavg,AL_SCIP-CARD-2,AL_HF-3
+1579.providernumber,10018,10099
+2101.stateavg,AL_SCIP-CARD-2,AL_AMI-2
+9904.emergencyservice,**N***o,No
+5278.measurecode,*S*CIP-**INF*-4,SCIP-INF-4
+6911.emergencyservice,**N***o,No
+448.providernumber,10018,20017
+2695.condition,Hea*rt* A*tt*ac*k,Heart Attack
+778.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Aspirin at Arrival
+2620.state,*A****K,AK
+2478.phonenumber,**334*260410**0,3342604100
+1592.providernumber,10018,10099
+2695.state,*****AK,AK
+2499.phonenumber,20*5*5*5**42000,2055542000
+443.providernumber,10018,20017
+2482.phonenumber,*20*55*5420**00,2055542000
+4556.hospitalname,VA NORTHERN ARIZO*N*A HEALTHCARE S*Y*S*TEM,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+5075.measurecode,SC*IP***-INF-*4,SCIP-INF-4
+6918.measurecode,S*C*IP-*IN*F-*4,SCIP-INF-4
+4543.emergencyservice,N*****o,No
+6893.measurecode,*SC**I*P-I*NF-4,SCIP-INF-4
+2667.condition,*H***eart *Attack,Heart Attack
+10.stateavg,AK_PN-7,AL_AMI-2
+2833.state,*****AK,AK
+2015.stateavg,AL_SCIP-CARD-2,AL_PN-6
+1905.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Fibrinolytic Medication Within 30 Minutes Of Arrival
+2254.emergencyservice,N*****o,No
+1882.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given Discharge Instructions
+1977.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given ACE Inhibitor or ARB for Left Ventricular Systolic Dysfunction (LVSD)
+755.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given Smoking Cessation Advice/Counseling
+2723.condition,Heart Fail*u***r*e,Heart Failure
+2987.condition,Surgical **Infect*ion Prev*en*tion,Surgical Infection Prevention
+2660.state,**A***K,AK
+1914.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given Initial Antibiotic(s) within 6 Hours After Arrival
+2696.condition,H*eart* At***tack,Heart Attack
+2869.condition,He*art Att**a**ck,Heart Attack
+2630.state,*A****K,AK
+2644.state,*****AK,AK
+2500.hospitalname,TUSCA*LO*OSA **VA MEDICA*L CENTER,TUSCALOOSA VA MEDICAL CENTER
+952.condition,*Sur*gical I*nfection** Prevention,Surgical Infection Prevention
+2516.phonenumber,2053258100,2518472223
+2763.state,*****AK,AK
+2458.phonenumber,3342*604*1*0**0,3342604100
+814.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Assessed and Given Pneumococcal Vaccination
+2069.emergencyservice,**N***o,No
+1416.condition,Su*rgical *I*nfection Preve*nti*on,Surgical Infection Prevention
+5888.emergencyservice,**N***o,No
+2488.phonenumber,*2055*54**20*00,2055542000
+1466.condition,Sur*gic*al* Infection Prevent*i*on,Surgical Infection Prevention
+5606.measurecode,SCIP-I****NF-*4,SCIP-INF-4
+2687.state,*A****K,AK
+2793.condition,He*ar*t* *Atta*ck,Heart Attack
+1919.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,surgery patients who were given the  right kind  of antibiotic to help prevent infection
+750.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given an Evaluation of Left Ventricular Systolic (LVS) Function
+1900.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Aspirin at Arrival
+1155.condition,Sur*gical Inf*ection Pre*venti*o*n,Surgical Infection Prevention
+5303.measurecode,*SC**I*P-I*NF-4,SCIP-INF-4
+2627.state,*****AK,AK
+706.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given Initial Antibiotic(s) within 6 Hours After Arrival
+6006.measurecode,**S*CI*P-I*NF-4,SCIP-INF-4
+2732.state,****A*K,AK
+2602.phonenumber,2053258100,9072613675
+7079.measurecode,S**CIP-I*NF*-*4,SCIP-INF-4
+2691.condition,*H*ea*rt Att**ack,Heart Attack
+4541.hospitalname,VA S. ARIZONA* HEALTHC*A**R*E SYSTEM,VA S. ARIZONA HEALTHCARE SYSTEM
+2819.condition,H*e*art Att*ac**k,Heart Attack
+6818.measurecode,S*CIP**-I*NF-*4,SCIP-INF-4
+2750.state,***A**K,AK
+108.providernumber,10018,10007
+2638.state,****A*K,AK
+1796.condition,S**urgical Infe*ct*ion* Prevention,Surgical Infection Prevention
+6946.measurecode,SCI***P-I**NF-4,SCIP-INF-4
+1323.providernumber,10018,10078
+805.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given ACE Inhibitor or ARB for Left Ventricular Systolic Dysfunction (LVSD)
+4722.measurecode,*S*CIP-IN**F-*4,SCIP-INF-4
+2810.state,***A**K,AK
+1968.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,surgery patients who were given an antibiotic at the right time (within one hour before surgery) to help prevent infection
+1655.providernumber,10018,10102
+2759.state,*****AK,AK
+36.stateavg,AK_PN-7,AL_PN-7
+4561.emergencyservice,N*****o,No
+2496.hospitalname,TU*SCALOO*SA *VA MEDICAL* C*ENTER,TUSCALOOSA VA MEDICAL CENTER
+2253.emergencyservice,****N*o,No
+5806.measurecode,SCIP***-*I*NF-4,SCIP-INF-4
+2058.stateavg,AL_SCIP-CARD-2,AL_HF-2
+8261.emergencyservice,****N*o,No
+2692.state,***A**K,AK
+4507.hospitalname,PHO*ENI*X *VA MEDIC**AL CENTER,PHOENIX VA MEDICAL CENTER
+1577.providernumber,10018,10099
+44.stateavg,AK_PN-7,AL_SCIP-VTE-2
+1649.providernumber,10018,10102
+4563.emergencyservice,***N**o,No
+2038.stateavg,AL_SCIP-CARD-2,AL_PN-4
+70.stateavg,AK_PN-7,AL_AMI-1
+4520.hospitalname,PHOENIX* VA* MEDICA*L C**ENTER,PHOENIX VA MEDICAL CENTER
+8263.emergencyservice,****N*o,No
+1702.emergencyservice,****N*o,No
+5831.measurecode,**SCI*P**-INF-4,SCIP-INF-4
+4547.hospitalname,VA S. A*RIZO*NA *HEAL*THCARE SY*STEM,VA S. ARIZONA HEALTHCARE SYSTEM
+1972.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,surgery patients needing hair removed from the surgical area before surgery&#54; who had hair removed using a safer method (electric clippers or hair removal cream - not a razor)
+674.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given Discharge Instructions
+5889.emergencyservice,*****No,No
+2696.phonenumber,2053258100,9075436300
+2807.state,**A***K,AK
+2887.condition,Surgi*cal Infection Preve*n*t**ion,Surgical Infection Prevention
+1940.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given the Most Appropriate Initial Antibiotic(s)
+2720.state,*A****K,AK
+2707.state,*****AK,AK
+9402.hospitaltype,Acu*te C*are* *Hospit*als,Acute Care Hospitals
+4505.hospitalname,PHOEN*IX VA* MEDI*C*AL* CENTER,PHOENIX VA MEDICAL CENTER
+62.stateavg,AK_PN-7,AL_SCIP-CARD-2
+2860.state,*****AK,AK
+2832.state,*A****K,AK
+6415.measurecode,*S*CIP*-INF-**4,SCIP-INF-4
+111.providernumber,10018,10007
+4544.emergencyservice,**N***o,No
+2667.state,*A****K,AK
+4570.emergencyservice,**N***o,No
+2056.emergencyservice,N*****o,No
+1878.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Smoking Cessation Advice/Counseling
+1285.providernumber,10018,10073
+1330.providernumber,10018,10078
+5887.emergencyservice,N*****o,No
+2016.stateavg,AL_SCIP-CARD-2,AL_PN-7
+2500.phonenumber,**20555**42*000,2055542000
+1929.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Beta Blocker at Discharge
+2773.state,*****AK,AK
+2663.condition,Heart *Att***ac*k,Heart Attack
+695.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Smoking Cessation Advice/Counseling
+1924.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,patients who got treatment  at the right time (within 24 hours before or after their surgery) to help prevent blood clots after certain types of surgery
+2744.condition,H*eart **At*tac*k,Heart Attack
+1642.providernumber,10018,10101
+1629.providernumber,10018,10101
+9410.hospitaltype,Ac*ut*e Ca*re** Hospitals,Acute Care Hospitals
+1597.providernumber,10018,10100
+96.providernumber,10018,10007
+50.stateavg,AK_PN-7,AL_AMI-7A
+2461.hospitaltype,Acut**e Care - VA M*edical* Cente*r,Acute Care - VA Medical Center
+1317.providernumber,10018,10078
+2699.condition,H***e*art F*ailure,Heart Failure
+2748.condition,H*e*ar*t F*ailur*e,Heart Failure
+746.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Beta Blocker at Discharge
+4528.phonenumber,5*2*06291**82*1,5206291821
+4554.hospitalname,VA* NORTHERN* ARIZ*ONA HEALTH*CARE SY*STEM,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+2823.condition,H*ea*r*t* Fail*ure,Heart Failure
+2453.phonenumber,2053258100,2513682500
+2256.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+2526.phonenumber,2053258100,2518472223
+2698.state,*****AK,AK
+1662.providernumber,10018,10102
+1580.providernumber,10018,10099
+2761.state,*A****K,AK
+104.providernumber,10018,10007
+2709.state,*A****K,AK
+2252.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+2488.hospitaltype,*Ac**ute Care - VA *Medic*al Center,Acute Care - VA Medical Center
+1945.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,surgery patients whose preventive antibiotics were stopped at the right time (within 24 hours after surgery)
+4564.hospitalname,V*A NORT*HERN ARIZONA *HEALTHCAR*E S*YSTEM,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+4524.hospitalname,PHOEN**IX VA* MEDI*CAL C*ENTER,PHOENIX VA MEDICAL CENTER
+1602.providernumber,10018,10100
+2887.state,***A**K,AK
+2653.state,**A***K,AK
+679.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Whose Initial Emergency Room Blood Culture Was Performed Prior To The Administration Of The First Hospital Dose Of Antibiotics
+1278.providernumber,10018,10069
+2605.state,**A***K,AK
+2074.emergencyservice,N*****o,No
+4537.emergencyservice,*****No,No
+2489.phonenumber,*2055*54200***0,2055542000
+1310.providernumber,10018,10078
+2463.hospitaltype,Acute* Care - V**A* Medical Ce*nter,Acute Care - VA Medical Center
+2670.condition,He*art* *Failu**re,Heart Failure
+4545.hospitalname,VA *S. ARIZ*ONA* HEAL*THC*ARE SYSTEM,VA S. ARIZONA HEALTHCARE SYSTEM
+5856.measurecode,SCIP*-I**N*F*-4,SCIP-INF-4
+5863.hospitalname,FAY*ETTEV*I**LLE AR VA MEDICAL C*ENTER,FAYETTEVILLE AR VA MEDICAL CENTER
+2749.condition,H**ea*rt *F*ailure,Heart Failure
+2784.state,****A*K,AK
+1609.providernumber,10018,10100
+1622.providernumber,10018,10101
+436.providernumber,10018,20017
+1298.providernumber,10018,10073
+2678.state,A*****K,AK
+1585.providernumber,10018,10099
+1355.condition,Surgical *Infect**ion Pr*even*tion,Surgical Infection Prevention
+1356.providernumber,10018,10079
+2715.state,****A*K,AK
+27.stateavg,AK_PN-7,AL_HF-1
+1337.providernumber,10018,10079
+1002.condition,Surgic*al *Infecti*on* Preven*tion,Surgical Infection Prevention
+677.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given Smoking Cessation Advice/Counseling
+4503.hospitalname,PHOENIX* VA *ME*DICAL CEN*T*ER,PHOENIX VA MEDICAL CENTER
+1703.emergencyservice,*N****o,No
+4567.hospitalname,VA NORTHERN ARIZONA HEAL*T*HCA**RE SY*STEM,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+42.stateavg,AK_PN-7,AL_SCIP-INF-6
+2064.stateavg,AL_SCIP-CARD-2,AL_PN-5C
+2072.emergencyservice,N*****o,No
+1947.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,surgery patients needing hair removed from the surgical area before surgery&#54; who had hair removed using a safer method (electric clippers or hair removal cream - not a razor)
+9413.hospitaltype,A*cute *Care Hosp*it**als,Acute Care Hospitals
+9543.hospitaltype,Ac*ute C**are Ho*spi*tals,Acute Care Hospitals
+1331.providernumber,10018,10078
+2460.hospitaltype,Acute Care - VA Med*ical* *Ce*nte*r,Acute Care - VA Medical Center
+9909.emergencyservice,***N**o,No
+4541.emergencyservice,**N***o,No
+763.condition,Surgical I*nf*ec*tion P*revent*ion,Surgical Infection Prevention
+1715.emergencyservice,****N*o,No
+5050.measurecode,S**CIP-IN*F*-*4,SCIP-INF-4
+2461.phonenumber,3342*60*4**1*00,3342604100
+1635.providernumber,10018,10101
+1616.providernumber,10018,10100
+2617.state,A*****K,AK
+56.stateavg,AK_PN-7,AL_PN-2
+9911.emergencyservice,*****No,No
+2519.phonenumber,2053258100,2518472223
+2756.state,***A**K,AK
+4569.emergencyservice,*N****o,No
+2872.condition,Hea**rt At***tack,Heart Attack
+1610.providernumber,10018,10100
+13.stateavg,AK_PN-7,AL_AMI-5
+1938.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given Smoking Cessation Advice/Counseling
+1669.providernumber,10018,10102
+1933.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given an Evaluation of Left Ventricular Systolic (LVS) Function
+1663.providernumber,10018,10102
+1615.providernumber,10018,10100
+2800.condition,H**ea*rt Fail*ur*e,Heart Failure
+4925.measurecode,S***CIP*-IN*F-4,SCIP-INF-4
+1309.providernumber,10018,10078
+5909.hospitaltype,Acut*e Care - VA* Medical ***Center,Acute Care - VA Medical Center
+4532.phonenumber,*52*0*62**91821,5206291821
+2221.condition,Surgi*cal *Inf*ection Preven*t*ion,Surgical Infection Prevention
+3012.condition,Surgical Infection Pr**e*v*ent*ion,Surgical Infection Prevention
+2524.phonenumber,2053258100,2518472223
+2637.condition,*He**art At*tac*k,Heart Attack
+1027.condition,Surgical* Inf*ectio**n Pr*evention,Surgical Infection Prevention
+4537.phonenumber,***5206291*8*21,5206291821
+2743.hospitaltype,Acut*e Ca*re *Ho*spi*tals,Acute Care Hospitals
+1303.providernumber,10018,10073
+2371.condition,*Surgical Infe*ction P*reve*n*tion,Surgical Infection Prevention
+2727.state,**A***K,AK
+1713.emergencyservice,*****No,No
+1897.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,surgery patients needing hair removed from the surgical area before surgery&#54; who had hair removed using a safer method (electric clippers or hair removal cream - not a razor)
+5868.emergencyservice,****N*o,No
+4563.hospitalname,VA* *NORTHERN ARIZONA HEALTH*C*ARE S*YSTEM,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+2267.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+2636.condition,Heart At*ta****ck,Heart Attack
+2718.state,****A*K,AK
+435.providernumber,10018,20017
+9409.hospitaltype,A*cute Care** Hos*pi*tals,Acute Care Hospitals
+2728.state,***A**K,AK
+3224.condition,*Su*rgical I*nfect*ion Preve*ntion,Surgical Infection Prevention
+4560.emergencyservice,***N**o,No
+2014.stateavg,AL_SCIP-CARD-2,AL_PN-5C
+4564.emergencyservice,N*****o,No
+743.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Aspirin at Discharge
+87.stateavg,AK_PN-7,AL_SCIP-CARD-2
+5781.measurecode,*SCIP-*I*NF-**4,SCIP-INF-4
+1336.providernumber,10018,10079
+103.providernumber,10018,10007
+2271.condition,Su**rgic**al Infection* Prevention,Surgical Infection Prevention
+4529.hospitalname,VA *S. **A*RIZONA HEALT*HCARE SYSTEM,VA S. ARIZONA HEALTHCARE SYSTEM
+2646.state,*A****K,AK
+1311.providernumber,10018,10078
+4647.measurecode,S*CIP*-**IN*F-4,SCIP-INF-4
+1712.emergencyservice,***N**o,No
+722.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Fibrinolytic Medication Within 30 Minutes Of Arrival
+5897.hospitaltype,Acute Care* - VA Medica*l* C**enter,Acute Care - VA Medical Center
+2735.state,***A**K,AK
+5895.emergencyservice,N*****o,No
+8.stateavg,AK_PN-7,AL_SCIP-VTE-2
+4523.hospitalname,PH***OENIX* VA MEDICAL CE*NTER,PHOENIX VA MEDICAL CENTER
+1279.providernumber,10018,10069
+2085.stateavg,AL_SCIP-CARD-2,AL_HF-4
+2036.stateavg,AL_SCIP-CARD-2,AL_PN-2
+2273.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+1714.emergencyservice,**N***o,No
+2650.state,*A****K,AK
+450.providernumber,10018,20017
+792.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given Initial Antibiotic(s) within 6 Hours After Arrival
+4558.emergencyservice,N*****o,No
+2836.state,***A**K,AK
+2603.state,*****AK,AK
+4528.hospitalname,VA S. *ARIZO*NA HE*AL*THCARE SYST*EM,VA S. ARIZONA HEALTHCARE SYSTEM
+2747.state,*A****K,AK
+2595.phonenumber,2053258100,9072613675
+6565.measurecode,**SCIP-INF***-4,SCIP-INF-4
+2635.condition,*H*eart **A*ttack,Heart Attack
+1491.condition,S*urgical I*nfect*ion* Preventi*on,Surgical Infection Prevention
+5150.measurecode,*S**CI*P*-INF-4,SCIP-INF-4
+727.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given Smoking Cessation Advice/Counseling
+748.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given PCI Within 90 Minutes Of Arrival
+6910.emergencyservice,*****No,No
+430.providernumber,10018,10164
+4521.phonenumber,*60222***2*6444,6022226444
+2251.emergencyservice,****N*o,No
+4508.phonenumber,6***022226*4*44,6022226444
+1706.emergencyservice,***N**o,No
+452.stateavg,AL_SCIP-INF-1,AK_AMI-2
+2511.phonenumber,2053258100,2518472223
+2321.condition,**Surg*ical Infec*tio*n Prevention,Surgical Infection Prevention
+4546.hospitalname,VA S. A*RI*ZONA HEALTH*C*ARE* SYSTEM,VA S. ARIZONA HEALTHCARE SYSTEM
+2718.condition,*Heart* A*ttac**k,Heart Attack
+1329.providernumber,10018,10078
+1963.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given Smoking Cessation Advice/Counseling
+4522.hospitalname,PHOENI*X *V*A MEDI*CAL CENTE*R,PHOENIX VA MEDICAL CENTER
+5882.emergencyservice,N*****o,No
+4535.phonenumber,*5**20*6*291821,5206291821
+2063.stateavg,AL_SCIP-CARD-2,AL_PN-4
+1959.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given ACE Inhibitor or ARB for Left Ventricular Systolic Dysfunction (LVSD)
+2669.condition,Hear**t*** Failure,Heart Failure
+785.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given Discharge Instructions
+1954.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Beta Blocker at Discharge
+2053.emergencyservice,****N*o,No
+8262.emergencyservice,**N***o,No
+2266.phonenumber,*2059*3*345**15,2059334515
+2694.condition,Heart** *Atta**ck,Heart Attack
+776.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Children Who Received Systemic Corticosteroid Medication (oral and IV Medication That Reduces Inflammation and Controls Symptoms) While Hospitalized for Asthma
+2268.phonenumber,2*0*5*9**334515,2059334515
+73.stateavg,AK_PN-7,AL_AMI-4
+5862.emergencyservice,***N**o,No
+6902.emergencyservice,N*****o,No
+428.providernumber,10018,10164
+2466.hospitaltype,Ac*ute Ca**r*e *- VA Medical Center,Acute Care - VA Medical Center
+4574.hospitalname,VA NOR*T*HE*RN* ARIZONA* HEALTHCARE SYSTEM,VA NORTHERN ARIZONA HEALTHCARE SYSTEM
+2665.state,***A**K,AK
+2463.phonenumber,3*342*6*0**4100,3342604100
+415.providernumber,10018,10164
+1630.providernumber,10018,10101
+2788.state,*A****K,AK
+2862.condition,Surgical I*nfectio*n Pre**ve*ntion,Surgical Infection Prevention
+2886.state,**A***K,AK
+6615.measurecode,*SCI*P-IN*F**-4,SCIP-INF-4
+6904.emergencyservice,****N*o,No
+2506.phonenumber,2053258100,2518472223
+1643.providernumber,10018,10101
+6971.measurecode,S*C*IP-I*N*F*-4,SCIP-INF-4
+4537.hospitalname,VA S. ARI*ZONA* HEALTHC*ARE* *SYSTEM,VA S. ARIZONA HEALTHCARE SYSTEM
+1351.providernumber,10018,10079
+8268.emergencyservice,****N*o,No
+2529.phonenumber,2053258100,2518472223
+2881.state,A*****K,AK
+1705.emergencyservice,*****No,No
+4822.measurecode,SCIP-****INF*-4,SCIP-INF-4
+6743.measurecode,**S*C*IP-IN*F-4,SCIP-INF-4
+4548.emergencyservice,*N****o,No
+2100.stateavg,AL_SCIP-CARD-2,AL_AMI-1
+5896.hospitaltype,*A*cu*te Care - V*A Medical *Center,Acute Care - VA Medical Center
+2685.state,*****AK,AK
+1696.emergencyservice,*****No,No
+1280.providernumber,10018,10069
+2708.phonenumber,2053258100,9075436300
+1286.providernumber,10018,10073
+2468.hospitaltype,Acute Care* -* VA* *M*edical Center,Acute Care - VA Medical Center
+1566.condition,Surg**ical Infe*ction Prev*e*ntion,Surgical Infection Prevention
+2263.hospitalname,CALLAHAN EYE FOUNDATION HOSPITAL,BIRMINGHAM VA MEDICAL CENTER
+2698.condition,*Heart Fai*l*ur**e,Heart Failure
+2456.phonenumber,3*34*2**6*04100,3342604100
+47.stateavg,AK_PN-7,AL_AMI-3
+2713.phonenumber,2053258100,9075436300
+2041.stateavg,AL_SCIP-CARD-2,AL_PN-7
+4538.hospitalname,*VA S.* ARI*ZONA HEALTHCARE* SY*STEM,VA S. ARIZONA HEALTHCARE SYSTEM
+2770.state,***A**K,AK
+2054.emergencyservice,**N***o,No
+1700.emergencyservice,N*****o,No
+718.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Aspirin at Discharge
+8266.emergencyservice,*****No,No
+5879.emergencyservice,*N****o,No
+780.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given ACE Inhibitor or ARB for Left Ventricular Systolic Dysfunction (LVSD)
+5898.hospitaltype,*Acute Ca*re** - VA Medica*l Center,Acute Care - VA Medical Center
+2443.phonenumber,2053258100,2513682500
+2438.phonenumber,2053258100,2513682500
+2476.phonenumber,3342604**1*0**0,3342604100
+2640.state,*A****K,AK
+2700.state,*A****K,AK
+1293.providernumber,10018,10073
+2501.hospitalname,T*USCALOO*SA VA MEDI*CAL C*ENT*ER,TUSCALOOSA VA MEDICAL CENTER
+2477.phonenumber,33**4*260*41*00,3342604100
+4511.hospitalname,PHOE*NI**X VA MEDICAL CE**NTER,PHOENIX VA MEDICAL CENTER
+5906.measurecode,S*CI*P-I**N*F-4,SCIP-INF-4
+8279.emergencyservice,*****No,No
+6843.measurecode,SC*I**P-**INF-4,SCIP-INF-4
+1405.condition,Su*rg*ica*l Inf*ect*ion Prevention,Surgical Infection Prevention
+1650.providernumber,10018,10102
+2462.hospitaltype,Acute *Ca*re - *VA* Medical Cente*r,Acute Care - VA Medical Center
+2476.condition,*Surgical* Infection Preve*nti*o*n,Surgical Infection Prevention
+2467.phonenumber,3*342*60*4**100,3342604100
+2585.phonenumber,2053258100,9072613675
+4519.phonenumber,60****2222644*4,6022226444
+109.providernumber,10018,10007
+2768.condition,*Heart At*t**ac*k,Heart Attack
+2719.condition,He*ar*t A*tta**ck,Heart Attack
+2769.state,***A**K,AK
+4672.measurecode,**SCIP*-INF*-*4,SCIP-INF-4
+2551.condition,Surgi***c*al In*fection Prevention,Surgical Infection Prevention
+1885.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Failure Patients Given Smoking Cessation Advice/Counseling
+2590.phonenumber,2053258100,9072613675
+9419.hospitaltype,Ac***ute Care Hospita**ls,Acute Care Hospitals
+5100.measurecode,SCI*P-IN*F**-*4,SCIP-INF-4
+1670.providernumber,10018,10103
+6907.emergencyservice,*N****o,No
+681.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Pneumonia Patients Given Initial Antibiotic(s) within 6 Hours After Arrival
+2086.stateavg,AL_SCIP-CARD-2,AL_PN-2
+2665.condition,Hear**t* **Attack,Heart Attack
+2607.phonenumber,2053258100,9072613675
+2477.hospitaltype,Acu**te Care - *VA* Medical Cen*ter,Acute Care - VA Medical Center
+3249.condition,Surg*ical Inf*ection* Pr*eventi*on,Surgical Infection Prevention
+2760.state,****A*K,AK
+2712.state,****A*K,AK
+2738.state,*****AK,AK
+2675.state,A*****K,AK
+2481.phonenumber,2*0**5*5542*000,2055542000
+4538.phonenumber,**52*0629**1821,5206291821
+1273.providernumber,10018,10069
+8274.emergencyservice,N*****o,No
+1699.emergencyservice,**N***o,No
+2059.stateavg,AL_SCIP-CARD-2,AL_HF-3
+1880.measurename,surgery patients who were taking heart drugs called beta blockers before coming to the hospital&#54; who were kept on the beta blockers during the period just before and after their surgery,Heart Attack Patients Given Fibrinolytic Medication Within 30 Minutes Of Arrival
+2274.phonenumber,20*593345***1*5,2059334515
+2737.condition,Surgical Infec*tion Pr*e*venti**on,Surgical Infection Prevention
+2641.condition,He**ar*t *Fa*ilure,Heart Failure
+97.phonenumber,2053258100,3344933541
+5876.emergencyservice,****N*o,No
+33.stateavg,AK_PN-7,AL_PN-4
+4522.phonenumber,60*****22226444,6022226444

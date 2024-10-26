@@ -1,0 +1,1 @@
+FName(String),LName(String),Gender(String),AreaCode(String),Phone(String),City(String),State(String),Zip(String),MaritalStatus(String),HasChild(String),Salary(Integer),Rate(Double),SingleExemp(String),MarriedExemp(String),ChildExemp(String)

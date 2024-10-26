@@ -1,0 +1,4 @@
+not(t1.flight=t2.flight^t1.sched_dep_time!=t2.sched_dep_time)
+not(t1.flight=t2.flight^t1.act_dep_time!=t2.act_dep_time)
+not(t1.flight=t2.flight^t1.sched_arr_time!=t2.sched_arr_time)
+not(t1.flight=t2.flight^t1.act_arr_time!=t2.act_arr_time)

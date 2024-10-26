@@ -1,0 +1,1 @@
+Date(String),Ticker(String),Open(Double),High(Double),Low(Double),Close(Double),Volume(Integer)
